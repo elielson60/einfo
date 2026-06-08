@@ -217,7 +217,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
 <div class="topbar">
   <div class="tb-brand">
     <div class="tb-logo">TI</div>
-    <span class="tb-name">Martins Import</span>
+    <span class="tb-name">E-INFO CONSULTORIA</span>
   </div>
   <div class="tb-user" id="tb-user" style="display:none;">
     <div class="tb-avatar" id="tb-avatar">?</div>
@@ -234,8 +234,8 @@ tr:hover td{background:rgba(255,255,255,.02);}
   <div class="auth-wrap">
     <div class="auth-card">
       <div class="auth-logo">TI</div>
-      <h1 class="auth-title">Portal de Suporte TI</h1>
-      <p class="auth-sub">Martins Import — acesse para abrir chamados</p>
+      <h1 class="auth-title">PORTAL - CHAMADO TÉCNICO</h1>
+      <p class="auth-sub">E-INFO Consultoria — Acesse para abrir chamados</p>
       <div class="auth-tabs">
         <button class="auth-tab active" onclick="switchAuthTab('login')">Entrar</button>
         <button class="auth-tab" onclick="switchAuthTab('register')">Cadastrar</button>
@@ -272,28 +272,27 @@ tr:hover td{background:rgba(255,255,255,.02);}
             <label>Empresa <span class="req">*</span></label>
             <select id="r-empresa">
               <option value="">Selecionar...</option>
-              <option>Concessionária Kia</option>
-              <option>Multimarcas</option>
-              <option>Locação de Veículos</option>
-              <option>Manutenção Automotiva</option>
-              <option>Hotelaria</option>
-              <option>Restaurante</option>
-              <option>Administrativo</option>
-            </select>
+              <option>Martins Import</option>
+              <option>Zucatelli Brasil</option>
+              <option>Hotel Prive do Atalaia</option>
+              <option>Rent a Car</option>
+              <option>Mobilidade Eletrica</option>
+              <option>Martins Auto Service</option>
+              
+           </select>
           </div>
           <div class="field">
             <label>Departamento <span class="req">*</span></label>
             <select id="r-depto">
               <option value="">Selecionar...</option>
+              <option>Recursos Humanos</option>
               <option>Vendas</option>
-              <option>Financeiro</option>
-              <option>RH</option>
-              <option>TI</option>
-              <option>Recepção / Atendimento</option>
-              <option>Manutenção</option>
-              <option>Logística</option>
-              <option>Diretoria</option>
+              <option>Pós Venda</option>
+              <option>Contábil &amp; Fiscal</option>
               <option>Marketing</option>
+              <option>Administrativo / Financeiro</option>
+              <option>TI</option>
+              <option>Diretoria</option>
               <option>Outro</option>
             </select>
           </div>
@@ -325,7 +324,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
   <div class="form-page">
     <div class="form-wrap">
       <div class="form-header">
-        <h1 class="form-title">Abrir chamado de suporte</h1>
+        <h1 class="form-title">Abrir chamado de suporte Informática</h1>
         <p class="form-sub">Descreva o problema — nossa IA vai classificar automaticamente.</p>
       </div>
 
@@ -355,14 +354,14 @@ tr:hover td{background:rgba(255,255,255,.02);}
             <label>Categoria (opcional)</label>
             <select id="c-cat">
               <option value="">Deixar a IA classificar automaticamente</option>
-              <option>Infraestrutura (rede, internet, servidor)</option>
-              <option>Hardware (computador, impressora, periférico)</option>
-              <option>Software (sistema, ERP, DMS, app)</option>
-              <option>Acesso e segurança (senha, VPN, permissão)</option>
-              <option>Automação / Integração (n8n, API, bot)</option>
-              <option>Telecomunicações (ramal, PABX, chip)</option>
-              <option>Câmeras e segurança física</option>
-              <option>Outro</option>
+              <option>Infraestrutura (Rede, Internet, Servidor)</option>
+              <option>Hardware (Desktop, Notebook, Impressora e Periféricos)</option>
+              <option>Software (Sistema, ERP, DMS, Apps)</option>
+              <option>Acesso e Segurança (Senha, VPN, Permissão)</option>
+              <option>Dúvidas e Procedimentos Operacionais</option>
+              <option>Telecomunicações (Ramal, PABX, Chip)</option>
+              <option>Câmeras e Segurança Física</option>
+              <option>Outros</option>
             </select>
           </div>
           <div class="field">
@@ -681,8 +680,8 @@ async function analisarIA() {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514', max_tokens: 800,
-        system: `Especialista em triagem de chamados de TI da Martins Import (Kia, multimarcas, locação, manutenção, hotelaria, restaurantes). Retorne APENAS JSON sem markdown: {categoria, prioridade:(critico|alto|medio|baixo), justificativa, acao_imediata, sla_horas}`,
-        messages: [{ role: 'user', content: `Título: ${titulo}\nDescrição: ${desc}\nEmpresa: ${currentPerfil?.empresa||''}\nDepto: ${currentPerfil?.departamento||}` }]
+        system: `Especialista em triagem de chamados de TI da E-INFO Consultoria, que atende: Martins Import (concessionária Kia), Zucatelli Brasil (multimarcas), Hotel Prive do Atalaia (hotelaria), Rent a Car (locação de veículos), Mobilidade Elétrica e Martins Auto Service (manutenção automotiva). Retorne APENAS JSON sem markdown: {categoria:(Infraestrutura|Hardware|Software|Acesso e Segurança|Dúvidas e Procedimentos Operacionais|Telecomunicações|Câmeras e Segurança Física|Outros), prioridade:(critico|alto|medio|baixo), justificativa, acao_imediata, sla_horas}`,
+        messages: [{ role: 'user', content: `Título: ${titulo}\nDescrição: ${desc}\nEmpresa: ${currentPerfil?.empresa||''}\nDepto: ${currentPerfil?.departamento||''}` }]
       })
     });
     const d = await r.json();
