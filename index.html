@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TI Martins — Suporte</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f11;--surface:#17171b;--surface2:#1e1e24;--surface3:#242430;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#f0f0f2;--muted:#7a7a8c;--dim:#3a3a4a;
+  --accent:#4f8cff;--accent-s:rgba(79,140,255,0.12);--accent-b:rgba(79,140,255,0.3);
+  --green:#3ecf8e;--green-s:rgba(62,207,142,0.1);
+  --red:#ef4444;--red-s:rgba(239,68,68,0.1);
+  --orange:#f59e0b;--orange-s:rgba(245,158,11,0.1);
+  --r:10px;--r-sm:7px;
+  --sans:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── TOPBAR ── */
+.topbar{position:sticky;top:0;z-index:200;height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;}
+.tb-brand{display:flex;align-items:center;gap:10px;}
+.tb-logo{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0;}
+.tb-name{font-size:14px;font-weight:500;}
+.tb-user{display:flex;align-items:center;gap:10px;}
+.tb-avatar{width:30px;height:30px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--accent);}
+.tb-info{display:flex;flex-direction:column;line-height:1.2;}
+.tb-uname{font-size:12px;font-weight:500;}
+.tb-role{font-size:10px;color:var(--muted);font-family:var(--mono);}
+.btn-logout{font-size:12px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:var(--r-sm);padding:5px 10px;cursor:pointer;font-family:var(--sans);transition:all .15s;}
+.btn-logout:hover{color:var(--text);border-color:var(--border2);}
+
+/* ── PAGES ── */
+.page{display:none;min-height:calc(100vh - 52px);}
+.page.active{display:flex;}
+
+/* ── AUTH PAGE ── */
+.auth-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:36px 32px;width:100%;max-width:420px;}
+.auth-logo{width:44px;height:44px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;margin-bottom:20px;}
+.auth-title{font-size:22px;font-weight:600;margin-bottom:4px;}
+.auth-sub{font-size:13px;color:var(--muted);margin-bottom:28px;}
+.auth-tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--surface2);padding:4px;border-radius:var(--r-sm);}
+.auth-tab{flex:1;padding:7px;border:none;background:none;color:var(--muted);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;border-radius:5px;transition:all .15s;}
+.auth-tab.active{background:var(--surface3);color:var(--text);}
+
+/* ── FORM ELEMENTS ── */
+.field{margin-bottom:14px;}
+.field:last-of-type{margin-bottom:0;}
+label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
+label .req{color:var(--accent);margin-left:2px;}
+input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:var(--sans);font-size:14px;padding:10px 13px;outline:none;transition:border-color .2s,box-shadow .2s;appearance:none;-webkit-appearance:none;}
+input::placeholder,textarea::placeholder{color:var(--dim);}
+input:focus,select:focus,textarea:focus{border-color:var(--accent-b);box-shadow:0 0 0 3px var(--accent-s);}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a7a8c' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;cursor:pointer;}
+textarea{resize:vertical;min-height:90px;line-height:1.6;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:480px){.grid2{grid-template-columns:1fr;}}
+.field-err{font-size:11px;color:#f87171;margin-top:4px;display:none;}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 18px;border-radius:var(--r-sm);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--border);}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-primary:hover{background:#3a7de8;}
+.btn-primary:disabled{opacity:.4;pointer-events:none;}
+.btn-ghost{background:var(--surface2);color:var(--muted);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.btn-ai{background:var(--surface2);color:var(--accent);border-color:var(--accent-b);}
+.btn-ai:hover{background:var(--accent-s);}
+.btn-danger{background:var(--red-s);color:#f87171;border-color:rgba(239,68,68,.3);}
+.btn-full{width:100%;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+
+/* ── CHAMADO FORM PAGE ── */
+.form-page{flex:1;display:flex;flex-direction:column;align-items:center;padding:32px 20px 80px;}
+.form-wrap{width:100%;max-width:600px;}
+.form-header{margin-bottom:24px;}
+.form-title{font-size:22px;font-weight:600;margin-bottom:4px;}
+.form-sub{font-size:13px;color:var(--muted);}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:14px;}
+.card-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:16px;}
+
+/* PERFIL BADGE */
+.perfil-badge{background:var(--accent-s);border:1px solid var(--accent-b);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+.perfil-avatar{width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;flex-shrink:0;}
+.perfil-info{flex:1;}
+.perfil-nome{font-size:14px;font-weight:500;}
+.perfil-meta{font-size:12px;color:var(--muted);margin-top:1px;}
+
+/* PRIORITY */
+.prio-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.prio-pill{padding:11px 8px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface2);cursor:pointer;text-align:center;transition:all .15s;user-select:none;}
+.prio-pill:hover{border-color:var(--border2);}
+.prio-pill .pi{font-size:16px;display:block;margin-bottom:3px;}
+.prio-pill .pn{font-size:13px;font-weight:500;display:block;}
+.prio-pill .pd{font-size:11px;color:var(--muted);display:block;margin-top:1px;}
+.prio-pill.sel-critico{border-color:var(--red);background:var(--red-s);}
+.prio-pill.sel-alto{border-color:var(--orange);background:var(--orange-s);}
+.prio-pill.sel-medio{border-color:var(--accent);background:var(--accent-s);}
+.prio-pill.sel-baixo{border-color:var(--green);background:var(--green-s);}
+
+/* AI BOX */
+.ai-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-top:14px;transition:border-color .3s;}
+.ai-box.on{border-color:var(--accent-b);}
+.ai-hdr{display:flex;align-items:center;gap:7px;font-size:10px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-bottom:8px;}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--dim);transition:background .3s;}
+.ai-dot.thinking{background:var(--accent);animation:pulse 1s infinite;}
+.ai-dot.done{background:var(--green);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.ai-body{font-size:13px;color:var(--muted);line-height:1.6;}
+.ai-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.ai-tag{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid;}
+.tag-cat{border-color:var(--accent-b);color:var(--accent);background:var(--accent-s);}
+.tag-c{border-color:rgba(239,68,68,.4);color:#f87171;background:var(--red-s);}
+.tag-a{border-color:rgba(245,158,11,.4);color:#fbbf24;background:var(--orange-s);}
+.tag-m{border-color:var(--accent-b);color:var(--accent);background:var(--accent-s);}
+.tag-b{border-color:rgba(62,207,142,.4);color:var(--green);background:var(--green-s);}
+.tag-sla{border-color:var(--border2);color:var(--muted);}
+.ai-acao{font-size:12px;color:var(--muted);padding-top:7px;border-top:1px solid var(--border);margin-top:7px;}
+
+/* SUCCESS */
+.success-screen{display:none;flex-direction:column;align-items:center;text-align:center;padding:60px 24px;}
+.success-icon{width:60px;height:60px;border-radius:50%;background:var(--green-s);border:1px solid rgba(62,207,142,.3);display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:20px;}
+.ticket-box{font-family:var(--mono);font-size:12px;padding:10px 20px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--accent);margin:16px 0;}
+
+/* ── ADMIN PAGE ── */
+.admin-layout{flex:1;display:flex;}
+.sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:20px 12px;display:flex;flex-direction:column;gap:4px;}
+.sb-section{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:4px 10px;margin-top:12px;margin-bottom:4px;}
+.sb-btn{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r-sm);cursor:pointer;font-size:13px;color:var(--muted);background:none;border:none;font-family:var(--sans);width:100%;text-align:left;transition:all .15s;}
+.sb-btn:hover{background:var(--surface2);color:var(--text);}
+.sb-btn.active{background:var(--surface2);color:var(--text);font-weight:500;}
+.sb-icon{font-size:15px;width:18px;text-align:center;}
+.admin-content{flex:1;overflow-y:auto;padding:28px;}
+.admin-section{display:none;}
+.admin-section.active{display:block;}
+.admin-title{font-size:20px;font-weight:600;margin-bottom:20px;}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
+.stat-n{font-size:28px;font-weight:600;}
+.stat-l{font-size:12px;color:var(--muted);margin-top:2px;}
+.stat-accent{border-color:var(--accent-b);background:var(--accent-s);}
+.stat-accent .stat-n{color:var(--accent);}
+.stat-red{border-color:rgba(239,68,68,.3);background:var(--red-s);}
+.stat-red .stat-n{color:#f87171;}
+.stat-green{border-color:rgba(62,207,142,.3);background:var(--green-s);}
+.stat-green .stat-n{color:var(--green);}
+
+/* TABLE */
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.tbl-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.tbl-search{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:7px 12px;outline:none;width:220px;}
+.tbl-search:focus{border-color:var(--accent-b);}
+table{width:100%;border-collapse:collapse;}
+th{font-size:11px;font-weight:500;color:var(--muted);text-align:left;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface2);font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;}
+td{font-size:13px;padding:11px 16px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.02);}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500;border:1px solid;white-space:nowrap;}
+.b-aberto{background:var(--accent-s);color:var(--accent);border-color:var(--accent-b);}
+.b-andamento{background:var(--orange-s);color:#fbbf24;border-color:rgba(245,158,11,.4);}
+.b-resolvido{background:var(--green-s);color:var(--green);border-color:rgba(62,207,142,.3);}
+.b-aguardando{background:rgba(255,255,255,.05);color:var(--muted);border-color:var(--border2);}
+.b-critico{background:var(--red-s);color:#f87171;border-color:rgba(239,68,68,.35);}
+.b-alto{background:var(--orange-s);color:#fbbf24;border-color:rgba(245,158,11,.4);}
+.b-medio{background:var(--accent-s);color:var(--accent);border-color:var(--accent-b);}
+.b-baixo{background:var(--green-s);color:var(--green);border-color:rgba(62,207,142,.3);}
+.b-admin{background:rgba(139,92,246,.15);color:#a78bfa;border-color:rgba(139,92,246,.3);}
+.b-user{background:var(--surface3);color:var(--muted);border-color:var(--border);}
+
+/* FILTER CHIPS */
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.chip{padding:5px 12px;border:1px solid var(--border);border-radius:20px;font-size:12px;cursor:pointer;color:var(--muted);background:var(--surface);transition:all .15s;}
+.chip:hover{color:var(--text);border-color:var(--border2);}
+.chip.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* SPINNER */
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;font-size:13px;display:flex;align-items:center;gap:10px;z-index:999;transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none;}
+.toast.show{transform:none;opacity:1;}
+.toast.ok{border-color:rgba(62,207,142,.4);color:var(--green);}
+.toast.err{border-color:rgba(239,68,68,.4);color:#f87171;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;width:100%;max-width:500px;max-height:80vh;overflow-y:auto;}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:16px;}
+.modal-close{float:right;background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;}
+
+/* RESPONSIVE */
+@media(max-width:680px){
+  .sidebar{display:none;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .admin-content{padding:16px;}
+}
+@media(max-width:480px){
+  .stats-row{grid-template-columns:1fr 1fr;}
+  th:nth-child(n+4),td:nth-child(n+4){display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-brand">
+    <div class="tb-logo">TI</div>
+    <span class="tb-name">Martins Import</span>
+  </div>
+  <div class="tb-user" id="tb-user" style="display:none;">
+    <div class="tb-avatar" id="tb-avatar">?</div>
+    <div class="tb-info">
+      <span class="tb-uname" id="tb-uname">—</span>
+      <span class="tb-role" id="tb-role">—</span>
+    </div>
+    <button class="btn-logout" onclick="logout()">Sair</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE: AUTH ═══ -->
+<div class="page active" id="page-auth">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">TI</div>
+      <h1 class="auth-title">Portal de Suporte TI</h1>
+      <p class="auth-sub">Martins Import — acesse para abrir chamados</p>
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login')">Entrar</button>
+        <button class="auth-tab" onclick="switchAuthTab('register')">Cadastrar</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="tab-login">
+        <div class="field">
+          <label>E-mail <span class="req">*</span></label>
+          <input type="email" id="l-email" placeholder="seu@email.com"/>
+        </div>
+        <div class="field" style="margin-bottom:20px;">
+          <label>Senha <span class="req">*</span></label>
+          <input type="password" id="l-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+        </div>
+        <button class="btn btn-primary btn-full" id="btn-login" onclick="doLogin()">Entrar</button>
+        <p id="login-err" style="font-size:12px;color:#f87171;margin-top:10px;display:none;"></p>
+      </div>
+
+      <!-- REGISTER -->
+      <div id="tab-register" style="display:none;">
+        <div class="grid2">
+          <div class="field">
+            <label>Nome completo <span class="req">*</span></label>
+            <input type="text" id="r-nome" placeholder="João Silva"/>
+          </div>
+          <div class="field">
+            <label>E-mail <span class="req">*</span></label>
+            <input type="email" id="r-email" placeholder="seu@email.com"/>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <label>Empresa <span class="req">*</span></label>
+            <select id="r-empresa">
+              <option value="">Selecionar...</option>
+              <option>Concessionária Kia</option>
+              <option>Multimarcas</option>
+              <option>Locação de Veículos</option>
+              <option>Manutenção Automotiva</option>
+              <option>Hotelaria</option>
+              <option>Restaurante</option>
+              <option>Administrativo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Departamento <span class="req">*</span></label>
+            <select id="r-depto">
+              <option value="">Selecionar...</option>
+              <option>Vendas</option>
+              <option>Financeiro</option>
+              <option>RH</option>
+              <option>TI</option>
+              <option>Recepção / Atendimento</option>
+              <option>Manutenção</option>
+              <option>Logística</option>
+              <option>Diretoria</option>
+              <option>Marketing</option>
+              <option>Outro</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <label>Ramal / WhatsApp</label>
+            <input type="text" id="r-ramal" placeholder="92 99999-0000"/>
+          </div>
+          <div class="field">
+            <label>Senha <span class="req">*</span></label>
+            <input type="password" id="r-senha" placeholder="Min. 6 caracteres"/>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:20px;">
+          <label>Confirmar senha <span class="req">*</span></label>
+          <input type="password" id="r-senha2" placeholder="Repita a senha"/>
+        </div>
+        <button class="btn btn-primary btn-full" id="btn-reg" onclick="doRegister()">Criar conta</button>
+        <p id="reg-err" style="font-size:12px;color:#f87171;margin-top:10px;display:none;"></p>
+        <p id="reg-ok" style="font-size:12px;color:var(--green);margin-top:10px;display:none;"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE: CHAMADO ═══ -->
+<div class="page" id="page-chamado">
+  <div class="form-page">
+    <div class="form-wrap">
+      <div class="form-header">
+        <h1 class="form-title">Abrir chamado de suporte</h1>
+        <p class="form-sub">Descreva o problema — nossa IA vai classificar automaticamente.</p>
+      </div>
+
+      <div id="chamado-form">
+        <!-- PERFIL AUTO -->
+        <div class="perfil-badge" id="perfil-badge">
+          <div class="perfil-avatar" id="pf-avatar">?</div>
+          <div class="perfil-info">
+            <div class="perfil-nome" id="pf-nome">—</div>
+            <div class="perfil-meta" id="pf-meta">—</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-lbl">Problema</div>
+          <div class="field">
+            <label>Título <span class="req">*</span></label>
+            <input type="text" id="c-titulo" placeholder="Ex: Impressora da recepção não imprime"/>
+            <div class="field-err" id="err-titulo">Informe o título do problema</div>
+          </div>
+          <div class="field">
+            <label>Descrição detalhada <span class="req">*</span></label>
+            <textarea id="c-desc" placeholder="O que aconteceu? Quando começou? Afeta mais alguém? O que já foi tentado?"></textarea>
+            <div class="field-err" id="err-desc">Descreva com mais detalhes</div>
+          </div>
+          <div class="field">
+            <label>Categoria (opcional)</label>
+            <select id="c-cat">
+              <option value="">Deixar a IA classificar automaticamente</option>
+              <option>Infraestrutura (rede, internet, servidor)</option>
+              <option>Hardware (computador, impressora, periférico)</option>
+              <option>Software (sistema, ERP, DMS, app)</option>
+              <option>Acesso e segurança (senha, VPN, permissão)</option>
+              <option>Automação / Integração (n8n, API, bot)</option>
+              <option>Telecomunicações (ramal, PABX, chip)</option>
+              <option>Câmeras e segurança física</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Impacto <span class="req">*</span></label>
+            <div class="prio-grid">
+              <div class="prio-pill" onclick="selPrio(this,'critico')"><span class="pi">🔴</span><span class="pn">Crítico</span><span class="pd">Sistema parado</span></div>
+              <div class="prio-pill" onclick="selPrio(this,'alto')"><span class="pi">🟠</span><span class="pn">Alto</span><span class="pd">Impacta operação</span></div>
+              <div class="prio-pill" onclick="selPrio(this,'medio')"><span class="pi">🔵</span><span class="pn">Médio</span><span class="pd">Prejudica mas funciona</span></div>
+              <div class="prio-pill" onclick="selPrio(this,'baixo')"><span class="pi">🟢</span><span class="pn">Baixo</span><span class="pd">Melhoria ou dúvida</span></div>
+            </div>
+            <div class="field-err" id="err-prio">Selecione o impacto</div>
+          </div>
+
+          <button class="btn btn-ai btn-full" style="margin-top:4px;" onclick="analisarIA()">
+            ✦ Analisar com IA
+          </button>
+
+          <div class="ai-box" id="ai-box">
+            <div class="ai-hdr"><div class="ai-dot" id="ai-dot"></div><span>Triagem automática</span></div>
+            <div class="ai-body" id="ai-body" style="color:var(--dim);">Preencha título e descrição e clique em "Analisar com IA".</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" style="flex:1;" id="btn-chamado" onclick="enviarChamado()">
+            Abrir chamado →
+          </button>
+        </div>
+      </div>
+
+      <div class="success-screen" id="chamado-success">
+        <div class="success-icon">✓</div>
+        <h2 style="font-size:20px;font-weight:600;margin-bottom:6px;">Chamado aberto!</h2>
+        <p style="font-size:13px;color:var(--muted);max-width:360px;line-height:1.7;">O time de TI foi notificado e já está ciente do seu chamado.</p>
+        <div class="ticket-box" id="ticket-box">—</div>
+        <button class="btn btn-ghost" style="margin-top:8px;" onclick="novoChamado()">Abrir outro chamado</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE: ADMIN ═══ -->
+<div class="page" id="page-admin">
+  <div class="admin-layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <span class="sb-section">Visão geral</span>
+      <button class="sb-btn active" onclick="adminNav('chamados',this)"><span class="sb-icon">📋</span> Chamados</button>
+      <button class="sb-btn" onclick="adminNav('usuarios',this)"><span class="sb-icon">👥</span> Usuários</button>
+      <span class="sb-section">Ações</span>
+      <button class="sb-btn" onclick="showPage('chamado')"><span class="sb-icon">➕</span> Novo chamado</button>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="admin-content">
+
+      <!-- CHAMADOS -->
+      <div class="admin-section active" id="sec-chamados">
+        <div class="admin-title">Todos os chamados</div>
+
+        <div class="stats-row" id="admin-stats">
+          <div class="stat stat-accent"><div class="stat-n" id="st-total">—</div><div class="stat-l">Total</div></div>
+          <div class="stat stat-red"><div class="stat-n" id="st-critico">—</div><div class="stat-l">Críticos</div></div>
+          <div class="stat"><div class="stat-n" id="st-aberto">—</div><div class="stat-l">Em aberto</div></div>
+          <div class="stat stat-green"><div class="stat-n" id="st-resolvido">—</div><div class="stat-l">Resolvidos</div></div>
+        </div>
+
+        <div class="chips" id="filter-chips">
+          <span class="chip active" onclick="filterChamados('todos',this)">Todos</span>
+          <span class="chip" onclick="filterChamados('aberto',this)">Aberto</span>
+          <span class="chip" onclick="filterChamados('andamento',this)">Em andamento</span>
+          <span class="chip" onclick="filterChamados('aguardando',this)">Aguardando</span>
+          <span class="chip" onclick="filterChamados('resolvido',this)">Resolvido</span>
+        </div>
+
+        <div class="tbl-wrap">
+          <div class="tbl-header">
+            <span style="font-size:14px;font-weight:500;">Chamados</span>
+            <input class="tbl-search" placeholder="Buscar..." oninput="buscarChamados(this.value)" id="search-chamados"/>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Ticket</th>
+                <th>Título</th>
+                <th>Solicitante</th>
+                <th>Empresa</th>
+                <th>Prioridade</th>
+                <th>Status</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-chamados"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:30px;">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- USUÁRIOS -->
+      <div class="admin-section" id="sec-usuarios">
+        <div class="admin-title">Usuários cadastrados</div>
+        <div class="tbl-wrap">
+          <div class="tbl-header">
+            <span style="font-size:14px;font-weight:500;">Usuários</span>
+            <input class="tbl-search" placeholder="Buscar..." oninput="buscarUsuarios(this.value)" id="search-usuarios"/>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Empresa</th>
+                <th>Departamento</th>
+                <th>Role</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-usuarios"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px;">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL STATUS -->
+<div class="modal-overlay" id="modal-status">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">Atualizar chamado</div>
+    <input type="hidden" id="modal-id"/>
+    <div class="field">
+      <label>Status</label>
+      <select id="modal-status-val">
+        <option value="aberto">Aberto</option>
+        <option value="andamento">Em andamento</option>
+        <option value="aguardando">Aguardando usuário</option>
+        <option value="resolvido">Resolvido</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn btn-primary" onclick="salvarStatus()">Salvar</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════
+// ⚙️  CONFIGURAÇÃO — substitua a SUPABASE_KEY
+// ════════════════════════════════════════════
+const SUPABASE_URL = 'https://vubwgibczdzoyqwxnhma.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_iZtv8vEC4fr9Lw5VufVZaA_0drcPhCT';
+const CLICKUP_LIST_ID = '1000250000000273';
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── STATE ────────────────────────────────────
+let currentUser = null;
+let currentPerfil = null;
+let allChamados = [];
+let allUsuarios = [];
+let filterStatus = 'todos';
+let aiResult = null;
+let selectedPrio = '';
+
+// ── INIT ─────────────────────────────────────
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await loadPerfil(session.user);
+  }
+}
+
+async function loadPerfil(user) {
+  currentUser = user;
+  const { data } = await sb.from('perfis').select('*').eq('id', user.id).single();
+  currentPerfil = data;
+  if (data) {
+    updateTopbar(data);
+    if (data.role === 'admin') {
+      showPage('admin');
+      loadAdminData();
+    } else {
+      showPage('chamado');
+      fillPerfil(data);
+    }
+  }
+}
+
+function updateTopbar(p) {
+  document.getElementById('tb-user').style.display = 'flex';
+  const ini = p.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('tb-avatar').textContent = ini;
+  document.getElementById('tb-uname').textContent = p.nome.split(' ')[0];
+  document.getElementById('tb-role').textContent = p.role === 'admin' ? 'admin' : p.empresa;
+}
+
+function fillPerfil(p) {
+  const ini = p.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('pf-avatar').textContent = ini;
+  document.getElementById('pf-nome').textContent = p.nome;
+  document.getElementById('pf-meta').textContent = `${p.empresa} — ${p.departamento}${p.ramal?' · '+p.ramal:''}`;
+}
+
+// ── AUTH TABS ────────────────────────────────
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',['login','register'][i]===tab));
+  document.getElementById('tab-login').style.display = tab==='login'?'block':'none';
+  document.getElementById('tab-register').style.display = tab==='register'?'block':'none';
+}
+
+// ── LOGIN ────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const senha = document.getElementById('l-senha').value;
+  const err = document.getElementById('login-err');
+  const btn = document.getElementById('btn-login');
+  err.style.display = 'none';
+  btn.innerHTML = '<span class="spin"></span>';
+  btn.disabled = true;
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+  if (error) {
+    err.textContent = 'E-mail ou senha incorretos.';
+    err.style.display = 'block';
+    btn.innerHTML = 'Entrar';
+    btn.disabled = false;
+    return;
+  }
+  await loadPerfil(data.user);
+  btn.innerHTML = 'Entrar';
+  btn.disabled = false;
+}
+
+// ── REGISTER ─────────────────────────────────
+async function doRegister() {
+  const nome = document.getElementById('r-nome').value.trim();
+  const email = document.getElementById('r-email').value.trim();
+  const empresa = document.getElementById('r-empresa').value;
+  const depto = document.getElementById('r-depto').value;
+  const ramal = document.getElementById('r-ramal').value.trim();
+  const senha = document.getElementById('r-senha').value;
+  const senha2 = document.getElementById('r-senha2').value;
+  const err = document.getElementById('reg-err');
+  const ok = document.getElementById('reg-ok');
+  const btn = document.getElementById('btn-reg');
+
+  err.style.display = 'none'; ok.style.display = 'none';
+  if (!nome||!email||!empresa||!depto||!senha) { err.textContent='Preencha todos os campos obrigatórios.'; err.style.display='block'; return; }
+  if (senha !== senha2) { err.textContent='As senhas não coincidem.'; err.style.display='block'; return; }
+  if (senha.length < 6) { err.textContent='A senha deve ter ao menos 6 caracteres.'; err.style.display='block'; return; }
+
+  btn.innerHTML = '<span class="spin"></span>';
+  btn.disabled = true;
+
+  const { data, error } = await sb.auth.signUp({ email, password: senha });
+  if (error) {
+    err.textContent = error.message.includes('already') ? 'Este e-mail já está cadastrado.' : 'Erro ao criar conta. Tente novamente.';
+    err.style.display = 'block';
+    btn.innerHTML = 'Criar conta'; btn.disabled = false;
+    return;
+  }
+
+  if (data.user) {
+    await sb.from('perfis').insert({ id: data.user.id, nome, email, empresa, departamento: depto, ramal, role: 'usuario' });
+    await loadPerfil(data.user);
+  } else {
+    ok.textContent = 'Conta criada! Verifique seu e-mail para confirmar.';
+    ok.style.display = 'block';
+  }
+  btn.innerHTML = 'Criar conta'; btn.disabled = false;
+}
+
+// ── LOGOUT ───────────────────────────────────
+async function logout() {
+  await sb.auth.signOut();
+  currentUser = null; currentPerfil = null;
+  document.getElementById('tb-user').style.display = 'none';
+  showPage('auth');
+  document.getElementById('l-email').value = '';
+  document.getElementById('l-senha').value = '';
+}
+
+// ── PAGES ────────────────────────────────────
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+}
+
+// ── PRIORITY ─────────────────────────────────
+function selPrio(el, p) {
+  document.querySelectorAll('.prio-pill').forEach(b=>b.className='prio-pill');
+  el.classList.add('sel-'+p);
+  selectedPrio = p;
+  document.getElementById('err-prio').style.display = 'none';
+}
+
+// ── AI ───────────────────────────────────────
+async function analisarIA() {
+  const titulo = document.getElementById('c-titulo').value.trim();
+  const desc = document.getElementById('c-desc').value.trim();
+  if (!titulo && !desc) { showToast('Preencha o título ou descrição primeiro.','err'); return; }
+  const dot = document.getElementById('ai-dot');
+  const body = document.getElementById('ai-body');
+  const box = document.getElementById('ai-box');
+  dot.className = 'ai-dot thinking'; box.classList.add('on');
+  body.innerHTML = '<span style="color:var(--muted)">Analisando...</span>';
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 800,
+        system: `Especialista em triagem de chamados de TI da Martins Import (Kia, multimarcas, locação, manutenção, hotelaria, restaurantes). Retorne APENAS JSON sem markdown: {categoria, prioridade:(critico|alto|medio|baixo), justificativa, acao_imediata, sla_horas}`,
+        messages: [{ role: 'user', content: `Título: ${titulo}\nDescrição: ${desc}\nEmpresa: ${currentPerfil?.empresa||''}\nDepto: ${currentPerfil?.departamento||}` }]
+      })
+    });
+    const d = await r.json();
+    const json = JSON.parse((d.content?.[0]?.text||'{}').replace(/```json|```/g,'').trim());
+    aiResult = json;
+    const pc = {critico:'tag-c',alto:'tag-a',medio:'tag-m',baixo:'tag-b'}[json.prioridade]||'tag-cat';
+    const pl = {critico:'🔴 Crítico',alto:'🟠 Alto',medio:'🔵 Médio',baixo:'🟢 Baixo'}[json.prioridade]||json.prioridade;
+    body.innerHTML = `<div class="ai-tags"><span class="ai-tag tag-cat">${json.categoria||'—'}</span><span class="ai-tag ${pc}">${pl}</span>${json.sla_horas?`<span class="ai-tag tag-sla">⏱ ${json.sla_horas}h</span>`:''}</div><div style="font-size:13px;color:var(--muted);margin-bottom:6px;">${json.justificativa||''}</div><div class="ai-acao"><strong style="color:var(--text)">↳ Ação:</strong> ${json.acao_imediata||''}</div>`;
+    dot.className = 'ai-dot done';
+    if (json.prioridade && !selectedPrio) {
+      const idx = ['critico','alto','medio','baixo'].indexOf(json.prioridade);
+      const pill = document.querySelectorAll('.prio-pill')[idx];
+      if (pill) selPrio(pill, json.prioridade);
+    }
+    if (json.categoria) {
+      const sel = document.getElementById('c-cat');
+      for (let o of sel.options) if (o.text.toLowerCase().startsWith(json.categoria.toLowerCase().split('/')[0].trim())) { sel.value=o.value; break; }
+    }
+  } catch(e) { dot.className='ai-dot'; box.classList.remove('on'); body.textContent='Não foi possível analisar. Continue normalmente.'; }
+}
+
+// ── ENVIAR CHAMADO ───────────────────────────
+async function enviarChamado() {
+  const titulo = document.getElementById('c-titulo').value.trim();
+  const desc = document.getElementById('c-desc').value.trim();
+  let ok = true;
+  if (!titulo) { document.getElementById('err-titulo').style.display='block'; ok=false; } else document.getElementById('err-titulo').style.display='none';
+  if (!desc) { document.getElementById('err-desc').style.display='block'; ok=false; } else document.getElementById('err-desc').style.display='none';
+  if (!selectedPrio) { document.getElementById('err-prio').style.display='block'; ok=false; } else document.getElementById('err-prio').style.display='none';
+  if (!ok) return;
+
+  const btn = document.getElementById('btn-chamado');
+  btn.innerHTML = '<span class="spin"></span> Abrindo...'; btn.disabled = true;
+
+  const cat = document.getElementById('c-cat').value || aiResult?.categoria || 'Não classificado';
+  const ticketNum = 'TI-' + Date.now().toString().slice(-6);
+  const prioMap = {critico:'urgent',alto:'high',medio:'normal',baixo:'low'};
+
+  const { error } = await sb.from('chamados').insert({
+    ticket_num: ticketNum, titulo, descricao: desc,
+    categoria: cat, prioridade: selectedPrio, status: 'aberto',
+    usuario_id: currentUser.id,
+    nome_solicitante: currentPerfil.nome,
+    empresa: currentPerfil.empresa,
+    departamento: currentPerfil.departamento,
+    ramal: currentPerfil.ramal || '',
+    ai_analise: aiResult?.justificativa || '',
+    ai_acao: aiResult?.acao_imediata || '',
+    ai_sla: aiResult?.sla_horas ? String(aiResult.sla_horas) : ''
+  });
+
+  if (error) { showToast('Erro ao salvar chamado. Tente novamente.','err'); btn.innerHTML='Abrir chamado →'; btn.disabled=false; return; }
+
+  // Criar no ClickUp via API
+  try {
+    await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514', max_tokens:200,
+        system:'Create ClickUp task. Reply OK.',
+        messages:[{role:'user',content:`Create task "${ticketNum} — ${titulo}" in list ${CLICKUP_LIST_ID}, priority ${prioMap[selectedPrio]}, description: ${currentPerfil.nome} | ${currentPerfil.empresa} | ${currentPerfil.departamento} | ${desc}`}],
+        mcp_servers:[{type:'url',url:'https://mcp.clickup.com/mcp',name:'clickup'}]
+      })
+    });
+  } catch(e) {}
+
+  document.getElementById('chamado-form').style.display = 'none';
+  const ss = document.getElementById('chamado-success');
+  ss.style.display = 'flex';
+  document.getElementById('ticket-box').textContent = ticketNum + ' — ' + titulo.substring(0,45)+(titulo.length>45?'...':'');
+  btn.innerHTML='Abrir chamado →'; btn.disabled=false;
+}
+
+function novoChamado() {
+  document.getElementById('chamado-form').style.display = 'block';
+  document.getElementById('chamado-success').style.display = 'none';
+  document.getElementById('c-titulo').value = '';
+  document.getElementById('c-desc').value = '';
+  document.getElementById('c-cat').value = '';
+  document.querySelectorAll('.prio-pill').forEach(p=>p.className='prio-pill');
+  selectedPrio=''; aiResult=null;
+  document.getElementById('ai-dot').className='ai-dot';
+  document.getElementById('ai-box').classList.remove('on');
+  document.getElementById('ai-body').textContent='Preencha título e descrição e clique em "Analisar com IA".';
+}
+
+// ── ADMIN ────────────────────────────────────
+function adminNav(sec, btn) {
+  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  if (sec==='chamados') loadChamados();
+  if (sec==='usuarios') loadUsuarios();
+}
+
+async function loadAdminData() { await loadChamados(); }
+
+async function loadChamados() {
+  const { data } = await sb.from('chamados').select('*').order('criado_em',{ascending:false});
+  allChamados = data || [];
+  renderChamados(allChamados);
+  updateStats(allChamados);
+}
+
+function updateStats(list) {
+  document.getElementById('st-total').textContent = list.length;
+  document.getElementById('st-critico').textContent = list.filter(c=>c.prioridade==='critico'&&c.status!=='resolvido').length;
+  document.getElementById('st-aberto').textContent = list.filter(c=>c.status==='aberto'||c.status==='andamento').length;
+  document.getElementById('st-resolvido').textContent = list.filter(c=>c.status==='resolvido').length;
+}
+
+function renderChamados(list) {
+  const tb = document.getElementById('tbl-chamados');
+  if (!list.length) { tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:30px;">Nenhum chamado encontrado</td></tr>'; return; }
+  const prioE = {critico:'🔴',alto:'🟠',medio:'🔵',baixo:'🟢'};
+  const prioL = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
+  const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando',resolvido:'Resolvido'};
+  tb.innerHTML = list.map(c=>`
+    <tr>
+      <td><span style="font-family:var(--mono);font-size:11px;color:var(--accent);">${c.ticket_num}</span></td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${c.titulo}">${c.titulo}</td>
+      <td style="font-size:12px;">${c.nome_solicitante||'—'}<br><span style="color:var(--muted);font-size:11px;">${c.departamento||''}</span></td>
+      <td style="font-size:12px;">${c.empresa||'—'}</td>
+      <td><span class="badge b-${c.prioridade}">${prioE[c.prioridade]||''} ${prioL[c.prioridade]||c.prioridade}</span></td>
+      <td><span class="badge b-${c.status}">${statusL[c.status]||c.status}</span></td>
+      <td><button class="btn btn-ghost btn-sm" onclick="openModal('${c.id}','${c.status}')">✎ Status</button></td>
+    </tr>`).join('');
+}
+
+function filterChamados(status, chip) {
+  filterStatus = status;
+  document.querySelectorAll('#filter-chips .chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  const filtered = status==='todos' ? allChamados : allChamados.filter(c=>c.status===status);
+  renderChamados(filtered);
+}
+
+function buscarChamados(q) {
+  const low = q.toLowerCase();
+  const filtered = allChamados.filter(c=>
+    (c.titulo||'').toLowerCase().includes(low)||
+    (c.ticket_num||'').toLowerCase().includes(low)||
+    (c.nome_solicitante||'').toLowerCase().includes(low)||
+    (c.empresa||'').toLowerCase().includes(low)
+  );
+  renderChamados(filtered);
+}
+
+async function loadUsuarios() {
+  const { data } = await sb.from('perfis').select('*').order('criado_em',{ascending:false});
+  allUsuarios = data || [];
+  renderUsuarios(allUsuarios);
+}
+
+function renderUsuarios(list) {
+  const tb = document.getElementById('tbl-usuarios');
+  if (!list.length) { tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px;">Nenhum usuário encontrado</td></tr>'; return; }
+  tb.innerHTML = list.map(u=>`
+    <tr>
+      <td style="font-weight:500;">${u.nome}</td>
+      <td style="font-size:12px;color:var(--muted);">${u.email}</td>
+      <td style="font-size:12px;">${u.empresa||'—'}</td>
+      <td style="font-size:12px;">${u.departamento||'—'}</td>
+      <td><span class="badge ${u.role==='admin'?'b-admin':'b-user'}">${u.role}</span></td>
+      <td>${u.role!=='admin'?`<button class="btn btn-ghost btn-sm" onclick="promoverAdmin('${u.id}')">→ Admin</button>`:'<span style="color:var(--muted);font-size:12px;">—</span>'}</td>
+    </tr>`).join('');
+}
+
+function buscarUsuarios(q) {
+  const low = q.toLowerCase();
+  const filtered = allUsuarios.filter(u=>
+    (u.nome||'').toLowerCase().includes(low)||
+    (u.email||'').toLowerCase().includes(low)||
+    (u.empresa||'').toLowerCase().includes(low)
+  );
+  renderUsuarios(filtered);
+}
+
+async function promoverAdmin(id) {
+  if (!confirm('Promover este usuário a admin?')) return;
+  await sb.from('perfis').update({role:'admin'}).eq('id',id);
+  showToast('Usuário promovido a admin!','ok');
+  loadUsuarios();
+}
+
+// ── MODAL STATUS ─────────────────────────────
+function openModal(id, status) {
+  document.getElementById('modal-id').value = id;
+  document.getElementById('modal-status-val').value = status;
+  document.getElementById('modal-status').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-status').classList.remove('open'); }
+
+async function salvarStatus() {
+  const id = document.getElementById('modal-id').value;
+  const status = document.getElementById('modal-status-val').value;
+  await sb.from('chamados').update({status, atualizado_em: new Date().toISOString()}).eq('id',id);
+  closeModal();
+  showToast('Status atualizado!','ok');
+  loadChamados();
+}
+
+// ── TOAST ────────────────────────────────────
+function showToast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = (type==='ok'?'✓ ':'✕ ') + msg;
+  t.className = 'toast show ' + type;
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ── START ────────────────────────────────────
+init();
+</script>
+</body>
+</html>
