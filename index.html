@@ -199,6 +199,20 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .modal-title{font-size:17px;font-weight:600;margin-bottom:16px;}
 .modal-close{float:right;background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;}
 
+/* UPLOAD */
+.upload-area{border:1.5px dashed var(--border2);border-radius:var(--r-sm);padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2);position:relative;}
+.upload-area:hover,.upload-area.drag{border-color:var(--accent);background:var(--accent-s);}
+.upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-icon{font-size:24px;margin-bottom:6px;}
+.upload-txt{font-size:13px;color:var(--muted);}
+.upload-txt span{color:var(--accent);font-weight:500;}
+.upload-limit{font-size:11px;color:var(--dim);margin-top:4px;}
+.preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
+.preview-item{position:relative;border-radius:var(--r-sm);overflow:hidden;aspect-ratio:1;background:var(--surface3);}
+.preview-item img{width:100%;height:100%;object-fit:cover;}
+.preview-remove{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.preview-name{font-size:10px;color:var(--muted);text-align:center;padding:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
 /* RESPONSIVE */
 @media(max-width:680px){
   .sidebar{display:none;}
@@ -364,6 +378,20 @@ tr:hover td{background:rgba(255,255,255,.02);}
             </select>
           </div>
           <div class="field">
+            <label>Anexar imagens <span style="color:var(--dim);font-weight:400;">(opcional — máx. 3 imagens JPG/PNG)</span></label>
+            <div class="upload-area" id="upload-area" 
+              ondragover="event.preventDefault();this.classList.add('drag')" 
+              ondragleave="this.classList.remove('drag')"
+              ondrop="handleDrop(event)">
+              <input type="file" id="file-input" accept="image/jpeg,image/png" multiple onchange="handleFiles(this.files)"/>
+              <div class="upload-icon">🖼️</div>
+              <div class="upload-txt">Arraste imagens ou <span>clique para selecionar</span></div>
+              <div class="upload-limit">JPG ou PNG · máx. 3 arquivos · 5MB cada</div>
+            </div>
+            <div class="preview-grid" id="preview-grid"></div>
+          </div>
+
+          <div class="field">
             <label>Impacto <span class="req">*</span></label>
             <div class="prio-grid">
               <div class="prio-pill" onclick="selPrio(this,'critico')"><span class="pi">🔴</span><span class="pn">Crítico</span><span class="pd">Sistema parado</span></div>
@@ -453,6 +481,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
                 <th>Empresa</th>
                 <th>Prioridade</th>
                 <th>Status</th>
+                <th>Anexos</th>
                 <th>Ação</th>
               </tr>
             </thead>
@@ -520,7 +549,6 @@ tr:hover td{background:rgba(255,255,255,.02);}
 // ════════════════════════════════════════════
 const SUPABASE_URL = 'https://vubwgibczdzoyqwxnhma.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_iZtv8vEC4fr9Lw5VufVZaA_0drcPhCT';
-const CLICKUP_LIST_ID = '1000250000000273';
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -680,6 +708,63 @@ function selPrio(el, p) {
   document.getElementById('err-prio').style.display = 'none';
 }
 
+// ── UPLOAD ───────────────────────────────────
+let selectedFiles = [];
+
+function handleFiles(files) {
+  const valid = Array.from(files).filter(f => 
+    (f.type === 'image/jpeg' || f.type === 'image/png') && f.size <= 5*1024*1024
+  );
+  const remaining = 3 - selectedFiles.length;
+  const toAdd = valid.slice(0, remaining);
+  if (valid.length > remaining) showToast('Máximo 3 imagens permitidas.','err');
+  selectedFiles = [...selectedFiles, ...toAdd];
+  renderPreviews();
+  // reset input
+  document.getElementById('file-input').value = '';
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-area').classList.remove('drag');
+  handleFiles(e.dataTransfer.files);
+}
+
+function removeFile(idx) {
+  selectedFiles.splice(idx, 1);
+  renderPreviews();
+}
+
+function renderPreviews() {
+  const grid = document.getElementById('preview-grid');
+  if (!selectedFiles.length) { grid.innerHTML = ''; return; }
+  grid.innerHTML = selectedFiles.map((f,i) => {
+    const url = URL.createObjectURL(f);
+    return `<div class="preview-item">
+      <img src="${url}" alt="${f.name}"/>
+      <button class="preview-remove" onclick="removeFile(${i})">✕</button>
+      <div class="preview-name">${f.name}</div>
+    </div>`;
+  }).join('');
+  // hide upload area if 3 files selected
+  document.getElementById('upload-area').style.display = selectedFiles.length >= 3 ? 'none' : 'block';
+}
+
+async function uploadAnexos(ticketNum) {
+  if (!selectedFiles.length) return [];
+  const urls = [];
+  for (const file of selectedFiles) {
+    const ext = file.name.split('.').pop();
+    const path = `${ticketNum}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { data, error } = await sb.storage.from('chamados-anexos').upload(path, file, { contentType: file.type });
+    if (!error) {
+      const { data: urlData } = sb.storage.from('chamados-anexos').getPublicUrl(path);
+      urls.push(urlData.publicUrl);
+    }
+  }
+  return urls;
+}
+
 // ── AI ───────────────────────────────────────
 async function analisarIA() {
   const titulo = document.getElementById('c-titulo').value.trim();
@@ -734,7 +819,10 @@ async function enviarChamado() {
 
   const cat = document.getElementById('c-cat').value || aiResult?.categoria || 'Não classificado';
   const ticketNum = 'TI-' + Date.now().toString().slice(-6);
-  const prioMap = {critico:'urgent',alto:'high',medio:'normal',baixo:'low'};
+
+
+  // Upload imagens primeiro
+  const anexoUrls = await uploadAnexos(ticketNum);
 
   const { error } = await sb.from('chamados').insert({
     ticket_num: ticketNum, titulo, descricao: desc,
@@ -746,23 +834,13 @@ async function enviarChamado() {
     ramal: currentPerfil.ramal || '',
     ai_analise: aiResult?.justificativa || '',
     ai_acao: aiResult?.acao_imediata || '',
-    ai_sla: aiResult?.sla_horas ? String(aiResult.sla_horas) : ''
+    ai_sla: aiResult?.sla_horas ? String(aiResult.sla_horas) : '',
+    anexos: anexoUrls.length ? anexoUrls : null
   });
 
   if (error) { showToast('Erro ao salvar chamado. Tente novamente.','err'); btn.innerHTML='Abrir chamado →'; btn.disabled=false; return; }
 
-  // Criar no ClickUp via API
-  try {
-    await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model:'claude-sonnet-4-20250514', max_tokens:200,
-        system:'Create ClickUp task. Reply OK.',
-        messages:[{role:'user',content:`Create task "${ticketNum} — ${titulo}" in list ${CLICKUP_LIST_ID}, priority ${prioMap[selectedPrio]}, description: ${currentPerfil.nome} | ${currentPerfil.empresa} | ${currentPerfil.departamento} | ${desc}`}],
-        mcp_servers:[{type:'url',url:'https://mcp.clickup.com/mcp',name:'clickup'}]
-      })
-    });
-  } catch(e) {}
+  // Chamado salvo no Supabase
 
   document.getElementById('chamado-form').style.display = 'none';
   const ss = document.getElementById('chamado-success');
@@ -783,6 +861,10 @@ function novoChamado() {
   document.getElementById('c-cat').value = '';
   document.querySelectorAll('.prio-pill').forEach(p=>p.className='prio-pill');
   selectedPrio=''; aiResult=null;
+  selectedFiles=[];
+  document.getElementById('preview-grid').innerHTML='';
+  document.getElementById('upload-area').style.display='block';
+  document.getElementById('file-input').value='';
   document.getElementById('ai-dot').className='ai-dot';
   document.getElementById('ai-box').classList.remove('on');
   document.getElementById('ai-body').textContent='Preencha título e descrição e clique em "Analisar com IA".';
@@ -828,6 +910,7 @@ function renderChamados(list) {
       <td style="font-size:12px;">${c.empresa||'—'}</td>
       <td><span class="badge b-${c.prioridade}">${prioE[c.prioridade]||''} ${prioL[c.prioridade]||c.prioridade}</span></td>
       <td><span class="badge b-${c.status}">${statusL[c.status]||c.status}</span></td>
+      <td>${c.anexos && c.anexos.length ? c.anexos.map(url=>`<a href="${url}" target="_blank"><img src="${url}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;margin-right:3px;border:1px solid var(--border);" title="Ver imagem"/></a>`).join('') : '<span style="color:var(--dim);font-size:11px;">—</span>'}</td>
       <td><button class="btn btn-ghost btn-sm" onclick="openModal('${c.id}','${c.status}')">✎ Status</button></td>
     </tr>`).join('');
 }
