@@ -151,6 +151,19 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .preview-remove{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
 .preview-name{font-size:10px;color:var(--muted);text-align:center;padding:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
+/* ── AVALIAÇÃO ── */
+.star-row{display:flex;gap:6px;margin:8px 0;}
+.star{font-size:28px;cursor:pointer;opacity:.3;transition:all .15s;user-select:none;}
+.star.on{opacity:1;}
+.star:hover{transform:scale(1.1);}
+.aval-opt{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;}
+.aval-btn{padding:8px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface2);color:var(--muted);font-family:var(--sans);font-size:13px;cursor:pointer;transition:all .15s;}
+.aval-btn:hover{border-color:var(--border2);color:var(--text);}
+.aval-btn.sel{border-color:var(--accent);background:var(--accent-s);color:var(--accent);font-weight:500;}
+.aval-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500;}
+.aval-ok{background:var(--green-s);color:var(--green);border:1px solid rgba(62,207,142,.3);}
+.aval-pending{background:var(--orange-s);color:#fbbf24;border:1px solid rgba(245,158,11,.4);}
+
 /* ── MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal-overlay.open{display:flex;}
@@ -437,6 +450,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
               <th>Prioridade</th>
               <th>Status</th>
               <th>Data</th>
+              <th>Avaliação</th>
             </tr>
           </thead>
           <tbody id="tbl-meus"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px;">Carregando...</td></tr></tbody>
@@ -471,7 +485,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <div class="stat stat-accent"><div class="stat-n" id="dk-total">—</div><div class="stat-l">Total chamados</div></div>
           <div class="stat stat-red"><div class="stat-n" id="dk-aberto">—</div><div class="stat-l">Em aberto</div></div>
           <div class="stat stat-green"><div class="stat-n" id="dk-resolvido">—</div><div class="stat-l">Resolvidos</div></div>
-          <div class="stat"><div class="stat-n" id="dk-tempo">—</div><div class="stat-l">Tempo médio resolução</div></div>
+          <div class="stat"><div class="stat-n" id="dk-tempo">—</div><div class="stat-l">Nota média avaliações</div></div>
         </div>
 
         <!-- CHARTS ROW 1 -->
@@ -585,6 +599,56 @@ tr:hover td{background:rgba(255,255,255,.02);}
       </div>
 
     </div>
+  </div>
+</div>
+
+<!-- MODAL AVALIAÇÃO -->
+<div class="modal-overlay" id="modal-aval">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModalAval()">✕</button>
+    <div class="modal-title">⭐ Avaliar atendimento</div>
+    <input type="hidden" id="aval-ticket-id"/>
+
+    <div class="field" style="margin-bottom:18px;">
+      <label>Como você avalia o atendimento recebido?</label>
+      <div class="star-row" id="star-row">
+        <span class="star" onclick="setStar(1)" onmouseover="hoverStar(1)" onmouseout="resetStars()">★</span>
+        <span class="star" onclick="setStar(2)" onmouseover="hoverStar(2)" onmouseout="resetStars()">★</span>
+        <span class="star" onclick="setStar(3)" onmouseover="hoverStar(3)" onmouseout="resetStars()">★</span>
+        <span class="star" onclick="setStar(4)" onmouseover="hoverStar(4)" onmouseout="resetStars()">★</span>
+        <span class="star" onclick="setStar(5)" onmouseover="hoverStar(5)" onmouseout="resetStars()">★</span>
+      </div>
+      <div id="star-label" style="font-size:12px;color:var(--muted);min-height:16px;"></div>
+    </div>
+
+    <div class="field" style="margin-bottom:18px;">
+      <label>O problema foi resolvido completamente?</label>
+      <div class="aval-opt" id="opts-resolvido">
+        <button class="aval-btn" onclick="selOpt('resolvido','sim',this)">✅ Sim, totalmente</button>
+        <button class="aval-btn" onclick="selOpt('resolvido','parcial',this)">⚠️ Parcialmente</button>
+        <button class="aval-btn" onclick="selOpt('resolvido','nao',this)">❌ Não foi resolvido</button>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:18px;">
+      <label>Como foi o tempo de atendimento?</label>
+      <div class="aval-opt" id="opts-tempo">
+        <button class="aval-btn" onclick="selOpt('tempo','rapido',this)">🚀 Muito rápido</button>
+        <button class="aval-btn" onclick="selOpt('tempo','ok',this)">👍 Dentro do esperado</button>
+        <button class="aval-btn" onclick="selOpt('tempo','lento',this)">🐢 Demorou mais</button>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:20px;">
+      <label>Comentário (opcional)</label>
+      <textarea id="aval-comentario" placeholder="Deixe uma observação se desejar..." style="min-height:70px;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-primary" onclick="salvarAvaliacao()">Enviar avaliação</button>
+      <button class="btn btn-ghost" onclick="closeModalAval()">Depois</button>
+    </div>
+    <p id="aval-err" style="font-size:12px;color:#f87171;margin-top:8px;display:none;">Selecione ao menos a nota de estrelas.</p>
   </div>
 </div>
 
@@ -977,6 +1041,15 @@ async function loadDashboard() {
     document.getElementById('dk-tempo').textContent = media < 24 ? Math.round(media)+'h' : Math.round(media/24)+'d';
   } else {
     document.getElementById('dk-tempo').textContent = '—';
+
+  // Média das avaliações
+  const avaliados = list.filter(c=>c.avaliacao);
+  if(avaliados.length) {
+    const media = avaliados.reduce((acc,c)=>{
+      try { return acc + JSON.parse(c.avaliacao).nota; } catch{ return acc; }
+    },0) / avaliados.length;
+    document.getElementById('dk-tempo').textContent = media.toFixed(1)+'⭐';
+  }
   }
 
   // Render charts
@@ -1218,15 +1291,82 @@ function renderMeusChamados(list) {
   const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando',resolvido:'Resolvido'};
   tb.innerHTML = list.map(c => {
     const data = new Date(c.criado_em).toLocaleDateString('pt-BR');
+    const avalBtn = c.status==='resolvido' && !c.avaliacao
+      ? `<button class="btn btn-ghost btn-sm" style="font-size:11px;color:#fbbf24;border-color:rgba(245,158,11,.4);" onclick="openModalAval('${c.id}')">⭐ Avaliar</button>`
+      : c.avaliacao ? `<span class="aval-tag aval-ok">⭐ ${JSON.parse(c.avaliacao).nota}/5</span>` : '—';
     return `<tr>
       <td><span style="font-family:var(--mono);font-size:11px;color:var(--accent);">${c.ticket_num}</span></td>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.titulo}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.titulo}</td>
       <td style="font-size:12px;">${c.empresa||'—'}</td>
       <td><span class="badge b-${c.prioridade}">${prioE[c.prioridade]||''} ${prioL[c.prioridade]||c.prioridade}</span></td>
       <td><span class="badge b-${c.status}">${statusL[c.status]||c.status}</span></td>
       <td style="font-size:12px;color:var(--muted);">${data}</td>
+      <td>${avalBtn}</td>
     </tr>`;
   }).join('');
+}
+
+// ── AVALIAÇÃO ────────────────────────────────
+let selectedStar = 0;
+let avalOpts = { resolvido: '', tempo: '' };
+
+function openModalAval(ticketId) {
+  selectedStar = 0;
+  avalOpts = { resolvido: '', tempo: '' };
+  document.getElementById('aval-ticket-id').value = ticketId;
+  document.getElementById('aval-comentario').value = '';
+  document.getElementById('aval-err').style.display = 'none';
+  document.querySelectorAll('.star').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.aval-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('star-label').textContent = '';
+  document.getElementById('modal-aval').classList.add('open');
+}
+
+function closeModalAval() {
+  document.getElementById('modal-aval').classList.remove('open');
+}
+
+function hoverStar(n) {
+  document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<n));
+  const labels = ['','Muito ruim','Ruim','Regular','Bom','Excelente!'];
+  document.getElementById('star-label').textContent = labels[n];
+}
+
+function resetStars() {
+  document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<selectedStar));
+  const labels = ['','Muito ruim','Ruim','Regular','Bom','Excelente!'];
+  document.getElementById('star-label').textContent = selectedStar ? labels[selectedStar] : '';
+}
+
+function setStar(n) {
+  selectedStar = n;
+  resetStars();
+}
+
+function selOpt(group, val, btn) {
+  avalOpts[group] = val;
+  document.querySelectorAll(`#opts-${group} .aval-btn`).forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+async function salvarAvaliacao() {
+  if (!selectedStar) { document.getElementById('aval-err').style.display='block'; return; }
+  document.getElementById('aval-err').style.display = 'none';
+  const id = document.getElementById('aval-ticket-id').value;
+  const comentario = document.getElementById('aval-comentario').value.trim();
+  const aval = {
+    nota: selectedStar,
+    resolvido: avalOpts.resolvido,
+    tempo: avalOpts.tempo,
+    comentario
+  };
+  await sb.from('chamados').update({
+    avaliacao: JSON.stringify(aval),
+    avaliado_em: new Date().toISOString()
+  }).eq('id', id);
+  closeModalAval();
+  showToast('✅ Avaliação enviada! Obrigado pelo feedback.','ok');
+  loadMeusChamados();
 }
 
 // ── START ────────────────────────────────────
