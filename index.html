@@ -151,6 +151,19 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .preview-remove{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
 .preview-name{font-size:10px;color:var(--muted);text-align:center;padding:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;width:100%;max-width:500px;max-height:80vh;overflow-y:auto;}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:16px;}
+.modal-close{float:right;background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;font-size:13px;display:flex;align-items:center;gap:10px;z-index:999;transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none;}
+.toast.show{transform:none;opacity:1;}
+.toast.ok{border-color:rgba(62,207,142,.4);color:var(--green);}
+.toast.err{border-color:rgba(239,68,68,.4);color:#f87171;}
+
 /* RESPONSIVE */
 @media(max-width:680px){
   .sidebar{display:none;}
