@@ -485,7 +485,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <div class="stat stat-accent"><div class="stat-n" id="dk-total">—</div><div class="stat-l">Total chamados</div></div>
           <div class="stat stat-red"><div class="stat-n" id="dk-aberto">—</div><div class="stat-l">Em aberto</div></div>
           <div class="stat stat-green"><div class="stat-n" id="dk-resolvido">—</div><div class="stat-l">Resolvidos</div></div>
-          <div class="stat"><div class="stat-n" id="dk-tempo">—</div><div class="stat-l">Nota média avaliações</div></div>
+          <div class="stat"><div class="stat-n" id="dk-nota">—</div><div class="stat-l">Nota média avaliações</div></div>
         </div>
 
         <!-- CHARTS ROW 1 -->
@@ -1031,25 +1031,15 @@ async function loadDashboard() {
   document.getElementById('dk-aberto').textContent = abertos;
   document.getElementById('dk-resolvido').textContent = list.filter(c=>c.status==='resolvido').length;
 
-  // Tempo médio (dias entre criação e resolução - simulado)
-  const resolvidos = list.filter(c=>c.status==='resolvido' && c.atualizado_em && c.criado_em);
-  if(resolvidos.length) {
-    const media = resolvidos.reduce((acc,c)=>{
-      const diff = (new Date(c.atualizado_em) - new Date(c.criado_em)) / (1000*60*60);
-      return acc + diff;
-    },0) / resolvidos.length;
-    document.getElementById('dk-tempo').textContent = media < 24 ? Math.round(media)+'h' : Math.round(media/24)+'d';
-  } else {
-    document.getElementById('dk-tempo').textContent = '—';
-
-  // Média das avaliações
+  // Nota média das avaliações
   const avaliados = list.filter(c=>c.avaliacao);
   if(avaliados.length) {
-    const media = avaliados.reduce((acc,c)=>{
+    const mediaAval = avaliados.reduce((acc,c)=>{
       try { return acc + JSON.parse(c.avaliacao).nota; } catch{ return acc; }
     },0) / avaliados.length;
-    document.getElementById('dk-tempo').textContent = media.toFixed(1)+'⭐';
-  }
+    document.getElementById('dk-nota').textContent = mediaAval.toFixed(1)+' ⭐';
+  } else {
+    document.getElementById('dk-nota').textContent = '—';
   }
 
   // Render charts
