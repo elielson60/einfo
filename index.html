@@ -452,6 +452,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <!-- SIDEBAR -->
     <div class="sidebar">
       <span class="sb-section">Visão geral</span>
+      <button class="sb-btn" onclick="adminNav('dashboard',this)"><span class="sb-icon">📊</span> Dashboard</button>
       <button class="sb-btn active" onclick="adminNav('chamados',this)"><span class="sb-icon">📋</span> Chamados</button>
       <button class="sb-btn" onclick="adminNav('usuarios',this)"><span class="sb-icon">👥</span> Usuários</button>
       <span class="sb-section">Ações</span>
@@ -460,6 +461,62 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
     <!-- CONTENT -->
     <div class="admin-content">
+
+      <!-- DASHBOARD -->
+      <div class="admin-section" id="sec-dashboard">
+        <div class="admin-title">Dashboard</div>
+
+        <!-- KPIs -->
+        <div class="stats-row" id="dash-kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+          <div class="stat stat-accent"><div class="stat-n" id="dk-total">—</div><div class="stat-l">Total chamados</div></div>
+          <div class="stat stat-red"><div class="stat-n" id="dk-aberto">—</div><div class="stat-l">Em aberto</div></div>
+          <div class="stat stat-green"><div class="stat-n" id="dk-resolvido">—</div><div class="stat-l">Resolvidos</div></div>
+          <div class="stat"><div class="stat-n" id="dk-tempo">—</div><div class="stat-l">Tempo médio resolução</div></div>
+        </div>
+
+        <!-- CHARTS ROW 1 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+          <!-- Por Empresa -->
+          <div class="tbl-wrap" style="padding:20px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">📊 Chamados por empresa</div>
+            <div id="chart-empresa"></div>
+          </div>
+          <!-- Por Prioridade -->
+          <div class="tbl-wrap" style="padding:20px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">🎯 Chamados por impacto</div>
+            <div id="chart-prio"></div>
+          </div>
+        </div>
+
+        <!-- CHARTS ROW 2 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+          <!-- Por Categoria -->
+          <div class="tbl-wrap" style="padding:20px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">🗂️ Chamados por categoria</div>
+            <div id="chart-cat"></div>
+          </div>
+          <!-- Por Área/Departamento -->
+          <div class="tbl-wrap" style="padding:20px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">🏢 Chamados por área</div>
+            <div id="chart-area"></div>
+          </div>
+        </div>
+
+        <!-- CHARTS ROW 3 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+          <!-- Status Backlog -->
+          <div class="tbl-wrap" style="padding:20px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">📌 Backlog por status</div>
+            <div id="chart-status"></div>
+          </div>
+          <!-- Top solicitantes -->
+          <div class="tbl-wrap" style="padding:20px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">👤 Top solicitantes</div>
+            <div id="chart-users"></div>
+          </div>
+        </div>
+
+      </div>
 
       <!-- CHAMADOS -->
       <div class="admin-section active" id="sec-chamados">
@@ -896,6 +953,120 @@ function adminNav(sec, btn) {
   document.getElementById('sec-'+sec).classList.add('active');
   if (sec==='chamados') loadChamados();
   if (sec==='usuarios') loadUsuarios();
+  if (sec==='dashboard') loadDashboard();
+}
+
+// ── DASHBOARD ────────────────────────────────
+async function loadDashboard() {
+  const { data } = await sb.from('chamados').select('*').order('criado_em',{ascending:false});
+  const list = data || [];
+
+  // KPIs
+  document.getElementById('dk-total').textContent = list.length;
+  const abertos = list.filter(c=>c.status!=='resolvido').length;
+  document.getElementById('dk-aberto').textContent = abertos;
+  document.getElementById('dk-resolvido').textContent = list.filter(c=>c.status==='resolvido').length;
+
+  // Tempo médio (dias entre criação e resolução - simulado)
+  const resolvidos = list.filter(c=>c.status==='resolvido' && c.atualizado_em && c.criado_em);
+  if(resolvidos.length) {
+    const media = resolvidos.reduce((acc,c)=>{
+      const diff = (new Date(c.atualizado_em) - new Date(c.criado_em)) / (1000*60*60);
+      return acc + diff;
+    },0) / resolvidos.length;
+    document.getElementById('dk-tempo').textContent = media < 24 ? Math.round(media)+'h' : Math.round(media/24)+'d';
+  } else {
+    document.getElementById('dk-tempo').textContent = '—';
+  }
+
+  // Render charts
+  renderBarChart('chart-empresa', countBy(list,'empresa'), ['#4f8cff','#3ecf8e','#f59e0b','#ef4444','#a78bfa','#06b6d4','#f97316']);
+  renderBarChart('chart-prio', countBy(list,'prioridade'), {'critico':'#ef4444','alto':'#f59e0b','medio':'#4f8cff','baixo':'#3ecf8e'});
+  renderBarChart('chart-cat', countBy(list,'categoria'), ['#4f8cff','#3ecf8e','#f59e0b','#ef4444','#a78bfa','#06b6d4','#f97316','#ec4899']);
+  renderBarChart('chart-area', countBy(list,'departamento'), ['#4f8cff','#3ecf8e','#f59e0b','#ef4444','#a78bfa','#06b6d4','#f97316']);
+  renderStatusChart('chart-status', list);
+  renderTopUsers('chart-users', list);
+}
+
+function countBy(list, field) {
+  const counts = {};
+  list.forEach(item => {
+    const val = item[field] || 'Não informado';
+    const key = val.length > 28 ? val.substring(0,28)+'…' : val;
+    counts[key] = (counts[key]||0) + 1;
+  });
+  return Object.fromEntries(Object.entries(counts).sort((a,b)=>b[1]-a[1]));
+}
+
+function renderBarChart(containerId, data, colors) {
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  const entries = Object.entries(data);
+  if(!entries.length) { container.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Sem dados</p>'; return; }
+  const max = Math.max(...entries.map(e=>e[1]));
+  const isObj = typeof colors === 'object' && !Array.isArray(colors);
+  container.innerHTML = entries.map(([label,count],i) => {
+    const pct = Math.round((count/max)*100);
+    const color = isObj ? (colors[label]||'#4f8cff') : colors[i % colors.length];
+    return `<div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:12px;color:var(--text);">${label}</span>
+        <span style="font-size:12px;font-weight:500;color:var(--muted);">${count}</span>
+      </div>
+      <div style="background:var(--surface3);border-radius:4px;height:8px;overflow:hidden;">
+        <div style="width:${pct}%;height:100%;background:${color};border-radius:4px;transition:width .5s;"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderStatusChart(containerId, list) {
+  const statuses = {
+    'Aberto': list.filter(c=>c.status==='aberto').length,
+    'Em andamento': list.filter(c=>c.status==='andamento').length,
+    'Aguardando': list.filter(c=>c.status==='aguardando').length,
+    'Resolvido': list.filter(c=>c.status==='resolvido').length
+  };
+  const colors = {'Aberto':'#4f8cff','Em andamento':'#f59e0b','Aguardando':'#7a7a8c','Resolvido':'#3ecf8e'};
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  const total = list.length || 1;
+  container.innerHTML = Object.entries(statuses).map(([label,count]) => {
+    const pct = Math.round((count/total)*100);
+    return `<div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:12px;color:var(--text);">${label}</span>
+        <span style="font-size:12px;font-weight:500;color:var(--muted);">${count} <span style="color:var(--dim)">(${pct}%)</span></span>
+      </div>
+      <div style="background:var(--surface3);border-radius:4px;height:10px;overflow:hidden;">
+        <div style="width:${pct}%;height:100%;background:${colors[label]};border-radius:4px;transition:width .5s;"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTopUsers(containerId, list) {
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  const counts = {};
+  list.forEach(c => {
+    const name = c.nome_solicitante || 'Desconhecido';
+    if(!counts[name]) counts[name] = {total:0,aberto:0,resolvido:0};
+    counts[name].total++;
+    if(c.status==='aberto'||c.status==='andamento') counts[name].aberto++;
+    if(c.status==='resolvido') counts[name].resolvido++;
+  });
+  const sorted = Object.entries(counts).sort((a,b)=>b[1].total-a[1].total).slice(0,6);
+  if(!sorted.length) { container.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Sem dados</p>'; return; }
+  container.innerHTML = sorted.map(([name,data],i)=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--accent-s);border:1px solid var(--accent-b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--accent);flex-shrink:0;">${i+1}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
+        <div style="font-size:11px;color:var(--muted);">Total: ${data.total} · Aberto: ${data.aberto} · Resolvido: ${data.resolvido}</div>
+      </div>
+      <span style="font-size:18px;font-weight:600;color:var(--accent);">${data.total}</span>
+    </div>`).join('');
 }
 
 async function loadAdminData() { await loadChamados(); }
