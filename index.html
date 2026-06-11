@@ -352,7 +352,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
             <div class="field-err" id="err-desc">Descreva com mais detalhes</div>
           </div>
           <div class="field">
-            <label>Tipo de Categoria</label>
+            <label>Tipo de Categoria <span class="req">*</span></label>
             <select id="c-cat">
               <option value="">Selecionar...</option>
               <option>Infraestrutura (Rede, Internet, Servidor)</option>
@@ -364,6 +364,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
               <option>Câmeras e Segurança Física</option>
               <option>Outros</option>
             </select>
+            <div class="field-err" id="err-cat">Selecione o tipo de categoria</div>
           </div>
           <div class="field">
             <label>Anexar imagens <span style="color:var(--dim);font-weight:400;">(opcional)</span></label>
@@ -946,17 +947,19 @@ async function enviarChamado() {
   const empresa = document.getElementById('c-empresa').value;
   const area = document.getElementById('c-area').value;
   let ok = true;
+  const cat = document.getElementById('c-cat').value;
   if (!empresa) { document.getElementById('err-empresa').style.display='block'; ok=false; } else document.getElementById('err-empresa').style.display='none';
   if (!area) { document.getElementById('err-area').style.display='block'; ok=false; } else document.getElementById('err-area').style.display='none';
   if (!titulo) { document.getElementById('err-titulo').style.display='block'; ok=false; } else document.getElementById('err-titulo').style.display='none';
   if (!desc) { document.getElementById('err-desc').style.display='block'; ok=false; } else document.getElementById('err-desc').style.display='none';
+  if (!cat) { document.getElementById('err-cat').style.display='block'; ok=false; } else document.getElementById('err-cat').style.display='none';
   if (!selectedPrio) { document.getElementById('err-prio').style.display='block'; ok=false; } else document.getElementById('err-prio').style.display='none';
   if (!ok) return;
 
   const btn = document.getElementById('btn-chamado');
   btn.innerHTML = '<span class="spin"></span> Abrindo...'; btn.disabled = true;
 
-  const cat = document.getElementById('c-cat').value || aiResult?.categoria || 'Não classificado';
+  // cat já declarado na validação acima
   const ticketNum = 'TI-' + Date.now().toString().slice(-6);
 
 
@@ -967,9 +970,9 @@ async function enviarChamado() {
     ticket_num: ticketNum, titulo, descricao: desc,
     categoria: cat, prioridade: selectedPrio, status: 'aberto',
     usuario_id: currentUser.id,
-    nome_solicitante: currentPerfil.nome,
-    empresa: empresa || currentPerfil.empresa,
-    departamento: area || currentPerfil.departamento,
+    nome_solicitante: currentPerfil?.nome || 'Não identificado',
+    empresa: empresa || currentPerfil?.empresa || 'Não informado',
+    departamento: area || currentPerfil?.departamento || 'Não informado',
     ramal: currentPerfil.ramal || '',
     ai_analise: '',
     ai_acao: '',
@@ -995,6 +998,8 @@ async function enviarChamado() {
 function novoChamado() {
   document.getElementById('chamado-form').style.display = 'block';
   document.getElementById('chamado-success').style.display = 'none';
+  document.getElementById('c-cat').value = '';
+  document.getElementById('err-cat').style.display = 'none';
   document.getElementById('c-empresa').value = '';
   document.getElementById('c-area').value = '';
   document.getElementById('c-titulo').value = '';
