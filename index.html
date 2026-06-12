@@ -673,31 +673,15 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
         <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
           <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🕒 Horário de atendimento</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Define a janela considerada para cálculo do SLA. Chamados abertos fora desse horário aguardam o próximo expediente.</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Ative os dias de atendimento e defina o horário de cada um — útil quando o sábado ou outro dia tem expediente diferente.</div>
 
-          <div class="grid2" style="margin-bottom:14px;">
-            <div class="field">
-              <label>Início do expediente</label>
-              <input type="time" id="cfg-horario-inicio"/>
-            </div>
-            <div class="field">
-              <label>Fim do expediente</label>
-              <input type="time" id="cfg-horario-fim"/>
-            </div>
+          <div style="display:grid;grid-template-columns:90px 1fr 1fr;gap:10px;margin-bottom:8px;align-items:center;">
+            <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;">Dia</div>
+            <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;">Início</div>
+            <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;">Fim</div>
           </div>
 
-          <div class="field">
-            <label>Dias de atendimento</label>
-            <div class="aval-opt" id="cfg-dias">
-              <button class="aval-btn" data-dia="1" onclick="toggleDia(this)">Seg</button>
-              <button class="aval-btn" data-dia="2" onclick="toggleDia(this)">Ter</button>
-              <button class="aval-btn" data-dia="3" onclick="toggleDia(this)">Qua</button>
-              <button class="aval-btn" data-dia="4" onclick="toggleDia(this)">Qui</button>
-              <button class="aval-btn" data-dia="5" onclick="toggleDia(this)">Sex</button>
-              <button class="aval-btn" data-dia="6" onclick="toggleDia(this)">Sáb</button>
-              <button class="aval-btn" data-dia="0" onclick="toggleDia(this)">Dom</button>
-            </div>
-          </div>
+          <div id="cfg-dias-list"></div>
         </div>
 
         <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
@@ -1607,7 +1591,20 @@ let SLA_CONFIG = {
   medio: { resposta: 4, resolucao: 24 },
   baixo: { resposta: 8, resolucao: 72 }
 };
-let HORARIO_CONFIG = { inicio: '08:00', fim: '18:00', dias: [1,2,3,4,5] };
+const DIAS_SEMANA = [
+  {id:1,label:'Segunda'},{id:2,label:'Terça'},{id:3,label:'Quarta'},
+  {id:4,label:'Quinta'},{id:5,label:'Sexta'},{id:6,label:'Sábado'},{id:0,label:'Domingo'}
+];
+
+let HORARIO_CONFIG = {
+  1:{ativo:true,inicio:'08:00',fim:'18:00'},
+  2:{ativo:true,inicio:'08:00',fim:'18:00'},
+  3:{ativo:true,inicio:'08:00',fim:'18:00'},
+  4:{ativo:true,inicio:'08:00',fim:'18:00'},
+  5:{ativo:true,inicio:'08:00',fim:'18:00'},
+  6:{ativo:false,inicio:'08:00',fim:'12:00'},
+  0:{ativo:false,inicio:'08:00',fim:'12:00'}
+};
 
 async function loadConfig() {
   const { data } = await sb.from('configuracoes').select('*').eq('id',1).single();
@@ -1622,16 +1619,24 @@ function preencherFormConfig() {
     document.getElementById(`cfg-${p}-resposta`).value = SLA_CONFIG[p]?.resposta ?? '';
     document.getElementById(`cfg-${p}-resolucao`).value = SLA_CONFIG[p]?.resolucao ?? '';
   });
-  document.getElementById('cfg-horario-inicio').value = HORARIO_CONFIG.inicio || '08:00';
-  document.getElementById('cfg-horario-fim').value = HORARIO_CONFIG.fim || '18:00';
-  document.querySelectorAll('#cfg-dias .aval-btn').forEach(b=>{
-    const dia = parseInt(b.dataset.dia);
-    b.classList.toggle('sel', (HORARIO_CONFIG.dias||[]).includes(dia));
-  });
+
+  const list = document.getElementById('cfg-dias-list');
+  list.innerHTML = DIAS_SEMANA.map(d => {
+    const cfg = HORARIO_CONFIG[d.id] || {ativo:false,inicio:'08:00',fim:'18:00'};
+    return `<div style="display:grid;grid-template-columns:90px 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px;">
+      <button class="aval-btn ${cfg.ativo?'sel':''}" data-dia="${d.id}" onclick="toggleDia(this)" style="text-align:center;">${d.label}</button>
+      <input type="time" id="cfg-dia-${d.id}-inicio" value="${cfg.inicio||'08:00'}" ${cfg.ativo?'':'disabled'}/>
+      <input type="time" id="cfg-dia-${d.id}-fim" value="${cfg.fim||'18:00'}" ${cfg.ativo?'':'disabled'}/>
+    </div>`;
+  }).join('');
 }
 
 function toggleDia(btn) {
   btn.classList.toggle('sel');
+  const dia = btn.dataset.dia;
+  const ativo = btn.classList.contains('sel');
+  document.getElementById(`cfg-dia-${dia}-inicio`).disabled = !ativo;
+  document.getElementById(`cfg-dia-${dia}-fim`).disabled = !ativo;
 }
 
 async function salvarConfig() {
@@ -1642,12 +1647,16 @@ async function salvarConfig() {
       resolucao: parseFloat(document.getElementById(`cfg-${p}-resolucao`).value) || 0
     };
   });
-  const dias = Array.from(document.querySelectorAll('#cfg-dias .aval-btn.sel')).map(b=>parseInt(b.dataset.dia));
-  const horario = {
-    inicio: document.getElementById('cfg-horario-inicio').value || '08:00',
-    fim: document.getElementById('cfg-horario-fim').value || '18:00',
-    dias
-  };
+
+  const horario = {};
+  DIAS_SEMANA.forEach(d=>{
+    const btn = document.querySelector(`#cfg-dias-list .aval-btn[data-dia="${d.id}"]`);
+    horario[d.id] = {
+      ativo: btn.classList.contains('sel'),
+      inicio: document.getElementById(`cfg-dia-${d.id}-inicio`).value || '08:00',
+      fim: document.getElementById(`cfg-dia-${d.id}-fim`).value || '18:00'
+    };
+  });
 
   await sb.from('configuracoes').upsert({ id:1, sla, horario, updated_at: new Date().toISOString() });
   SLA_CONFIG = sla;
