@@ -511,11 +511,22 @@ tr:hover td{background:rgba(255,255,255,.02);}
         <div class="admin-title">Dashboard</div>
 
         <!-- KPIs -->
-        <div class="stats-row" id="dash-kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+        <div class="stats-row" id="dash-kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px;">
           <div class="stat stat-accent"><div class="stat-n" id="dk-total">—</div><div class="stat-l">Total chamados</div></div>
           <div class="stat stat-red"><div class="stat-n" id="dk-aberto">—</div><div class="stat-l">Em aberto</div></div>
           <div class="stat stat-green"><div class="stat-n" id="dk-resolvido">—</div><div class="stat-l">Resolvidos</div></div>
           <div class="stat"><div class="stat-n" id="dk-nota">—</div><div class="stat-l">Nota média avaliações</div></div>
+        </div>
+
+        <div class="stats-row" id="dash-sla-kpis" style="grid-template-columns:repeat(2,1fr);margin-bottom:24px;">
+          <div class="stat" id="sla-resposta-card">
+            <div class="stat-n" id="dk-sla-resposta">—</div>
+            <div class="stat-l">SLA de Inicialização (1ª resposta) <span style="color:var(--dim);">· meta ≥90%</span></div>
+          </div>
+          <div class="stat" id="sla-resolucao-card">
+            <div class="stat-n" id="dk-sla-resolucao">—</div>
+            <div class="stat-l">SLA de Resolução <span style="color:var(--dim);">· meta ≥90%</span></div>
+          </div>
         </div>
 
         <!-- EVOLUÇÃO MENSAL -->
@@ -1183,6 +1194,29 @@ function adminNav(sec, btn) {
 }
 
 // ── DASHBOARD ────────────────────────────────
+function setSlaKpi(numId, cardId, pct, base) {
+  const numEl = document.getElementById(numId);
+  const cardEl = document.getElementById(cardId);
+  cardEl.classList.remove('stat-green','stat-red','stat-accent');
+  if (pct === null) {
+    numEl.innerHTML = '—';
+    numEl.style.color = '';
+    return;
+  }
+  numEl.textContent = pct + '%';
+  if (pct >= 90) {
+    cardEl.classList.add('stat-green');
+  } else {
+    cardEl.classList.add('stat-red');
+  }
+  // small base count label
+  const labelEl = cardEl.querySelector('.stat-l');
+  const baseSpan = labelEl.querySelector('.sla-base');
+  const txt = ` · ${base} chamado${base!==1?'s':''}`;
+  if (baseSpan) { baseSpan.textContent = txt; }
+  else { labelEl.insertAdjacentHTML('beforeend', `<span class="sla-base" style="color:var(--dim);">${txt}</span>`); }
+}
+
 async function loadDashboard() {
   const { data } = await sb.from('chamados').select('*').order('criado_em',{ascending:false});
   const list = data || [];
@@ -1192,6 +1226,35 @@ async function loadDashboard() {
   const abertos = list.filter(c=>c.status!=='resolvido').length;
   document.getElementById('dk-aberto').textContent = abertos;
   document.getElementById('dk-resolvido').textContent = list.filter(c=>c.status==='resolvido').length;
+
+  // SLA de Inicialização (1ª resposta do admin dentro do prazo)
+  const comResposta = list.filter(c => (c.comentarios||[]).some(cm=>cm.autor==='admin'));
+  if (comResposta.length) {
+    const dentroResposta = comResposta.filter(c => {
+      const cfg = SLA_CONFIG[c.prioridade] || {resposta:4};
+      const prazoResposta = new Date(new Date(c.criado_em).getTime() + (cfg.resposta||4)*60*60*1000);
+      const primeiraResposta = (c.comentarios||[]).find(cm=>cm.autor==='admin');
+      return new Date(primeiraResposta.data) <= prazoResposta;
+    }).length;
+    const pctResposta = Math.round((dentroResposta/comResposta.length)*100);
+    setSlaKpi('dk-sla-resposta','sla-resposta-card', pctResposta, comResposta.length);
+  } else {
+    setSlaKpi('dk-sla-resposta','sla-resposta-card', null, 0);
+  }
+
+  // SLA de Resolução (resolvidos dentro do prazo)
+  const resolvidosSla = list.filter(c=>c.status==='resolvido' && c.atualizado_em);
+  if (resolvidosSla.length) {
+    const dentroResolucao = resolvidosSla.filter(c => {
+      const cfg = SLA_CONFIG[c.prioridade] || {resolucao:24};
+      const prazo = new Date(new Date(c.criado_em).getTime() + (cfg.resolucao||24)*60*60*1000);
+      return new Date(c.atualizado_em) <= prazo;
+    }).length;
+    const pctResolucao = Math.round((dentroResolucao/resolvidosSla.length)*100);
+    setSlaKpi('dk-sla-resolucao','sla-resolucao-card', pctResolucao, resolvidosSla.length);
+  } else {
+    setSlaKpi('dk-sla-resolucao','sla-resolucao-card', null, 0);
+  }
 
   // Nota média das avaliações
   const avaliados = list.filter(c=>c.avaliacao);
