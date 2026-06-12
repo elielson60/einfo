@@ -1374,14 +1374,14 @@ function renderMonthChart(containerId, list) {
   const sortedKeys = Object.keys(counts).sort();
   const max = Math.max(...Object.values(counts));
 
-  container.innerHTML = `<div style="display:flex;align-items:flex-end;gap:10px;height:140px;padding-top:10px;">` +
+  container.innerHTML = `<div style="display:flex;align-items:flex-end;gap:16px;height:140px;padding-top:10px;justify-content:flex-start;">` +
     sortedKeys.map(key => {
       const [ano,mes] = key.split('-');
       const count = counts[key];
       const heightPct = Math.max(8, Math.round((count/max)*100));
-      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;">
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;width:48px;flex-shrink:0;">
         <span style="font-size:12px;font-weight:600;color:var(--accent);">${count}</span>
-        <div style="width:100%;max-width:36px;background:var(--accent);border-radius:4px 4px 0 0;height:${heightPct}%;transition:height .5s;"></div>
+        <div style="width:36px;background:var(--accent);border-radius:4px 4px 0 0;height:${heightPct}%;transition:height .5s;"></div>
         <span style="font-size:11px;color:var(--muted);">${meses[parseInt(mes)-1]}/${ano.slice(2)}</span>
       </div>`;
     }).join('') +
