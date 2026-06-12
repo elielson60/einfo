@@ -498,6 +498,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <button class="sb-btn" onclick="adminNav('dashboard',this)"><span class="sb-icon">📊</span> Dashboard</button>
       <button class="sb-btn active" onclick="adminNav('chamados',this)"><span class="sb-icon">📋</span> Chamados</button>
       <button class="sb-btn" onclick="adminNav('usuarios',this)"><span class="sb-icon">👥</span> Usuários</button>
+      <button class="sb-btn" onclick="adminNav('config',this)"><span class="sb-icon">⚙️</span> Configurações</button>
       <span class="sb-section">Ações</span>
       <button class="sb-btn" onclick="showPage('chamado')"><span class="sb-icon">➕</span> Novo chamado</button>
     </div>
@@ -632,6 +633,75 @@ tr:hover td{background:rgba(255,255,255,.02);}
             <tbody id="tbl-usuarios"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px;">Carregando...</td></tr></tbody>
           </table>
         </div>
+      </div>
+
+      <!-- CONFIGURAÇÕES -->
+      <div class="admin-section" id="sec-config">
+        <div class="admin-title">Configurações</div>
+
+        <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:500;margin-bottom:4px;">⏰ SLA por prioridade</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Defina o tempo de primeira resposta e o tempo total para resolução, em horas, para cada nível de prioridade.</div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:8px;">
+            <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;">Prioridade</div>
+            <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;">Resposta inicial (h)</div>
+            <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;">Resolução total (h)</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px;">
+            <div><span class="badge b-critico">🔴 Crítico</span></div>
+            <input type="number" min="0" id="cfg-critico-resposta"/>
+            <input type="number" min="0" id="cfg-critico-resolucao"/>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px;">
+            <div><span class="badge b-alto">🟠 Alto</span></div>
+            <input type="number" min="0" id="cfg-alto-resposta"/>
+            <input type="number" min="0" id="cfg-alto-resolucao"/>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px;">
+            <div><span class="badge b-medio">🔵 Médio</span></div>
+            <input type="number" min="0" id="cfg-medio-resposta"/>
+            <input type="number" min="0" id="cfg-medio-resolucao"/>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px;">
+            <div><span class="badge b-baixo">🟢 Baixo</span></div>
+            <input type="number" min="0" id="cfg-baixo-resposta"/>
+            <input type="number" min="0" id="cfg-baixo-resolucao"/>
+          </div>
+        </div>
+
+        <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🕒 Horário de atendimento</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Define a janela considerada para cálculo do SLA. Chamados abertos fora desse horário aguardam o próximo expediente.</div>
+
+          <div class="grid2" style="margin-bottom:14px;">
+            <div class="field">
+              <label>Início do expediente</label>
+              <input type="time" id="cfg-horario-inicio"/>
+            </div>
+            <div class="field">
+              <label>Fim do expediente</label>
+              <input type="time" id="cfg-horario-fim"/>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Dias de atendimento</label>
+            <div class="aval-opt" id="cfg-dias">
+              <button class="aval-btn" data-dia="1" onclick="toggleDia(this)">Seg</button>
+              <button class="aval-btn" data-dia="2" onclick="toggleDia(this)">Ter</button>
+              <button class="aval-btn" data-dia="3" onclick="toggleDia(this)">Qua</button>
+              <button class="aval-btn" data-dia="4" onclick="toggleDia(this)">Qui</button>
+              <button class="aval-btn" data-dia="5" onclick="toggleDia(this)">Sex</button>
+              <button class="aval-btn" data-dia="6" onclick="toggleDia(this)">Sáb</button>
+              <button class="aval-btn" data-dia="0" onclick="toggleDia(this)">Dom</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
+        <p id="config-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Configurações salvas com sucesso!</p>
       </div>
 
     </div>
@@ -800,6 +870,7 @@ async function init() {
 
 async function loadPerfil(user) {
   currentUser = user;
+  await loadConfig();
   const { data, error } = await sb.from('perfis').select('*').eq('id', user.id).single();
   if (error || !data) {
     // perfil nao encontrado — tenta inserir perfil basico
@@ -1124,6 +1195,7 @@ function adminNav(sec, btn) {
   if (sec==='chamados') loadChamados();
   if (sec==='usuarios') loadUsuarios();
   if (sec==='dashboard') loadDashboard();
+  if (sec==='config') preencherFormConfig();
 }
 
 // ── DASHBOARD ────────────────────────────────
@@ -1529,10 +1601,67 @@ async function salvarAvaliacao() {
 }
 
 // ── SLA ──────────────────────────────────────
-const SLA_HORAS = { critico: 4, alto: 8, medio: 24, baixo: 72 };
+let SLA_CONFIG = {
+  critico: { resposta: 1, resolucao: 4 },
+  alto: { resposta: 2, resolucao: 8 },
+  medio: { resposta: 4, resolucao: 24 },
+  baixo: { resposta: 8, resolucao: 72 }
+};
+let HORARIO_CONFIG = { inicio: '08:00', fim: '18:00', dias: [1,2,3,4,5] };
+
+async function loadConfig() {
+  const { data } = await sb.from('configuracoes').select('*').eq('id',1).single();
+  if (data) {
+    if (data.sla) SLA_CONFIG = data.sla;
+    if (data.horario) HORARIO_CONFIG = data.horario;
+  }
+}
+
+function preencherFormConfig() {
+  ['critico','alto','medio','baixo'].forEach(p=>{
+    document.getElementById(`cfg-${p}-resposta`).value = SLA_CONFIG[p]?.resposta ?? '';
+    document.getElementById(`cfg-${p}-resolucao`).value = SLA_CONFIG[p]?.resolucao ?? '';
+  });
+  document.getElementById('cfg-horario-inicio').value = HORARIO_CONFIG.inicio || '08:00';
+  document.getElementById('cfg-horario-fim').value = HORARIO_CONFIG.fim || '18:00';
+  document.querySelectorAll('#cfg-dias .aval-btn').forEach(b=>{
+    const dia = parseInt(b.dataset.dia);
+    b.classList.toggle('sel', (HORARIO_CONFIG.dias||[]).includes(dia));
+  });
+}
+
+function toggleDia(btn) {
+  btn.classList.toggle('sel');
+}
+
+async function salvarConfig() {
+  const sla = {};
+  ['critico','alto','medio','baixo'].forEach(p=>{
+    sla[p] = {
+      resposta: parseFloat(document.getElementById(`cfg-${p}-resposta`).value) || 0,
+      resolucao: parseFloat(document.getElementById(`cfg-${p}-resolucao`).value) || 0
+    };
+  });
+  const dias = Array.from(document.querySelectorAll('#cfg-dias .aval-btn.sel')).map(b=>parseInt(b.dataset.dia));
+  const horario = {
+    inicio: document.getElementById('cfg-horario-inicio').value || '08:00',
+    fim: document.getElementById('cfg-horario-fim').value || '18:00',
+    dias
+  };
+
+  await sb.from('configuracoes').upsert({ id:1, sla, horario, updated_at: new Date().toISOString() });
+  SLA_CONFIG = sla;
+  HORARIO_CONFIG = horario;
+
+  const msg = document.getElementById('config-msg');
+  msg.style.display = 'block';
+  setTimeout(()=>msg.style.display='none', 3000);
+  showToast('Configurações salvas!','ok');
+}
 
 function slaInfo(c) {
-  const horas = SLA_HORAS[c.prioridade] || 24;
+  const cfg = SLA_CONFIG[c.prioridade] || {resposta:4, resolucao:24};
+  const horas = cfg.resolucao || 24;
   const criado = new Date(c.criado_em);
   const prazo = new Date(criado.getTime() + horas*60*60*1000);
   const agora = new Date();
