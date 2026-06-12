@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>E-INFO Consultoria — Portal de Chamados TI</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -163,6 +164,30 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .aval-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500;}
 .aval-ok{background:var(--green-s);color:var(--green);border:1px solid rgba(62,207,142,.3);}
 .aval-pending{background:var(--orange-s);color:#fbbf24;border:1px solid rgba(245,158,11,.4);}
+
+/* ── SLA ── */
+.sla-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500;border:1px solid;white-space:nowrap;}
+.sla-ok{background:var(--green-s);color:var(--green);border-color:rgba(62,207,142,.3);}
+.sla-warn{background:var(--orange-s);color:#fbbf24;border-color:rgba(245,158,11,.4);}
+.sla-late{background:var(--red-s);color:#f87171;border-color:rgba(239,68,68,.35);}
+.sla-done{background:var(--surface3);color:var(--muted);border-color:var(--border);}
+
+/* ── COMENTARIOS ── */
+.comment-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:8px;}
+.comment-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.comment-author{font-size:12px;font-weight:500;color:var(--accent);}
+.comment-date{font-size:11px;color:var(--dim);}
+.comment-text{font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap;}
+
+/* ── PRINT ── */
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; color: #000; background: #fff; }
+  #print-area .pi-row { margin-bottom: 8px; font-size: 13px; }
+  #print-area .pi-label { font-weight: 700; }
+  #print-area h2 { margin-bottom: 12px; }
+}
 
 /* ── MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
@@ -441,6 +466,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <div class="tbl-wrap">
         <div class="tbl-header">
           <span style="font-size:14px;font-weight:500;">Chamados</span>
+          <input class="tbl-search" placeholder="Buscar..." oninput="buscarMeus(this.value)" id="search-meus"/>
         </div>
         <table>
           <thead>
@@ -449,12 +475,14 @@ tr:hover td{background:rgba(255,255,255,.02);}
               <th>Assunto</th>
               <th>Empresa</th>
               <th>Prioridade</th>
+              <th>SLA</th>
               <th>Status</th>
               <th>Data</th>
               <th>Avaliação</th>
+              <th>Ação</th>
             </tr>
           </thead>
-          <tbody id="tbl-meus"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px;">Carregando...</td></tr></tbody>
+          <tbody id="tbl-meus"><tr><td colspan="9" style="text-align:center;color:var(--muted);padding:30px;">Carregando...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -487,6 +515,12 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <div class="stat stat-red"><div class="stat-n" id="dk-aberto">—</div><div class="stat-l">Em aberto</div></div>
           <div class="stat stat-green"><div class="stat-n" id="dk-resolvido">—</div><div class="stat-l">Resolvidos</div></div>
           <div class="stat"><div class="stat-n" id="dk-nota">—</div><div class="stat-l">Nota média avaliações</div></div>
+        </div>
+
+        <!-- EVOLUÇÃO MENSAL -->
+        <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:500;margin-bottom:16px;">📈 Chamados por mês</div>
+          <div id="chart-mes"></div>
         </div>
 
         <!-- CHARTS ROW 1 -->
@@ -565,6 +599,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
                 <th>Solicitante</th>
                 <th>Empresa</th>
                 <th>Prioridade</th>
+                <th>SLA</th>
                 <th>Status</th>
                 <th>Anexos</th>
                 <th>Ação</th>
@@ -602,6 +637,35 @@ tr:hover td{background:rgba(255,255,255,.02);}
     </div>
   </div>
 </div>
+
+<!-- MODAL DETALHES -->
+<div class="modal-overlay" id="modal-detalhe">
+  <div class="modal" style="max-width:640px;">
+    <button class="modal-close" onclick="closeModalDetalhe()">✕</button>
+    <div class="modal-title" id="det-titulo">—</div>
+    <div id="det-info" style="font-size:13px;color:var(--muted);margin-bottom:6px;line-height:1.8;"></div>
+    <div id="det-sla" style="margin-bottom:14px;"></div>
+    <div id="det-desc" style="font-size:13px;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-bottom:14px;white-space:pre-wrap;line-height:1.6;"></div>
+    <div id="det-anexos" style="margin-bottom:14px;"></div>
+
+    <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:500;margin-bottom:10px;">💬 Comentários / Tratativas</div>
+      <div id="det-comentarios" style="max-height:220px;overflow-y:auto;margin-bottom:10px;"></div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="det-novo-comentario" placeholder="Escreva uma resposta..." onkeydown="if(event.key==='Enter')addComentario()"/>
+        <button class="btn btn-primary btn-sm" onclick="addComentario()">Enviar</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:18px;">
+      <button class="btn btn-ghost" onclick="imprimirChamado()">🖨️ Imprimir</button>
+      <button class="btn btn-ghost" onclick="closeModalDetalhe()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ÁREA OCULTA PARA IMPRESSÃO -->
+<div id="print-area" style="display:none;"></div>
 
 <!-- MODAL AVALIAÇÃO -->
 <div class="modal-overlay" id="modal-aval">
@@ -684,6 +748,36 @@ tr:hover td{background:rgba(255,255,255,.02);}
 // ════════════════════════════════════════════
 const SUPABASE_URL = 'https://vubwgibczdzoyqwxnhma.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_iZtv8vEC4fr9Lw5VufVZaA_0drcPhCT';
+
+// ── EMAILJS CONFIG (opcional — preencha para ativar notificações por e-mail) ──
+// 1. Crie conta gratuita em https://www.emailjs.com
+// 2. Crie um Email Service e um Template
+// 3. Cole aqui o Service ID, Template ID e Public Key
+const EMAILJS_SERVICE_ID = '';   // ex: 'service_xxxxx'
+const EMAILJS_TEMPLATE_ID = '';  // ex: 'template_xxxxx'
+const EMAILJS_PUBLIC_KEY = '';   // ex: 'AbCdEfGhIjKlMnOp'
+
+if (EMAILJS_PUBLIC_KEY && window.emailjs) {
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+}
+
+async function enviarEmailNotificacao(toEmail, toName, ticketNum, assunto, mensagem) {
+  if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
+    console.log('EmailJS não configurado — notificação ignorada.');
+    return;
+  }
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: toEmail,
+      to_name: toName,
+      ticket_num: ticketNum,
+      assunto: assunto,
+      mensagem: mensagem
+    });
+  } catch (e) {
+    console.error('Erro ao enviar e-mail:', e);
+  }
+}
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -984,6 +1078,13 @@ async function enviarChamado() {
 
   // Chamado salvo no Supabase
 
+  // notificar admins sobre novo chamado
+  const { data: admins } = await sb.from('perfis').select('email,nome').eq('role','admin');
+  (admins||[]).forEach(a => {
+    enviarEmailNotificacao(a.email, a.nome, ticketNum, titulo,
+      `Novo chamado aberto por ${currentPerfil.nome} (${empresa}/${area}). Prioridade: ${selectedPrio}.`);
+  });
+
   document.getElementById('chamado-form').style.display = 'none';
   const ss = document.getElementById('chamado-success');
   ss.style.display = 'flex';
@@ -1054,6 +1155,7 @@ async function loadDashboard() {
   renderBarChart('chart-area', countBy(list,'departamento'), ['#4f8cff','#3ecf8e','#f59e0b','#ef4444','#a78bfa','#06b6d4','#f97316']);
   renderStatusChart('chart-status', list);
   renderTopUsers('chart-users', list);
+  renderMonthChart('chart-mes', list);
 }
 
 function countBy(list, field) {
@@ -1137,6 +1239,36 @@ function renderTopUsers(containerId, list) {
     </div>`).join('');
 }
 
+function renderMonthChart(containerId, list) {
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  if(!list.length) { container.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Sem dados</p>'; return; }
+
+  const counts = {};
+  list.forEach(c => {
+    const d = new Date(c.criado_em);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    counts[key] = (counts[key]||0) + 1;
+  });
+
+  const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const sortedKeys = Object.keys(counts).sort();
+  const max = Math.max(...Object.values(counts));
+
+  container.innerHTML = `<div style="display:flex;align-items:flex-end;gap:10px;height:140px;padding-top:10px;">` +
+    sortedKeys.map(key => {
+      const [ano,mes] = key.split('-');
+      const count = counts[key];
+      const heightPct = Math.max(8, Math.round((count/max)*100));
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;">
+        <span style="font-size:12px;font-weight:600;color:var(--accent);">${count}</span>
+        <div style="width:100%;max-width:36px;background:var(--accent);border-radius:4px 4px 0 0;height:${heightPct}%;transition:height .5s;"></div>
+        <span style="font-size:11px;color:var(--muted);">${meses[parseInt(mes)-1]}/${ano.slice(2)}</span>
+      </div>`;
+    }).join('') +
+  `</div>`;
+}
+
 async function loadAdminData() { await loadChamados(); }
 
 async function loadChamados() {
@@ -1155,7 +1287,7 @@ function updateStats(list) {
 
 function renderChamados(list) {
   const tb = document.getElementById('tbl-chamados');
-  if (!list.length) { tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:30px;">Nenhum chamado encontrado</td></tr>'; return; }
+  if (!list.length) { tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:30px;">Nenhum chamado encontrado</td></tr>'; return; }
   const prioE = {critico:'🔴',alto:'🟠',medio:'🔵',baixo:'🟢'};
   const prioL = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
   const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando',resolvido:'Resolvido'};
@@ -1166,9 +1298,13 @@ function renderChamados(list) {
       <td style="font-size:12px;">${c.nome_solicitante||'—'}<br><span style="color:var(--muted);font-size:11px;">${c.departamento||''}</span></td>
       <td style="font-size:12px;">${c.empresa||'—'}</td>
       <td><span class="badge b-${c.prioridade}">${prioE[c.prioridade]||''} ${prioL[c.prioridade]||c.prioridade}</span></td>
+      <td>${slaInfo(c).html}</td>
       <td><span class="badge b-${c.status}">${statusL[c.status]||c.status}</span></td>
       <td>${c.anexos && c.anexos.length ? c.anexos.map(url=>`<a href="${url}" target="_blank"><img src="${url}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;margin-right:3px;border:1px solid var(--border);" title="Ver imagem"/></a>`).join('') : '<span style="color:var(--dim);font-size:11px;">—</span>'}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="openModal('${c.id}','${c.status}')">✎ Status</button></td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="openModalDetalhe('${c.id}')">👁 Ver</button>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('${c.id}','${c.status}')">✎ Status</button>
+      </td>
     </tr>`).join('');
 }
 
@@ -1242,6 +1378,20 @@ async function salvarStatus() {
   await sb.from('chamados').update({status, atualizado_em: new Date().toISOString()}).eq('id',id);
   closeModal();
   showToast('Status atualizado!','ok');
+
+  // notificar usuário por e-mail
+  const ticket = allChamados.find(c=>c.id===id);
+  if (ticket) {
+    const { data: perfil } = await sb.from('perfis').select('email,nome').eq('id', ticket.usuario_id).single();
+    if (perfil?.email) {
+      const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando',resolvido:'Resolvido'};
+      enviarEmailNotificacao(
+        perfil.email, perfil.nome, ticket.ticket_num, ticket.titulo,
+        `O status do seu chamado foi atualizado para: ${statusL[status]||status}.`
+      );
+    }
+  }
+
   loadChamados();
 }
 
@@ -1278,9 +1428,21 @@ function filterMeus(status, chip) {
   renderMeusChamados(filtered);
 }
 
+function buscarMeus(q) {
+  const low = q.toLowerCase();
+  let base = meusFiltro==='todos' ? allMeusChamados : allMeusChamados.filter(c=>c.status===meusFiltro);
+  const filtered = base.filter(c=>
+    (c.titulo||'').toLowerCase().includes(low)||
+    (c.ticket_num||'').toLowerCase().includes(low)||
+    (c.empresa||'').toLowerCase().includes(low)||
+    (c.categoria||'').toLowerCase().includes(low)
+  );
+  renderMeusChamados(filtered);
+}
+
 function renderMeusChamados(list) {
   const tb = document.getElementById('tbl-meus');
-  if (!list.length) { tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px;">Nenhum chamado encontrado</td></tr>'; return; }
+  if (!list.length) { tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:30px;">Nenhum chamado encontrado</td></tr>'; return; }
   const prioE = {critico:'🔴',alto:'🟠',medio:'🔵',baixo:'🟢'};
   const prioL = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
   const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando',resolvido:'Resolvido'};
@@ -1291,12 +1453,14 @@ function renderMeusChamados(list) {
       : c.avaliacao ? `<span class="aval-tag aval-ok">⭐ ${JSON.parse(c.avaliacao).nota}/5</span>` : '—';
     return `<tr>
       <td><span style="font-family:var(--mono);font-size:11px;color:var(--accent);">${c.ticket_num}</span></td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.titulo}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.titulo}</td>
       <td style="font-size:12px;">${c.empresa||'—'}</td>
       <td><span class="badge b-${c.prioridade}">${prioE[c.prioridade]||''} ${prioL[c.prioridade]||c.prioridade}</span></td>
+      <td>${slaInfo(c).html}</td>
       <td><span class="badge b-${c.status}">${statusL[c.status]||c.status}</span></td>
       <td style="font-size:12px;color:var(--muted);">${data}</td>
       <td>${avalBtn}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="openModalDetalhe('${c.id}')">👁 Ver</button></td>
     </tr>`;
   }).join('');
 }
@@ -1362,6 +1526,159 @@ async function salvarAvaliacao() {
   closeModalAval();
   showToast('✅ Avaliação enviada! Obrigado pelo feedback.','ok');
   loadMeusChamados();
+}
+
+// ── SLA ──────────────────────────────────────
+const SLA_HORAS = { critico: 4, alto: 8, medio: 24, baixo: 72 };
+
+function slaInfo(c) {
+  const horas = SLA_HORAS[c.prioridade] || 24;
+  const criado = new Date(c.criado_em);
+  const prazo = new Date(criado.getTime() + horas*60*60*1000);
+  const agora = new Date();
+
+  if (c.status === 'resolvido') {
+    const resolvidoEm = new Date(c.atualizado_em || c.criado_em);
+    const noPrazo = resolvidoEm <= prazo;
+    return { html: `<span class="sla-badge ${noPrazo?'sla-ok':'sla-late'}">${noPrazo?'✓ Resolvido no prazo':'⚠ Resolvido com atraso'}</span>`, prazo };
+  }
+
+  const diffH = (prazo - agora) / (1000*60*60);
+  if (diffH < 0) {
+    const atraso = Math.abs(diffH);
+    const txt = atraso < 24 ? `${Math.round(atraso)}h` : `${Math.round(atraso/24)}d`;
+    return { html: `<span class="sla-badge sla-late">⚠ Atrasado há ${txt}</span>`, prazo };
+  }
+  if (diffH < (horas*0.25)) {
+    const txt = diffH < 1 ? `${Math.round(diffH*60)}min` : `${Math.round(diffH)}h`;
+    return { html: `<span class="sla-badge sla-warn">⏰ Vence em ${txt}</span>`, prazo };
+  }
+  const txt = diffH < 24 ? `${Math.round(diffH)}h` : `${Math.round(diffH/24)}d`;
+  return { html: `<span class="sla-badge sla-ok">⏳ Prazo: ${txt}</span>`, prazo };
+}
+
+// ── MODAL DETALHES ───────────────────────────
+let currentDetalhe = null;
+
+function findChamadoById(id) {
+  return (allChamados.find(c=>c.id===id)) || (allMeusChamados.find(c=>c.id===id));
+}
+
+function openModalDetalhe(id) {
+  const c = findChamadoById(id);
+  if (!c) return;
+  currentDetalhe = c;
+
+  const prioL = {critico:'🔴 Crítico',alto:'🟠 Alto',medio:'🔵 Médio',baixo:'🟢 Baixo'};
+  const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando',resolvido:'Resolvido'};
+  const dataAbertura = new Date(c.criado_em).toLocaleString('pt-BR');
+
+  document.getElementById('det-titulo').textContent = `${c.ticket_num} — ${c.titulo}`;
+  document.getElementById('det-info').innerHTML = `
+    <div><strong style="color:var(--text)">Solicitante:</strong> ${c.nome_solicitante||'—'}</div>
+    <div><strong style="color:var(--text)">Empresa:</strong> ${c.empresa||'—'} &nbsp;·&nbsp; <strong style="color:var(--text)">Área:</strong> ${c.departamento||'—'}</div>
+    <div><strong style="color:var(--text)">Categoria:</strong> ${c.categoria||'—'} &nbsp;·&nbsp; <strong style="color:var(--text)">Prioridade:</strong> ${prioL[c.prioridade]||c.prioridade}</div>
+    <div><strong style="color:var(--text)">Status:</strong> ${statusL[c.status]||c.status} &nbsp;·&nbsp; <strong style="color:var(--text)">Aberto em:</strong> ${dataAbertura}</div>
+  `;
+  document.getElementById('det-sla').innerHTML = slaInfo(c).html;
+  document.getElementById('det-desc').textContent = c.descricao || '';
+
+  const anexosDiv = document.getElementById('det-anexos');
+  if (c.anexos && c.anexos.length) {
+    anexosDiv.innerHTML = '<div style="font-size:12px;color:var(--muted);margin-bottom:6px;">📎 Anexos</div>' +
+      c.anexos.map(url=>`<a href="${url}" target="_blank"><img src="${url}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;margin-right:6px;border:1px solid var(--border);"/></a>`).join('');
+  } else {
+    anexosDiv.innerHTML = '';
+  }
+
+  renderComentarios(c.comentarios || []);
+  document.getElementById('det-novo-comentario').value = '';
+  document.getElementById('modal-detalhe').classList.add('open');
+}
+
+function closeModalDetalhe() {
+  document.getElementById('modal-detalhe').classList.remove('open');
+  currentDetalhe = null;
+}
+
+function renderComentarios(lista) {
+  const div = document.getElementById('det-comentarios');
+  if (!lista.length) { div.innerHTML = '<p style="font-size:12px;color:var(--dim);text-align:center;padding:10px;">Nenhum comentário ainda.</p>'; return; }
+  div.innerHTML = lista.map(c => `
+    <div class="comment-item">
+      <div class="comment-head">
+        <span class="comment-author">${c.autor==='admin'?'🛠️ Suporte TI':(c.nome||'Usuário')}</span>
+        <span class="comment-date">${new Date(c.data).toLocaleString('pt-BR')}</span>
+      </div>
+      <div class="comment-text">${c.texto}</div>
+    </div>`).join('');
+  div.scrollTop = div.scrollHeight;
+}
+
+async function addComentario() {
+  const input = document.getElementById('det-novo-comentario');
+  const texto = input.value.trim();
+  if (!texto || !currentDetalhe) return;
+
+  const isAdmin = currentPerfil && currentPerfil.role === 'admin';
+  const novo = {
+    autor: isAdmin ? 'admin' : 'usuario',
+    nome: currentPerfil?.nome || '—',
+    texto,
+    data: new Date().toISOString()
+  };
+
+  const lista = [...(currentDetalhe.comentarios || []), novo];
+  await sb.from('chamados').update({ comentarios: lista }).eq('id', currentDetalhe.id);
+  currentDetalhe.comentarios = lista;
+  renderComentarios(lista);
+  input.value = '';
+  showToast('Comentário adicionado!','ok');
+
+  // notificar a outra parte por e-mail
+  if (isAdmin) {
+    const { data: perfil } = await sb.from('perfis').select('email,nome').eq('id', currentDetalhe.usuario_id).single();
+    if (perfil?.email) {
+      enviarEmailNotificacao(perfil.email, perfil.nome, currentDetalhe.ticket_num, currentDetalhe.titulo,
+        `O suporte TI respondeu seu chamado: "${texto}"`);
+    }
+  } else {
+    // notifica admins
+    const { data: admins } = await sb.from('perfis').select('email,nome').eq('role','admin');
+    (admins||[]).forEach(a => {
+      enviarEmailNotificacao(a.email, a.nome, currentDetalhe.ticket_num, currentDetalhe.titulo,
+        `${currentPerfil?.nome||'Usuário'} respondeu o chamado: "${texto}"`);
+    });
+  }
+
+  // recarrega listas em background
+  if (isAdmin) loadChamados(); else loadMeusChamados();
+}
+
+// ── IMPRIMIR ─────────────────────────────────
+function imprimirChamado() {
+  const c = currentDetalhe;
+  if (!c) return;
+  const prioL = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
+  const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando',resolvido:'Resolvido'};
+  const comentariosHtml = (c.comentarios||[]).map(cm=>`
+    <div class="pi-row"><span class="pi-label">${cm.autor==='admin'?'Suporte TI':(cm.nome||'Usuário')} (${new Date(cm.data).toLocaleString('pt-BR')}):</span><br>${cm.texto}</div>
+  `).join('') || '<div class="pi-row">Sem comentários.</div>';
+
+  document.getElementById('print-area').innerHTML = `
+    <h2>Chamado ${c.ticket_num} — E-INFO Consultoria</h2>
+    <div class="pi-row"><span class="pi-label">Assunto:</span> ${c.titulo}</div>
+    <div class="pi-row"><span class="pi-label">Solicitante:</span> ${c.nome_solicitante||'—'}</div>
+    <div class="pi-row"><span class="pi-label">Empresa:</span> ${c.empresa||'—'} &nbsp; <span class="pi-label">Área:</span> ${c.departamento||'—'}</div>
+    <div class="pi-row"><span class="pi-label">Categoria:</span> ${c.categoria||'—'} &nbsp; <span class="pi-label">Prioridade:</span> ${prioL[c.prioridade]||c.prioridade}</div>
+    <div class="pi-row"><span class="pi-label">Status:</span> ${statusL[c.status]||c.status}</div>
+    <div class="pi-row"><span class="pi-label">Aberto em:</span> ${new Date(c.criado_em).toLocaleString('pt-BR')}</div>
+    <div class="pi-row"><span class="pi-label">Descrição:</span><br>${c.descricao}</div>
+    <hr/>
+    <div class="pi-row"><span class="pi-label">Comentários / Tratativas:</span></div>
+    ${comentariosHtml}
+  `;
+  window.print();
 }
 
 // ── START ────────────────────────────────────
