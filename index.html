@@ -487,8 +487,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <button class="sb-btn" onclick="adminNav('dashboard',this)"><span class="sb-icon">📊</span> Dashboard</button>
       <button class="sb-btn active" onclick="adminNav('chamados',this)"><span class="sb-icon">📋</span> Chamados</button>
       <button class="sb-btn" onclick="adminNav('usuarios',this)"><span class="sb-icon">👥</span> Usuários</button>
-      <button class="sb-btn" onclick="adminNav('config',this)"><span class="sb-icon">⚙️</span> Configurações</button>
-      <button class="sb-btn" onclick="adminNav('cadastros',this)"><span class="sb-icon">🗂️</span> Cadastros</button>
+      <button class="sb-btn" onclick="adminNav('config',this)"><span class="sb-icon">⚙️</span> Administração</button>
       <span class="sb-section">Ações</span>
       <button class="sb-btn" onclick="showPage('chamado')"><span class="sb-icon">➕</span> Novo chamado</button>
     </div>
@@ -641,7 +640,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
       <!-- CONFIGURAÇÕES -->
       <div class="admin-section" id="sec-config">
-        <div class="admin-title">Configurações</div>
+        <div class="admin-title">Administração</div>
 
         <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
           <div style="font-size:14px;font-weight:500;margin-bottom:4px;">⏰ SLA por prioridade</div>
@@ -690,40 +689,41 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
         <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
         <p id="config-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Configurações salvas com sucesso!</p>
-      </div>
 
-      <!-- CADASTROS -->
-      <div class="admin-section" id="sec-cadastros">
-        <div class="admin-title">Cadastros</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+        <!-- CADASTROS -->
+        <div style="margin-top:28px;">
+          <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🗂️ Empresas, Áreas e Categorias</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Gerencie as opções disponíveis no formulário de abertura de chamado.</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
 
-          <div class="tbl-wrap" style="padding:18px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">🏢 Empresas</div>
-            <div style="display:flex;gap:6px;margin-bottom:12px;">
-              <input type="text" id="novo-empresa" placeholder="Nova empresa..."/>
-              <button class="btn btn-primary btn-sm" onclick="addCadastro('empresas','novo-empresa')">+</button>
+            <div class="tbl-wrap" style="padding:18px;">
+              <div style="font-size:14px;font-weight:500;margin-bottom:10px;">🏢 Empresas</div>
+              <div style="display:flex;gap:6px;margin-bottom:12px;">
+                <input type="text" id="novo-empresa" placeholder="Nova empresa..."/>
+                <button class="btn btn-primary btn-sm" onclick="addCadastro('empresas','novo-empresa')">+</button>
+              </div>
+              <div id="lista-empresas"></div>
             </div>
-            <div id="lista-empresas"></div>
-          </div>
 
-          <div class="tbl-wrap" style="padding:18px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">📍 Áreas</div>
-            <div style="display:flex;gap:6px;margin-bottom:12px;">
-              <input type="text" id="novo-area" placeholder="Nova área..."/>
-              <button class="btn btn-primary btn-sm" onclick="addCadastro('areas','novo-area')">+</button>
+            <div class="tbl-wrap" style="padding:18px;">
+              <div style="font-size:14px;font-weight:500;margin-bottom:10px;">📍 Áreas</div>
+              <div style="display:flex;gap:6px;margin-bottom:12px;">
+                <input type="text" id="novo-area" placeholder="Nova área..."/>
+                <button class="btn btn-primary btn-sm" onclick="addCadastro('areas','novo-area')">+</button>
+              </div>
+              <div id="lista-areas"></div>
             </div>
-            <div id="lista-areas"></div>
-          </div>
 
-          <div class="tbl-wrap" style="padding:18px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">🗂️ Tipos de Categoria</div>
-            <div style="display:flex;gap:6px;margin-bottom:12px;">
-              <input type="text" id="novo-categoria" placeholder="Nova categoria..."/>
-              <button class="btn btn-primary btn-sm" onclick="addCadastro('categorias','novo-categoria')">+</button>
+            <div class="tbl-wrap" style="padding:18px;">
+              <div style="font-size:14px;font-weight:500;margin-bottom:10px;">🗂️ Tipos de Categoria</div>
+              <div style="display:flex;gap:6px;margin-bottom:12px;">
+                <input type="text" id="novo-categoria" placeholder="Nova categoria..."/>
+                <button class="btn btn-primary btn-sm" onclick="addCadastro('categorias','novo-categoria')">+</button>
+              </div>
+              <div id="lista-categorias"></div>
             </div>
-            <div id="lista-categorias"></div>
-          </div>
 
+          </div>
         </div>
       </div>
 
@@ -1239,8 +1239,7 @@ function adminNav(sec, btn) {
   if (sec==='chamados') loadChamados();
   if (sec==='usuarios') loadUsuarios();
   if (sec==='dashboard') loadDashboard();
-  if (sec==='config') preencherFormConfig();
-  if (sec==='cadastros') loadCadastros();
+  if (sec==='config') { preencherFormConfig(); loadCadastros(); }
 }
 
 // ── DASHBOARD ────────────────────────────────
