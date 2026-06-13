@@ -827,6 +827,50 @@ tr:hover td{background:rgba(255,255,255,.02);}
   </div>
 </div>
 
+<!-- MODAL USUARIO -->
+<div class="modal-overlay" id="modal-usuario">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModalUsuario()">✕</button>
+    <div class="modal-title">✎ Editar usuário</div>
+    <input type="hidden" id="usu-id"/>
+    <div class="field">
+      <label>Nome</label>
+      <input type="text" id="usu-nome"/>
+    </div>
+    <div class="field">
+      <label>E-mail</label>
+      <input type="email" id="usu-email" disabled style="opacity:.6;"/>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label>Telefone / WhatsApp</label>
+        <input type="text" id="usu-ramal"/>
+      </div>
+      <div class="field">
+        <label>Perfil</label>
+        <select id="usu-role">
+          <option value="usuario">Usuário</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label>Empresa</label>
+        <input type="text" id="usu-empresa"/>
+      </div>
+      <div class="field">
+        <label>Departamento</label>
+        <input type="text" id="usu-departamento"/>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <button class="btn btn-primary" onclick="salvarUsuario()">Salvar</button>
+      <button class="btn btn-ghost" onclick="closeModalUsuario()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL STATUS -->
 <div class="modal-overlay" id="modal-status">
   <div class="modal">
@@ -923,6 +967,16 @@ async function loadPerfil(user) {
     fillPerfil(newPerfil);
     return;
   }
+  if (data.ativo === false) {
+    await sb.auth.signOut();
+    currentUser = null; currentPerfil = null;
+    showPage('auth');
+    const err = document.getElementById('login-err');
+    err.textContent = 'Seu acesso foi inativado. Contate o administrador.';
+    err.style.display = 'block';
+    return;
+  }
+
   currentPerfil = data;
   updateTopbar(data);
   await popularSelectsFormulario();
@@ -1535,8 +1589,16 @@ function renderUsuarios(list) {
       <td style="font-size:12px;color:var(--muted);">${u.email}</td>
       <td style="font-size:12px;">${u.empresa||'—'}</td>
       <td style="font-size:12px;">${u.departamento||'—'}</td>
-      <td><span class="badge ${u.role==='admin'?'b-admin':'b-user'}">${u.role}</span></td>
-      <td>${u.role!=='admin'?`<button class="btn btn-ghost btn-sm" onclick="promoverAdmin('${u.id}')">→ Admin</button>`:'<span style="color:var(--muted);font-size:12px;">—</span>'}</td>
+      <td>
+        <span class="badge ${u.role==='admin'?'b-admin':'b-user'}">${u.role}</span>
+        ${u.ativo===false?'<span class="badge" style="background:var(--red-s);color:#f87171;border-color:rgba(239,68,68,.35);margin-left:4px;">Inativo</span>':''}
+      </td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="openModalUsuario('${u.id}')">✎ Editar</button>
+        ${u.ativo===false
+          ? `<button class="btn btn-ghost btn-sm" style="color:var(--green);border-color:rgba(62,207,142,.3);" onclick="toggleAtivoUsuario('${u.id}',true)">✅ Ativar</button>`
+          : `<button class="btn btn-ghost btn-sm" style="color:#f87171;border-color:rgba(239,68,68,.35);" onclick="toggleAtivoUsuario('${u.id}',false)">🚫 Inativar</button>`}
+      </td>
     </tr>`).join('');
 }
 
@@ -1550,10 +1612,43 @@ function buscarUsuarios(q) {
   renderUsuarios(filtered);
 }
 
-async function promoverAdmin(id) {
-  if (!confirm('Promover este usuário a admin?')) return;
-  await sb.from('perfis').update({role:'admin'}).eq('id',id);
-  showToast('Usuário promovido a admin!','ok');
+function openModalUsuario(id) {
+  const u = allUsuarios.find(x=>x.id===id);
+  if (!u) return;
+  document.getElementById('usu-id').value = u.id;
+  document.getElementById('usu-nome').value = u.nome || '';
+  document.getElementById('usu-email').value = u.email || '';
+  document.getElementById('usu-ramal').value = u.ramal || '';
+  document.getElementById('usu-empresa').value = u.empresa || '';
+  document.getElementById('usu-departamento').value = u.departamento || '';
+  document.getElementById('usu-role').value = u.role || 'usuario';
+  document.getElementById('modal-usuario').classList.add('open');
+}
+
+function closeModalUsuario() {
+  document.getElementById('modal-usuario').classList.remove('open');
+}
+
+async function salvarUsuario() {
+  const id = document.getElementById('usu-id').value;
+  await sb.from('perfis').update({
+    nome: document.getElementById('usu-nome').value.trim(),
+    ramal: document.getElementById('usu-ramal').value.trim(),
+    empresa: document.getElementById('usu-empresa').value.trim(),
+    departamento: document.getElementById('usu-departamento').value.trim(),
+    role: document.getElementById('usu-role').value
+  }).eq('id', id);
+  closeModalUsuario();
+  showToast('Usuário atualizado!','ok');
+  loadUsuarios();
+}
+
+async function toggleAtivoUsuario(id, ativo) {
+  const u = allUsuarios.find(x=>x.id===id);
+  const msg = ativo ? `Reativar o acesso de "${u?.nome}"?` : `Inativar o acesso de "${u?.nome}"? Ele não conseguirá mais entrar no sistema, mas o histórico de chamados é mantido.`;
+  if (!confirm(msg)) return;
+  await sb.from('perfis').update({ ativo }).eq('id', id);
+  showToast(ativo ? 'Usuário reativado!' : 'Usuário inativado!','ok');
   loadUsuarios();
 }
 
