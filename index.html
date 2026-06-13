@@ -2153,10 +2153,40 @@ function renderCadastroLista(tabela) {
   const items = CADASTROS[tabela];
   if (!items.length) { container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhum item cadastrado.</p>'; return; }
   container.innerHTML = items.map(i => `
-    <div class="cad-item">
-      <span>${i.nome}</span>
-      <button class="cad-del" onclick="delCadastro('${tabela}','${i.id}')">✕</button>
+    <div class="cad-item" id="cad-${tabela}-${i.id}">
+      <span class="cad-nome" id="cad-nome-${tabela}-${i.id}">${i.nome}</span>
+      <span style="display:flex;gap:8px;">
+        <button class="cad-del" onclick="editCadastro('${tabela}','${i.id}')" title="Editar">✎</button>
+        <button class="cad-del" onclick="delCadastro('${tabela}','${i.id}')" title="Excluir">✕</button>
+      </span>
     </div>`).join('');
+}
+
+function editCadastro(tabela, id) {
+  const item = CADASTROS[tabela].find(i=>i.id===id);
+  if (!item) return;
+  const nomeEl = document.getElementById(`cad-nome-${tabela}-${id}`);
+  nomeEl.outerHTML = `
+    <span style="display:flex;gap:6px;flex:1;">
+      <input type="text" id="edit-${tabela}-${id}" value="${item.nome.replace(/"/g,'&quot;')}" style="flex:1;padding:4px 8px;font-size:12px;" onkeydown="if(event.key==='Enter')saveCadastroEdit('${tabela}','${id}')"/>
+      <button class="cad-del" style="color:var(--green);" onclick="saveCadastroEdit('${tabela}','${id}')" title="Salvar">✓</button>
+      <button class="cad-del" onclick="renderCadastroLista('${tabela}')" title="Cancelar">✕</button>
+    </span>`;
+}
+
+async function saveCadastroEdit(tabela, id) {
+  const input = document.getElementById(`edit-${tabela}-${id}`);
+  const nome = input.value.trim();
+  if (!nome) return;
+  const { error } = await sb.from(tabela).update({ nome }).eq('id', id);
+  if (error) {
+    showToast(error.message.includes('duplicate') ? 'Esse item já existe.' : 'Erro ao atualizar.','err');
+    return;
+  }
+  await loadCadastrosLists();
+  renderCadastroLista(tabela);
+  await popularSelectsFormulario();
+  showToast('Item atualizado!','ok');
 }
 
 async function addCadastro(tabela, inputId) {
