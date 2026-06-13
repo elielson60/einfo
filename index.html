@@ -642,6 +642,15 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <div class="admin-section" id="sec-config">
         <div class="admin-title">Administração</div>
 
+        <div class="chips" id="config-chips">
+          <span class="chip active" onclick="switchConfigTab('sla',this)">⏰ SLA</span>
+          <span class="chip" onclick="switchConfigTab('horarios',this)">🕒 Horários</span>
+          <span class="chip" onclick="switchConfigTab('empresas',this)">🏢 Empresas</span>
+          <span class="chip" onclick="switchConfigTab('areas',this)">📍 Áreas</span>
+          <span class="chip" onclick="switchConfigTab('categorias',this)">🗂️ Categorias</span>
+        </div>
+
+        <div class="config-tab" id="cfgtab-sla">
         <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
           <div style="font-size:14px;font-weight:500;margin-bottom:4px;">⏰ SLA por prioridade</div>
           <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Defina o tempo de primeira resposta e o tempo total para resolução, em horas, para cada nível de prioridade.</div>
@@ -674,6 +683,9 @@ tr:hover td{background:rgba(255,255,255,.02);}
           </div>
         </div>
 
+        </div><!-- /cfgtab-sla -->
+
+        <div class="config-tab" id="cfgtab-horarios" style="display:none;">
         <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
           <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🕒 Horário de atendimento</div>
           <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Ative os dias de atendimento e defina o horário de cada um — útil quando o sábado ou outro dia tem expediente diferente.</div>
@@ -686,45 +698,50 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
           <div id="cfg-dias-list"></div>
         </div>
+        </div><!-- /cfgtab-horarios -->
 
-        <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
-        <p id="config-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Configurações salvas com sucesso!</p>
+        <div id="cfg-save-row" style="margin-bottom:24px;">
+          <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
+          <p id="config-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Configurações salvas com sucesso!</p>
+        </div>
 
         <!-- CADASTROS -->
-        <div style="margin-top:28px;">
-          <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🗂️ Empresas, Áreas e Categorias</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Gerencie as opções disponíveis no formulário de abertura de chamado.</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
-
-            <div class="tbl-wrap" style="padding:18px;">
-              <div style="font-size:14px;font-weight:500;margin-bottom:10px;">🏢 Empresas</div>
-              <div style="display:flex;gap:6px;margin-bottom:12px;">
-                <input type="text" id="novo-empresa" placeholder="Nova empresa..."/>
-                <button class="btn btn-primary btn-sm" onclick="addCadastro('empresas','novo-empresa')">+</button>
-              </div>
-              <div id="lista-empresas"></div>
+        <div class="config-tab" id="cfgtab-empresas" style="display:none;">
+          <div class="tbl-wrap" style="padding:18px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">🏢 Empresas</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Empresas disponíveis no formulário de abertura de chamado.</div>
+            <div style="display:flex;gap:6px;margin-bottom:12px;max-width:400px;">
+              <input type="text" id="novo-empresa" placeholder="Nova empresa..."/>
+              <button class="btn btn-primary btn-sm" onclick="addCadastro('empresas','novo-empresa')">+</button>
             </div>
-
-            <div class="tbl-wrap" style="padding:18px;">
-              <div style="font-size:14px;font-weight:500;margin-bottom:10px;">📍 Áreas</div>
-              <div style="display:flex;gap:6px;margin-bottom:12px;">
-                <input type="text" id="novo-area" placeholder="Nova área..."/>
-                <button class="btn btn-primary btn-sm" onclick="addCadastro('areas','novo-area')">+</button>
-              </div>
-              <div id="lista-areas"></div>
-            </div>
-
-            <div class="tbl-wrap" style="padding:18px;">
-              <div style="font-size:14px;font-weight:500;margin-bottom:10px;">🗂️ Tipos de Categoria</div>
-              <div style="display:flex;gap:6px;margin-bottom:12px;">
-                <input type="text" id="novo-categoria" placeholder="Nova categoria..."/>
-                <button class="btn btn-primary btn-sm" onclick="addCadastro('categorias','novo-categoria')">+</button>
-              </div>
-              <div id="lista-categorias"></div>
-            </div>
-
+            <div id="lista-empresas"></div>
           </div>
         </div>
+
+        <div class="config-tab" id="cfgtab-areas" style="display:none;">
+          <div class="tbl-wrap" style="padding:18px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">📍 Áreas</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Áreas/departamentos disponíveis no formulário de abertura de chamado.</div>
+            <div style="display:flex;gap:6px;margin-bottom:12px;max-width:400px;">
+              <input type="text" id="novo-area" placeholder="Nova área..."/>
+              <button class="btn btn-primary btn-sm" onclick="addCadastro('areas','novo-area')">+</button>
+            </div>
+            <div id="lista-areas"></div>
+          </div>
+        </div>
+
+        <div class="config-tab" id="cfgtab-categorias" style="display:none;">
+          <div class="tbl-wrap" style="padding:18px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">🗂️ Tipos de Categoria</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Categorias disponíveis no formulário de abertura de chamado.</div>
+            <div style="display:flex;gap:6px;margin-bottom:12px;max-width:400px;">
+              <input type="text" id="novo-categoria" placeholder="Nova categoria..."/>
+              <button class="btn btn-primary btn-sm" onclick="addCadastro('categorias','novo-categoria')">+</button>
+            </div>
+            <div id="lista-categorias"></div>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -1239,7 +1256,15 @@ function adminNav(sec, btn) {
   if (sec==='chamados') loadChamados();
   if (sec==='usuarios') loadUsuarios();
   if (sec==='dashboard') loadDashboard();
-  if (sec==='config') { preencherFormConfig(); loadCadastros(); }
+  if (sec==='config') { preencherFormConfig(); loadCadastros(); switchConfigTab('sla', document.querySelector('#config-chips .chip')); }
+}
+
+function switchConfigTab(tab, chip) {
+  document.querySelectorAll('#config-chips .chip').forEach(c=>c.classList.remove('active'));
+  if (chip) chip.classList.add('active');
+  document.querySelectorAll('.config-tab').forEach(el=>el.style.display='none');
+  document.getElementById('cfgtab-'+tab).style.display = 'block';
+  document.getElementById('cfg-save-row').style.display = (tab==='sla'||tab==='horarios') ? 'block' : 'none';
 }
 
 // ── DASHBOARD ────────────────────────────────
