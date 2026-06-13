@@ -183,11 +183,22 @@ tr:hover td{background:rgba(255,255,255,.02);}
 @media print {
   body * { visibility: hidden; }
   #print-area, #print-area * { visibility: visible; }
-  #print-area { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; color: #000; background: #fff; }
-  #print-area .pi-row { margin-bottom: 8px; font-size: 13px; }
-  #print-area .pi-label { font-weight: 700; }
-  #print-area h2 { margin-bottom: 12px; }
+  #print-area { position: absolute; top: 0; left: 0; width: 100%; padding: 24px; color: #000; background: #fff; font-family: Arial, sans-serif; }
 }
+#print-area { display: none; }
+#print-area .os-header { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #000; padding-bottom:10px; margin-bottom:14px; }
+#print-area .os-header h1 { font-size:18px; margin:0; }
+#print-area .os-header .os-num { font-size:14px; font-weight:700; text-align:right; }
+#print-area .os-section { margin-bottom:14px; }
+#print-area .os-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; border-bottom:1px solid #999; margin-bottom:6px; padding-bottom:2px; }
+#print-area .os-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 16px; font-size:12px; }
+#print-area .os-grid div b { display:inline-block; min-width:80px; }
+#print-area .os-box { font-size:12px; border:1px solid #ccc; border-radius:4px; padding:8px; min-height:50px; white-space:pre-wrap; }
+#print-area .os-comment { border-bottom:1px solid #eee; padding:6px 0; font-size:12px; }
+#print-area .os-comment b { color:#333; }
+#print-area .os-sign { display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:40px; }
+#print-area .os-sign div { border-top:1px solid #000; padding-top:4px; text-align:center; font-size:12px; }
+#print-area .os-footer { margin-top:20px; font-size:10px; color:#777; text-align:center; border-top:1px solid #ccc; padding-top:6px; }
 
 /* ── MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
@@ -1880,26 +1891,106 @@ async function addComentario() {
 function imprimirChamado() {
   const c = currentDetalhe;
   if (!c) return;
-  const prioL = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
-  const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando',resolvido:'Resolvido'};
-  const comentariosHtml = (c.comentarios||[]).map(cm=>`
-    <div class="pi-row"><span class="pi-label">${cm.autor==='admin'?'Suporte TI':(cm.nome||'Usuário')} (${new Date(cm.data).toLocaleString('pt-BR')}):</span><br>${cm.texto}</div>
-  `).join('') || '<div class="pi-row">Sem comentários.</div>';
+  const prioL = {critico:'🔴 Crítico',alto:'🟠 Alto',medio:'🔵 Médio',baixo:'🟢 Baixo'};
+  const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando usuário',resolvido:'Resolvido'};
+
+  // Identifica o atendente (último comentário do admin)
+  const comentarios = c.comentarios || [];
+  const comentariosAdmin = comentarios.filter(cm=>cm.autor==='admin');
+  const atendente = comentariosAdmin.length ? comentariosAdmin[comentariosAdmin.length-1].nome : '—';
+
+  const avaliacao = c.avaliacao ? JSON.parse(c.avaliacao) : null;
+  const resolvidoL = {sim:'Sim, totalmente',parcial:'Parcialmente',nao:'Não foi resolvido'};
+  const tempoL = {rapido:'Muito rápido',ok:'Dentro do esperado',lento:'Demorou mais que o esperado'};
+
+  const comentariosHtml = comentarios.length ? comentarios.map(cm=>`
+    <div class="os-comment"><b>${cm.autor==='admin'?'🛠️ Suporte TI — '+(cm.nome||''):'👤 '+(cm.nome||'Usuário')}</b>
+    &nbsp;<span style="color:#999;">(${new Date(cm.data).toLocaleString('pt-BR')})</span><br>${cm.texto}</div>
+  `).join('') : '<div class="os-comment">Nenhum comentário registrado.</div>';
+
+  const anexosHtml = (c.anexos && c.anexos.length)
+    ? `<div class="os-section"><div class="os-title">Anexos</div><div style="font-size:12px;">${c.anexos.length} imagem(ns) anexada(s) — consulte o sistema online.</div></div>`
+    : '';
+
+  const avaliacaoHtml = avaliacao ? `
+    <div class="os-section">
+      <div class="os-title">Avaliação do atendimento</div>
+      <div class="os-grid">
+        <div><b>Nota:</b> ${'⭐'.repeat(avaliacao.nota)} (${avaliacao.nota}/5)</div>
+        <div><b>Resolvido:</b> ${resolvidoL[avaliacao.resolvido]||'—'}</div>
+        <div><b>Tempo de atendimento:</b> ${tempoL[avaliacao.tempo]||'—'}</div>
+      </div>
+      ${avaliacao.comentario ? `<div class="os-box" style="margin-top:6px;">${avaliacao.comentario}</div>` : ''}
+    </div>` : '';
 
   document.getElementById('print-area').innerHTML = `
-    <h2>Chamado ${c.ticket_num} — E-INFO Consultoria</h2>
-    <div class="pi-row"><span class="pi-label">Assunto:</span> ${c.titulo}</div>
-    <div class="pi-row"><span class="pi-label">Solicitante:</span> ${c.nome_solicitante||'—'}</div>
-    <div class="pi-row"><span class="pi-label">Empresa:</span> ${c.empresa||'—'} &nbsp; <span class="pi-label">Área:</span> ${c.departamento||'—'}</div>
-    <div class="pi-row"><span class="pi-label">Categoria:</span> ${c.categoria||'—'} &nbsp; <span class="pi-label">Prioridade:</span> ${prioL[c.prioridade]||c.prioridade}</div>
-    <div class="pi-row"><span class="pi-label">Status:</span> ${statusL[c.status]||c.status}</div>
-    <div class="pi-row"><span class="pi-label">Aberto em:</span> ${new Date(c.criado_em).toLocaleString('pt-BR')}</div>
-    <div class="pi-row"><span class="pi-label">Descrição:</span><br>${c.descricao}</div>
-    <hr/>
-    <div class="pi-row"><span class="pi-label">Comentários / Tratativas:</span></div>
-    ${comentariosHtml}
+    <div class="os-header">
+      <div>
+        <h1>ORDEM DE SERVIÇO — SUPORTE TI</h1>
+        <div style="font-size:12px;margin-top:4px;">E-INFO Consultoria</div>
+      </div>
+      <div class="os-num">
+        Ticket: ${c.ticket_num}<br>
+        Emitido em: ${new Date().toLocaleString('pt-BR')}
+      </div>
+    </div>
+
+    <div class="os-section">
+      <div class="os-title">Dados do Solicitante</div>
+      <div class="os-grid">
+        <div><b>Nome:</b> ${c.nome_solicitante||'—'}</div>
+        <div><b>Empresa:</b> ${c.empresa||'—'}</div>
+        <div><b>Área/Depto:</b> ${c.departamento||'—'}</div>
+        <div><b>Contato:</b> ${c.ramal||'—'}</div>
+      </div>
+    </div>
+
+    <div class="os-section">
+      <div class="os-title">Dados do Chamado</div>
+      <div class="os-grid">
+        <div><b>Assunto:</b> ${c.titulo}</div>
+        <div><b>Categoria:</b> ${c.categoria||'—'}</div>
+        <div><b>Prioridade:</b> ${prioL[c.prioridade]||c.prioridade}</div>
+        <div><b>Status:</b> ${statusL[c.status]||c.status}</div>
+        <div><b>Abertura:</b> ${new Date(c.criado_em).toLocaleString('pt-BR')}</div>
+        <div><b>Última atualização:</b> ${c.atualizado_em ? new Date(c.atualizado_em).toLocaleString('pt-BR') : '—'}</div>
+      </div>
+    </div>
+
+    <div class="os-section">
+      <div class="os-title">Descrição do Serviço / Problema</div>
+      <div class="os-box">${c.descricao}</div>
+    </div>
+
+    ${anexosHtml}
+
+    <div class="os-section">
+      <div class="os-title">Atendimento / Tratativas</div>
+      ${comentariosHtml}
+    </div>
+
+    <div class="os-section">
+      <div class="os-title">Dados do Atendente Responsável</div>
+      <div class="os-grid">
+        <div><b>Nome:</b> ${atendente}</div>
+        <div><b>Empresa:</b> E-INFO Consultoria</div>
+      </div>
+    </div>
+
+    ${avaliacaoHtml}
+
+    <div class="os-sign">
+      <div>Assinatura do Solicitante</div>
+      <div>Assinatura do Atendente (E-INFO)</div>
+    </div>
+
+    <div class="os-footer">E-INFO Consultoria — Portal de Chamados de TI · Documento gerado eletronicamente</div>
   `;
+
+  const area = document.getElementById('print-area');
+  area.style.display = 'block';
   window.print();
+  setTimeout(()=>{ area.style.display = 'none'; }, 500);
 }
 
 // ── START ────────────────────────────────────
