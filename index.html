@@ -200,6 +200,11 @@ tr:hover td{background:rgba(255,255,255,.02);}
 #print-area .os-sign div { border-top:1px solid #000; padding-top:4px; text-align:center; font-size:12px; }
 #print-area .os-footer { margin-top:20px; font-size:10px; color:#777; text-align:center; border-top:1px solid #ccc; padding-top:6px; }
 
+/* ── CADASTROS ── */
+.cad-item{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:6px;font-size:13px;}
+.cad-del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:14px;line-height:1;transition:color .15s;}
+.cad-del:hover{color:#f87171;}
+
 /* ── MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal-overlay.open{display:flex;}
@@ -343,13 +348,6 @@ tr:hover td{background:rgba(255,255,255,.02);}
               <label>Empresa <span class="req">*</span></label>
               <select id="c-empresa">
                 <option value="">Selecionar...</option>
-                <option>Martins Import</option>
-                <option>Zucatelli Brasil</option>
-                <option>Hotel Prive do Atalaia</option>
-                <option>Rent a Car</option>
-                <option>Mobilidade Elétrica</option>
-                <option>Martins Auto Service</option>
-                <option>E-INFO Consultoria</option>
               </select>
               <div class="field-err" id="err-empresa">Selecione a empresa</div>
             </div>
@@ -357,18 +355,6 @@ tr:hover td{background:rgba(255,255,255,.02);}
               <label>Área <span class="req">*</span></label>
               <select id="c-area">
                 <option value="">Selecionar...</option>
-                <option>Informática / TI</option>
-                <option>Financeiro</option>
-                <option>Recursos Humanos</option>
-                <option>Vendas</option>
-                <option>Pós Venda</option>
-                <option>Contábil / Fiscal</option>
-                <option>Marketing</option>
-                <option>Administrativo</option>
-                <option>Diretoria</option>
-                <option>Recepção / Atendimento</option>
-                <option>Manutenção</option>
-                <option>Outro</option>
               </select>
               <div class="field-err" id="err-area">Selecione a área</div>
             </div>
@@ -391,14 +377,6 @@ tr:hover td{background:rgba(255,255,255,.02);}
             <label>Tipo de Categoria <span class="req">*</span></label>
             <select id="c-cat">
               <option value="">Selecionar...</option>
-              <option>Infraestrutura (Rede, Internet, Servidor)</option>
-              <option>Hardware (Desktop, Notebook, Impressora e Periféricos)</option>
-              <option>Software (Sistema, ERP, DMS, Apps)</option>
-              <option>Acesso e Segurança (Senha, VPN, Permissão)</option>
-              <option>Dúvidas e Procedimentos Operacionais</option>
-              <option>Telecomunicações (Ramal, PABX, Chip)</option>
-              <option>Câmeras e Segurança Física</option>
-              <option>Outros</option>
             </select>
             <div class="field-err" id="err-cat">Selecione o tipo de categoria</div>
           </div>
@@ -510,6 +488,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <button class="sb-btn active" onclick="adminNav('chamados',this)"><span class="sb-icon">📋</span> Chamados</button>
       <button class="sb-btn" onclick="adminNav('usuarios',this)"><span class="sb-icon">👥</span> Usuários</button>
       <button class="sb-btn" onclick="adminNav('config',this)"><span class="sb-icon">⚙️</span> Configurações</button>
+      <button class="sb-btn" onclick="adminNav('cadastros',this)"><span class="sb-icon">🗂️</span> Cadastros</button>
       <span class="sb-section">Ações</span>
       <button class="sb-btn" onclick="showPage('chamado')"><span class="sb-icon">➕</span> Novo chamado</button>
     </div>
@@ -612,7 +591,10 @@ tr:hover td{background:rgba(255,255,255,.02);}
         <div class="tbl-wrap">
           <div class="tbl-header">
             <span style="font-size:14px;font-weight:500;">Chamados</span>
-            <input class="tbl-search" placeholder="Buscar..." oninput="buscarChamados(this.value)" id="search-chamados"/>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input class="tbl-search" placeholder="Buscar..." oninput="buscarChamados(this.value)" id="search-chamados"/>
+              <button class="btn btn-ghost btn-sm" onclick="exportarChamadosCSV()">📥 Exportar CSV</button>
+            </div>
           </div>
           <table>
             <thead>
@@ -708,6 +690,41 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
         <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
         <p id="config-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Configurações salvas com sucesso!</p>
+      </div>
+
+      <!-- CADASTROS -->
+      <div class="admin-section" id="sec-cadastros">
+        <div class="admin-title">Cadastros</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+
+          <div class="tbl-wrap" style="padding:18px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">🏢 Empresas</div>
+            <div style="display:flex;gap:6px;margin-bottom:12px;">
+              <input type="text" id="novo-empresa" placeholder="Nova empresa..."/>
+              <button class="btn btn-primary btn-sm" onclick="addCadastro('empresas','novo-empresa')">+</button>
+            </div>
+            <div id="lista-empresas"></div>
+          </div>
+
+          <div class="tbl-wrap" style="padding:18px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">📍 Áreas</div>
+            <div style="display:flex;gap:6px;margin-bottom:12px;">
+              <input type="text" id="novo-area" placeholder="Nova área..."/>
+              <button class="btn btn-primary btn-sm" onclick="addCadastro('areas','novo-area')">+</button>
+            </div>
+            <div id="lista-areas"></div>
+          </div>
+
+          <div class="tbl-wrap" style="padding:18px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">🗂️ Tipos de Categoria</div>
+            <div style="display:flex;gap:6px;margin-bottom:12px;">
+              <input type="text" id="novo-categoria" placeholder="Nova categoria..."/>
+              <button class="btn btn-primary btn-sm" onclick="addCadastro('categorias','novo-categoria')">+</button>
+            </div>
+            <div id="lista-categorias"></div>
+          </div>
+
+        </div>
       </div>
 
     </div>
@@ -891,6 +908,7 @@ async function loadPerfil(user) {
   }
   currentPerfil = data;
   updateTopbar(data);
+  await popularSelectsFormulario();
   if (data.role === 'admin') {
     showPage('admin');
     loadAdminData();
@@ -1222,6 +1240,7 @@ function adminNav(sec, btn) {
   if (sec==='usuarios') loadUsuarios();
   if (sec==='dashboard') loadDashboard();
   if (sec==='config') preencherFormConfig();
+  if (sec==='cadastros') loadCadastros();
 }
 
 // ── DASHBOARD ────────────────────────────────
@@ -1991,6 +2010,120 @@ function imprimirChamado() {
   area.style.display = 'block';
   window.print();
   setTimeout(()=>{ area.style.display = 'none'; }, 500);
+}
+
+// ── CADASTROS (Empresas / Áreas / Categorias) ──
+let CADASTROS = { empresas: [], areas: [], categorias: [] };
+
+async function loadCadastrosLists() {
+  for (const tabela of ['empresas','areas','categorias']) {
+    const { data } = await sb.from(tabela).select('*').order('nome');
+    CADASTROS[tabela] = data || [];
+  }
+}
+
+async function loadCadastros() {
+  await loadCadastrosLists();
+  renderCadastroLista('empresas');
+  renderCadastroLista('areas');
+  renderCadastroLista('categorias');
+}
+
+function renderCadastroLista(tabela) {
+  const container = document.getElementById('lista-'+tabela);
+  const items = CADASTROS[tabela];
+  if (!items.length) { container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhum item cadastrado.</p>'; return; }
+  container.innerHTML = items.map(i => `
+    <div class="cad-item">
+      <span>${i.nome}</span>
+      <button class="cad-del" onclick="delCadastro('${tabela}','${i.id}')">✕</button>
+    </div>`).join('');
+}
+
+async function addCadastro(tabela, inputId) {
+  const input = document.getElementById(inputId);
+  const nome = input.value.trim();
+  if (!nome) return;
+  const { error } = await sb.from(tabela).insert({ nome });
+  if (error) {
+    showToast(error.message.includes('duplicate') ? 'Esse item já existe.' : 'Erro ao adicionar.','err');
+    return;
+  }
+  input.value = '';
+  await loadCadastrosLists();
+  renderCadastroLista(tabela);
+  await popularSelectsFormulario();
+  showToast('Item adicionado!','ok');
+}
+
+async function delCadastro(tabela, id) {
+  if (!confirm('Remover este item?')) return;
+  await sb.from(tabela).delete().eq('id', id);
+  await loadCadastrosLists();
+  renderCadastroLista(tabela);
+  await popularSelectsFormulario();
+  showToast('Item removido!','ok');
+}
+
+// Popula os selects do formulário de chamado com dados dinâmicos
+async function popularSelectsFormulario() {
+  if (!CADASTROS.empresas.length && !CADASTROS.areas.length && !CADASTROS.categorias.length) {
+    await loadCadastrosLists();
+  }
+  const map = { 'c-empresa': 'empresas', 'c-area': 'areas', 'c-cat': 'categorias' };
+  Object.entries(map).forEach(([selectId, tabela]) => {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    const atual = sel.value;
+    const opts = CADASTROS[tabela].map(i=>`<option value="${i.nome}">${i.nome}</option>`).join('');
+    sel.innerHTML = `<option value="">Selecionar...</option>${opts}`;
+    if (atual) sel.value = atual;
+  });
+}
+
+// ── EXPORTAÇÃO CSV ───────────────────────────
+function exportarChamadosCSV() {
+  if (!allChamados.length) { showToast('Nenhum chamado para exportar.','err'); return; }
+  const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando',resolvido:'Resolvido'};
+  const prioL = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
+
+  const headers = ['Ticket','Assunto','Descrição','Categoria','Prioridade','Status','Solicitante','Empresa','Área/Depto','Contato','Aberto em','Atualizado em','Atendente','Comentários','Nota Avaliação','Avaliação - Resolvido','Avaliação - Tempo','Avaliação - Comentário','SLA'];
+
+  const csvEscape = (v) => {
+    if (v === null || v === undefined) return '';
+    const s = String(v).replace(/"/g,'""');
+    return `"${s}"`;
+  };
+
+  const rows = allChamados.map(c => {
+    const comentariosAdmin = (c.comentarios||[]).filter(cm=>cm.autor==='admin');
+    const atendente = comentariosAdmin.length ? comentariosAdmin[comentariosAdmin.length-1].nome : '';
+    const comentariosTxt = (c.comentarios||[]).map(cm=>`${cm.autor==='admin'?'TI':'Usuário'} (${cm.nome||''}) - ${new Date(cm.data).toLocaleString('pt-BR')}: ${cm.texto}`).join(' | ');
+    const aval = c.avaliacao ? JSON.parse(c.avaliacao) : null;
+    const slaTxt = slaInfo(c).html.replace(/<[^>]+>/g,'');
+
+    return [
+      c.ticket_num, c.titulo, c.descricao, c.categoria, prioL[c.prioridade]||c.prioridade, statusL[c.status]||c.status,
+      c.nome_solicitante, c.empresa, c.departamento, c.ramal,
+      new Date(c.criado_em).toLocaleString('pt-BR'),
+      c.atualizado_em ? new Date(c.atualizado_em).toLocaleString('pt-BR') : '',
+      atendente, comentariosTxt,
+      aval?.nota || '', aval?.resolvido || '', aval?.tempo || '', aval?.comentario || '',
+      slaTxt
+    ].map(csvEscape).join(';');
+  });
+
+  const csv = '\uFEFF' + headers.map(csvEscape).join(';') + '\n' + rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `chamados_einfo_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Relatório exportado!','ok');
 }
 
 // ── START ────────────────────────────────────
