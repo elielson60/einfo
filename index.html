@@ -337,6 +337,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
   <div class="form-page">
     <div class="form-wrap">
       <div class="form-header">
+        <button class="btn btn-ghost btn-sm" id="btn-voltar-chamado" onclick="voltarDoChamado()" style="margin-bottom:14px;display:none;">← Voltar</button>
         <h1 class="form-title">Abrir chamado de suporte Informática</h1>
         <p class="form-sub">Descreva o problema com o máximo de detalhes possível.</p>
       </div>
@@ -1055,6 +1056,7 @@ async function loadPerfil(user) {
     } else {
       showPage('chamado');
       fillPerfil(data);
+      atualizarBotaoVoltar();
     }
   }
 }
@@ -1073,6 +1075,7 @@ function irParaNovoChamado() {
   }
   novoChamado();
   showPage('chamado');
+  atualizarBotaoVoltar();
 }
 
 function updateTopbar(p) {
@@ -2439,6 +2442,27 @@ async function verificarMuralAvisos() {
 
 function closeMural() {
   document.getElementById('modal-mural').classList.remove('open');
+}
+
+// ── NAVEGAÇÃO VOLTAR ─────────────────────────
+function voltarDoChamado() {
+  if (currentPerfil && currentPerfil.role === 'admin') {
+    showPage('admin');
+    loadAdminData();
+  } else {
+    showPage('meus-chamados');
+    loadMeusChamados();
+  }
+}
+
+function atualizarBotaoVoltar() {
+  const btn = document.getElementById('btn-voltar-chamado');
+  if (!btn) return;
+  if (currentPerfil && (currentPerfil.role === 'admin' || allMeusChamados.length > 0)) {
+    btn.style.display = 'inline-flex';
+  } else {
+    btn.style.display = 'none';
+  }
 }
 
 // ── START ────────────────────────────────────
