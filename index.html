@@ -200,6 +200,16 @@ tr:hover td{background:rgba(255,255,255,.02);}
 #print-area .os-sign div { border-top:1px solid #000; padding-top:4px; text-align:center; font-size:12px; }
 #print-area .os-footer { margin-top:20px; font-size:10px; color:#777; text-align:center; border-top:1px solid #ccc; padding-top:6px; }
 
+/* ── AVISOS ── */
+.aviso-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:8px;}
+.aviso-item-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px;}
+.aviso-item-title{font-size:13px;font-weight:500;}
+.aviso-item-msg{font-size:12px;color:var(--muted);white-space:pre-wrap;}
+.aviso-item-meta{font-size:11px;color:var(--dim);margin-top:6px;}
+.mural-card{background:var(--surface2);border:1px solid var(--accent-b);border-left:3px solid var(--accent);border-radius:var(--r-sm);padding:14px;margin-bottom:10px;}
+.mural-card h4{font-size:14px;margin-bottom:4px;}
+.mural-card p{font-size:13px;color:var(--muted);white-space:pre-wrap;line-height:1.6;}
+
 /* ── CADASTROS ── */
 .cad-item{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:6px;font-size:13px;}
 .cad-del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:14px;line-height:1;transition:color .15s;}
@@ -648,6 +658,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <span class="chip" onclick="switchConfigTab('empresas',this)">🏢 Empresas</span>
           <span class="chip" onclick="switchConfigTab('areas',this)">📍 Áreas</span>
           <span class="chip" onclick="switchConfigTab('categorias',this)">🗂️ Categorias</span>
+          <span class="chip" onclick="switchConfigTab('avisos',this)">📢 Avisos</span>
         </div>
 
         <div class="config-tab" id="cfgtab-sla">
@@ -742,8 +753,60 @@ tr:hover td{background:rgba(255,255,255,.02);}
           </div>
         </div>
 
+        <div class="config-tab" id="cfgtab-avisos" style="display:none;">
+          <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📢 Novo aviso no mural</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Avisos ativos aparecem para todos os usuários ao entrarem no sistema.</div>
+
+            <input type="hidden" id="aviso-id"/>
+            <div class="field">
+              <label>Título</label>
+              <input type="text" id="aviso-titulo" placeholder="Ex: Manutenção programada"/>
+            </div>
+            <div class="field">
+              <label>Mensagem</label>
+              <textarea id="aviso-mensagem" placeholder="Escreva o aviso que será exibido no mural..." style="min-height:90px;"></textarea>
+            </div>
+            <div class="grid2">
+              <div class="field">
+                <label>Início da exibição (opcional)</label>
+                <input type="date" id="aviso-inicio"/>
+              </div>
+              <div class="field">
+                <label>Fim da exibição (opcional)</label>
+                <input type="date" id="aviso-fim"/>
+              </div>
+            </div>
+            <div class="field" style="display:flex;align-items:center;gap:8px;">
+              <input type="checkbox" id="aviso-ativo" checked style="width:auto;"/>
+              <label style="margin:0;text-transform:none;font-size:13px;">Exibir mensagem (ativo)</label>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-primary" onclick="salvarAviso()">💾 Salvar aviso</button>
+              <button class="btn btn-ghost" onclick="limparFormAviso()">Novo / Limpar</button>
+            </div>
+          </div>
+
+          <div class="tbl-wrap" style="padding:18px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">Avisos cadastrados</div>
+            <div id="lista-avisos"></div>
+          </div>
+        </div>
+
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- MURAL DE AVISOS -->
+<div class="modal-overlay" id="modal-mural">
+  <div class="modal">
+    <button class="modal-close" onclick="closeMural()">✕</button>
+    <div class="modal-title">📢 Mural de Avisos</div>
+    <div id="mural-lista"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:14px;">
+      <button class="btn btn-primary" onclick="closeMural()">Entendi</button>
     </div>
   </div>
 </div>
@@ -980,6 +1043,7 @@ async function loadPerfil(user) {
   currentPerfil = data;
   updateTopbar(data);
   await popularSelectsFormulario();
+  verificarMuralAvisos();
   if (data.role === 'admin') {
     showPage('admin');
     loadAdminData();
@@ -1310,7 +1374,7 @@ function adminNav(sec, btn) {
   if (sec==='chamados') loadChamados();
   if (sec==='usuarios') loadUsuarios();
   if (sec==='dashboard') loadDashboard();
-  if (sec==='config') { preencherFormConfig(); loadCadastros(); switchConfigTab('sla', document.querySelector('#config-chips .chip')); }
+  if (sec==='config') { preencherFormConfig(); loadCadastros(); loadAvisosAdmin(); limparFormAviso(); switchConfigTab('sla', document.querySelector('#config-chips .chip')); }
 }
 
 function switchConfigTab(tab, chip) {
@@ -2273,6 +2337,108 @@ function exportarChamadosCSV() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   showToast('Relatório exportado!','ok');
+}
+
+// ── AVISOS (Mural) ───────────────────────────
+async function loadAvisosAdmin() {
+  const { data } = await sb.from('avisos').select('*').order('criado_em',{ascending:false});
+  renderAvisosAdmin(data || []);
+}
+
+function renderAvisosAdmin(list) {
+  const container = document.getElementById('lista-avisos');
+  if (!list.length) { container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhum aviso cadastrado.</p>'; return; }
+  container.innerHTML = list.map(a => {
+    const periodo = (a.data_inicio || a.data_fim)
+      ? `${a.data_inicio ? new Date(a.data_inicio+'T00:00:00').toLocaleDateString('pt-BR') : '—'} até ${a.data_fim ? new Date(a.data_fim+'T00:00:00').toLocaleDateString('pt-BR') : '—'}`
+      : 'Sempre';
+    return `<div class="aviso-item">
+      <div class="aviso-item-head">
+        <span class="aviso-item-title">${a.titulo}</span>
+        <span class="badge ${a.ativo?'b-resolvido':'b-aguardando'}">${a.ativo?'Ativo':'Inativo'}</span>
+      </div>
+      <div class="aviso-item-msg">${a.mensagem}</div>
+      <div class="aviso-item-meta">📅 ${periodo}</div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button class="btn btn-ghost btn-sm" onclick="editarAviso('${a.id}')">✎ Editar</button>
+        <button class="btn btn-ghost btn-sm" style="color:#f87171;border-color:rgba(239,68,68,.35);" onclick="excluirAviso('${a.id}')">✕ Excluir</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function limparFormAviso() {
+  document.getElementById('aviso-id').value = '';
+  document.getElementById('aviso-titulo').value = '';
+  document.getElementById('aviso-mensagem').value = '';
+  document.getElementById('aviso-inicio').value = '';
+  document.getElementById('aviso-fim').value = '';
+  document.getElementById('aviso-ativo').checked = true;
+}
+
+async function editarAviso(id) {
+  const { data } = await sb.from('avisos').select('*').eq('id',id).single();
+  if (!data) return;
+  document.getElementById('aviso-id').value = data.id;
+  document.getElementById('aviso-titulo').value = data.titulo || '';
+  document.getElementById('aviso-mensagem').value = data.mensagem || '';
+  document.getElementById('aviso-inicio').value = data.data_inicio || '';
+  document.getElementById('aviso-fim').value = data.data_fim || '';
+  document.getElementById('aviso-ativo').checked = !!data.ativo;
+}
+
+async function salvarAviso() {
+  const id = document.getElementById('aviso-id').value;
+  const titulo = document.getElementById('aviso-titulo').value.trim();
+  const mensagem = document.getElementById('aviso-mensagem').value.trim();
+  if (!titulo || !mensagem) { showToast('Preencha título e mensagem.','err'); return; }
+
+  const payload = {
+    titulo, mensagem,
+    data_inicio: document.getElementById('aviso-inicio').value || null,
+    data_fim: document.getElementById('aviso-fim').value || null,
+    ativo: document.getElementById('aviso-ativo').checked
+  };
+
+  if (id) {
+    await sb.from('avisos').update(payload).eq('id', id);
+  } else {
+    await sb.from('avisos').insert(payload);
+  }
+
+  limparFormAviso();
+  loadAvisosAdmin();
+  showToast('Aviso salvo!','ok');
+}
+
+async function excluirAviso(id) {
+  if (!confirm('Excluir este aviso?')) return;
+  await sb.from('avisos').delete().eq('id', id);
+  loadAvisosAdmin();
+  showToast('Aviso excluído!','ok');
+}
+
+// Verifica e exibe avisos ativos no login
+async function verificarMuralAvisos() {
+  const hoje = new Date().toISOString().slice(0,10);
+  const { data } = await sb.from('avisos').select('*').eq('ativo', true);
+  const ativos = (data || []).filter(a => {
+    if (a.data_inicio && hoje < a.data_inicio) return false;
+    if (a.data_fim && hoje > a.data_fim) return false;
+    return true;
+  });
+  if (!ativos.length) return;
+
+  document.getElementById('mural-lista').innerHTML = ativos.map(a => `
+    <div class="mural-card">
+      <h4>${a.titulo}</h4>
+      <p>${a.mensagem}</p>
+    </div>`).join('');
+  document.getElementById('modal-mural').classList.add('open');
+}
+
+function closeMural() {
+  document.getElementById('modal-mural').classList.remove('open');
 }
 
 // ── START ────────────────────────────────────
