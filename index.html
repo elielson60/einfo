@@ -431,7 +431,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
         <p style="font-size:13px;color:var(--muted);max-width:360px;line-height:1.7;">O time de TI foi notificado e já está ciente do seu chamado.</p>
         <div class="ticket-box" id="ticket-box">—</div>
         <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;justify-content:center;">
-        <button class="btn btn-ghost" onclick="novoChamado()">Abrir outro chamado</button>
+        <button class="btn btn-ghost" onclick="irParaNovoChamado()">Abrir outro chamado</button>
         <button class="btn btn-ghost" onclick="showPage('meus-chamados');loadMeusChamados();">📋 Meus chamados</button>
         <button class="btn btn-primary" id="btn-painel" onclick="irParaPainel()" style="display:none;">Ver painel admin</button>
       </div>
@@ -447,7 +447,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <span class="sb-section">Meu painel</span>
       <button class="sb-btn active" onclick=""><span class="sb-icon">📋</span> Meus chamados</button>
       <span class="sb-section">Ações</span>
-      <button class="sb-btn" onclick="novoChamado();showPage('chamado')"><span class="sb-icon">➕</span> Novo chamado</button>
+      <button class="sb-btn" onclick="irParaNovoChamado()"><span class="sb-icon">➕</span> Novo chamado</button>
     </div>
     <div class="admin-content">
       <div class="admin-title">Meus chamados</div>
@@ -884,11 +884,31 @@ async function loadPerfil(user) {
     showPage('admin');
     loadAdminData();
   } else {
-    showPage('chamado');
-    fillPerfil(data);
-    // load meus chamados in background
-    loadMeusChamados();
+    await loadMeusChamados();
+    const pendente = getAvaliacaoPendente();
+    if (pendente) {
+      showPage('meus-chamados');
+    } else {
+      showPage('chamado');
+      fillPerfil(data);
+    }
   }
+}
+
+function getAvaliacaoPendente() {
+  return allMeusChamados.find(c => c.status === 'resolvido' && !c.avaliacao) || null;
+}
+
+function irParaNovoChamado() {
+  const pendente = getAvaliacaoPendente();
+  if (pendente) {
+    showPage('meus-chamados');
+    showToast('Avalie seu chamado anterior antes de abrir um novo.','err');
+    setTimeout(()=>openModalAval(pendente.id), 300);
+    return;
+  }
+  novoChamado();
+  showPage('chamado');
 }
 
 function updateTopbar(p) {
@@ -1896,12 +1916,12 @@ function irParaPainel() {
           showPage('admin');
           loadAdminData();
         } else {
-          novoChamado();
+          irParaNovoChamado();
         }
       }
     });
   } else {
-    novoChamado();
+    irParaNovoChamado();
   }
 }
 init();
