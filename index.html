@@ -596,7 +596,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
             <span style="font-size:14px;font-weight:500;">Chamados</span>
             <div style="display:flex;gap:8px;align-items:center;">
               <input class="tbl-search" placeholder="Buscar..." oninput="buscarChamados(this.value)" id="search-chamados"/>
-              <button class="btn btn-ghost btn-sm" onclick="exportarChamadosCSV()">📥 Exportar CSV</button>
+              <button class="btn btn-ghost btn-sm" id="btn-exportar-csv" onclick="exportarChamadosCSV()" style="display:none;">📥 Exportar CSV</button>
             </div>
           </div>
           <table>
@@ -654,6 +654,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <span class="chip" onclick="switchConfigTab('categorias',this)">🗂️ Categorias</span>
           <span class="chip" onclick="switchConfigTab('avisos',this)">📢 Avisos</span>
           <span class="chip" onclick="switchConfigTab('status',this)">📌 Status</span>
+          <span class="chip" onclick="switchConfigTab('permissoes',this)">🔐 Permissões</span>
         </div>
 
         <div class="config-tab" id="cfgtab-sla">
@@ -773,6 +774,14 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <div class="tbl-wrap" style="padding:18px;">
             <div style="font-size:14px;font-weight:500;margin-bottom:10px;">Status cadastrados</div>
             <div id="lista-status"></div>
+          </div>
+        </div>
+
+        <div class="config-tab" id="cfgtab-permissoes" style="display:none;">
+          <div class="tbl-wrap" style="padding:18px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🔐 Permissões de acesso</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Defina quais recursos extras cada atendente pode acessar. Administradores sempre têm acesso total.</div>
+            <div id="lista-permissoes"></div>
           </div>
         </div>
 
@@ -1402,7 +1411,7 @@ function adminNav(sec, btn) {
   if (sec==='chamados') loadChamados();
   if (sec==='usuarios') loadUsuarios();
   if (sec==='dashboard') loadDashboard();
-  if (sec==='config') { preencherFormConfig(); loadCadastros(); loadAvisosAdmin(); limparFormAviso(); renderStatusAdmin(); limparFormStatus(); switchConfigTab('sla', document.querySelector('#config-chips .chip')); }
+  if (sec==='config') { preencherFormConfig(); loadCadastros(); loadAvisosAdmin(); limparFormAviso(); renderStatusAdmin(); limparFormStatus(); renderPermissoes(); switchConfigTab('sla', document.querySelector('#config-chips .chip')); }
 }
 
 function switchConfigTab(tab, chip) {
@@ -1951,6 +1960,12 @@ function configurarSidebarPorRole(perfil) {
   const sbConfig = document.getElementById('sb-config');
   if (sbUsuarios) sbUsuarios.style.display = isAdmin ? 'flex' : 'none';
   if (sbConfig) sbConfig.style.display = isAdmin ? 'flex' : 'none';
+
+  const btnExport = document.getElementById('btn-exportar-csv');
+  if (btnExport) {
+    const podeExportar = isAdmin || perfil.pode_exportar === true;
+    btnExport.style.display = podeExportar ? 'inline-flex' : 'none';
+  }
 }
 
 function popularChipsStatus() {
@@ -1973,6 +1988,41 @@ function statusBadgeHtml(chave) {
   const cor = s?.cor || '#7a7a8c';
   const nome = s?.nome || chave;
   return `<span class="badge" style="background:${cor}22;color:${cor};border-color:${cor}55;">${nome}</span>`;
+}
+
+// ── PERMISSÕES ────────────────────────────────
+async function renderPermissoes() {
+  const container = document.getElementById('lista-permissoes');
+  const { data } = await sb.from('perfis').select('*').eq('role','atendente').order('nome');
+  const atendentes = data || [];
+  if (!atendentes.length) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhum atendente cadastrado ainda. Crie um usuário e defina o perfil "Atendente" em Usuários.</p>';
+    return;
+  }
+  container.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;margin-bottom:8px;padding:0 10px;">
+      <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;">Atendente</div>
+      <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;">Departamentos</div>
+      <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;">📥 Exportar relatórios (CSV)</div>
+    </div>
+  ` + atendentes.map(u => `
+    <div class="cad-item" style="display:grid;grid-template-columns:1fr 1fr auto;align-items:center;">
+      <span>${u.nome}</span>
+      <span style="font-size:12px;color:var(--muted);">${(u.departamentos||[]).join(', ')||'—'}</span>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin:0;text-transform:none;font-size:12px;">
+        <input type="checkbox" style="width:auto;" ${u.pode_exportar?'checked':''} onchange="togglePermissaoExport('${u.id}',this.checked)"/>
+        Permitir
+      </label>
+    </div>`).join('');
+}
+
+async function togglePermissaoExport(id, valor) {
+  await sb.from('perfis').update({ pode_exportar: valor }).eq('id', id);
+  showToast('Permissão atualizada!','ok');
+  if (currentPerfil && currentPerfil.id === id) {
+    currentPerfil.pode_exportar = valor;
+    configurarSidebarPorRole(currentPerfil);
+  }
 }
 
 // ── CRUD STATUS DE CHAMADO ───────────────────
