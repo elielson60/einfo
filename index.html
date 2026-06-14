@@ -1451,12 +1451,8 @@ function setSlaKpi(numId, cardId, pct, base) {
 }
 
 async function loadDashboard() {
-  let query = sb.from('chamados').select('*').order('criado_em',{ascending:false});
-  if (currentPerfil?.role === 'atendente') {
-    query = query.in('departamento', currentPerfil.departamentos && currentPerfil.departamentos.length ? currentPerfil.departamentos : ['__nenhum__']);
-  }
-  const { data } = await query;
-  const list = data || [];
+  const { data } = await sb.from('chamados').select('*').order('criado_em',{ascending:false});
+  const list = filtrarChamadosPorAtendente(data || []);
 
   // KPIs
   document.getElementById('dk-total').textContent = list.length;
@@ -1621,13 +1617,20 @@ function renderMonthChart(containerId, list) {
 
 async function loadAdminData() { await loadChamados(); }
 
+function filtrarChamadosPorAtendente(list) {
+  if (currentPerfil?.role !== 'atendente') return list;
+  const deps = currentPerfil.departamentos || [];
+  const cats = currentPerfil.categorias || [];
+  return list.filter(c => {
+    const okDep = !deps.length || deps.includes(c.departamento);
+    const okCat = !cats.length || cats.includes(c.categoria);
+    return okDep && okCat;
+  });
+}
+
 async function loadChamados() {
-  let query = sb.from('chamados').select('*').order('criado_em',{ascending:false});
-  if (currentPerfil?.role === 'atendente') {
-    query = query.in('departamento', currentPerfil.departamentos && currentPerfil.departamentos.length ? currentPerfil.departamentos : ['__nenhum__']);
-  }
-  const { data } = await query;
-  allChamados = data || [];
+  const { data } = await sb.from('chamados').select('*').order('criado_em',{ascending:false});
+  allChamados = filtrarChamadosPorAtendente(data || []);
   renderChamados(allChamados);
   updateStats(allChamados);
 }
@@ -2003,7 +2006,7 @@ function statusBadgeHtml(chave) {
 // ── ATENDENTES POR DEPARTAMENTO ───────────────
 async function renderAtendentesDeptos() {
   const container = document.getElementById('lista-atendentes-deptos');
-  if (!CADASTROS.areas.length) await loadCadastrosLists();
+  await loadCadastrosLists();
   const { data } = await sb.from('perfis').select('*').eq('role','atendente').order('nome');
   const atendentes = data || [];
 
@@ -2011,29 +2014,41 @@ async function renderAtendentesDeptos() {
     container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhum atendente cadastrado ainda. Crie um usuário em "Usuários" e defina o perfil como "Atendente".</p>';
     return;
   }
-  if (!CADASTROS.areas.length) {
-    container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhuma área cadastrada. Adicione áreas na aba "📍 Áreas".</p>';
+  if (!CADASTROS.areas.length && !CADASTROS.categorias.length) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhuma área ou categoria cadastrada. Adicione em "📍 Áreas" ou "🗂️ Categorias".</p>';
     return;
   }
 
   container.innerHTML = atendentes.map(u => `
     <div class="cad-item" style="display:block;padding:12px;">
-      <div style="font-size:13px;font-weight:500;margin-bottom:8px;">${u.nome} <span style="color:var(--dim);font-size:11px;font-weight:400;">${u.email}</span></div>
+      <div style="font-size:13px;font-weight:500;margin-bottom:10px;">${u.nome} <span style="color:var(--dim);font-size:11px;font-weight:400;">${u.email}</span></div>
+
+      <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">📍 Áreas atendidas <span style="font-weight:400;text-transform:none;">(vazio = todas)</span></div>
       <div class="aval-opt" id="atd-depts-${u.id}">
         ${CADASTROS.areas.map(a => `
           <button type="button" class="aval-btn ${ (u.departamentos||[]).includes(a.nome) ? 'sel' : '' }" data-dept="${a.nome}" onclick="this.classList.toggle('sel')">${a.nome}</button>
         `).join('')}
       </div>
+
+      <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px;">🗂️ Categorias exclusivas <span style="font-weight:400;text-transform:none;">(vazio = todas)</span></div>
+      <div class="aval-opt" id="atd-cats-${u.id}">
+        ${CADASTROS.categorias.map(c => `
+          <button type="button" class="aval-btn ${ (u.categorias||[]).includes(c.nome) ? 'sel' : '' }" data-cat="${c.nome}" onclick="this.classList.toggle('sel')">${c.nome}</button>
+        `).join('')}
+      </div>
+
       <button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="salvarDeptosAtendente('${u.id}')">💾 Salvar</button>
     </div>`).join('');
 }
 
 async function salvarDeptosAtendente(id) {
   const departamentos = Array.from(document.querySelectorAll(`#atd-depts-${id} .aval-btn.sel`)).map(b=>b.dataset.dept);
-  await sb.from('perfis').update({ departamentos }).eq('id', id);
-  showToast('Áreas atualizadas!','ok');
+  const categorias = Array.from(document.querySelectorAll(`#atd-cats-${id} .aval-btn.sel`)).map(b=>b.dataset.cat);
+  await sb.from('perfis').update({ departamentos, categorias }).eq('id', id);
+  showToast('Vínculos atualizados!','ok');
   if (currentPerfil && currentPerfil.id === id) {
     currentPerfil.departamentos = departamentos;
+    currentPerfil.categorias = categorias;
   }
 }
 
