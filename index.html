@@ -949,8 +949,8 @@ tr:hover td{background:rgba(255,255,255,.02);}
     </div>
     <div class="grid2">
       <div class="field">
-        <label>Empresa</label>
-        <input type="text" id="usu-empresa"/>
+        <label>Organização</label>
+        <select id="usu-empresa"></select>
       </div>
       <div class="field">
         <label>Área (perfil)</label>
@@ -1725,7 +1725,14 @@ async function openModalUsuario(id) {
   document.getElementById('usu-nome').value = u.nome || '';
   document.getElementById('usu-email').value = u.email || '';
   document.getElementById('usu-ramal').value = u.ramal || '';
-  document.getElementById('usu-empresa').value = u.empresa || '';
+
+  // Popular select de organização
+  if (!CADASTROS.empresas.length) await loadCadastrosLists();
+  const selEmpresa = document.getElementById('usu-empresa');
+  const optsEmpresa = CADASTROS.empresas.map(i=>`<option value="${i.nome}">${i.nome}</option>`).join('');
+  selEmpresa.innerHTML = `<option value="">Selecionar...</option>${optsEmpresa}`;
+  selEmpresa.value = u.empresa || '';
+
   document.getElementById('usu-departamento').value = u.departamento || '';
   document.getElementById('usu-role').value = u.role || 'usuario';
 
