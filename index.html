@@ -309,6 +309,12 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <input type="text" id="r-nome" placeholder="João Silva"/>
         </div>
         <div class="field">
+          <label>Organização <span class="req">*</span></label>
+          <select id="r-empresa">
+            <option value="">Selecionar...</option>
+          </select>
+        </div>
+        <div class="field">
           <label>Telefone / WhatsApp <span class="req">*</span></label>
           <input type="tel" id="r-ramal" placeholder="(92) 99999-0000"/>
         </div>
@@ -353,22 +359,13 @@ tr:hover td{background:rgba(255,255,255,.02);}
         </div>
 
         <div class="card">
-          <div class="card-lbl">Identificação</div>
-          <div class="grid2">
-            <div class="field">
-              <label>Empresa <span class="req">*</span></label>
-              <select id="c-empresa">
-                <option value="">Selecionar...</option>
-              </select>
-              <div class="field-err" id="err-empresa">Selecione a empresa</div>
-            </div>
-            <div class="field">
-              <label>Área <span class="req">*</span></label>
-              <select id="c-area">
-                <option value="">Selecionar...</option>
-              </select>
-              <div class="field-err" id="err-area">Selecione a área</div>
-            </div>
+          <div class="card-lbl">Novo Chamado</div>
+          <div class="field">
+            <label>Área <span class="req">*</span></label>
+            <select id="c-area">
+              <option value="">Selecionar...</option>
+            </select>
+            <div class="field-err" id="err-area">Selecione a área</div>
           </div>
         </div>
 
@@ -1041,10 +1038,19 @@ let selectedPrio = '';
 
 // ── INIT ─────────────────────────────────────
 async function init() {
+  await loadCadastrosLists();
+  popularSelectRempresa();
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     await loadPerfil(session.user);
   }
+}
+
+function popularSelectRempresa() {
+  const sel = document.getElementById('r-empresa');
+  if (!sel) return;
+  const opts = CADASTROS.empresas.map(i=>`<option value="${i.nome}">${i.nome}</option>`).join('');
+  sel.innerHTML = `<option value="">Selecionar...</option>${opts}`;
 }
 
 async function loadPerfil(user) {
@@ -1196,6 +1202,7 @@ async function doLogin() {
 // ── REGISTER ─────────────────────────────────
 async function doRegister() {
   const nome = document.getElementById('r-nome').value.trim();
+  const empresa = document.getElementById('r-empresa').value;
   const telefone = document.getElementById('r-ramal').value.trim();
   const email = document.getElementById('r-email').value.trim();
   const senha = document.getElementById('r-senha').value;
@@ -1205,7 +1212,7 @@ async function doRegister() {
   const btn = document.getElementById('btn-reg');
 
   err.style.display = 'none'; ok.style.display = 'none';
-  if (!nome||!telefone||!email||!senha) { err.textContent='Preencha todos os campos obrigatórios.'; err.style.display='block'; return; }
+  if (!nome||!empresa||!telefone||!email||!senha) { err.textContent='Preencha todos os campos obrigatórios.'; err.style.display='block'; return; }
   if (senha !== senha2) { err.textContent='As senhas não coincidem.'; err.style.display='block'; return; }
   if (senha.length < 6) { err.textContent='A senha deve ter ao menos 6 caracteres.'; err.style.display='block'; return; }
 
@@ -1223,7 +1230,7 @@ async function doRegister() {
   if (data.user) {
     await sb.from('perfis').insert({
       id: data.user.id, nome, email,
-      empresa: 'Não informado',
+      empresa: empresa,
       departamento: 'Não informado',
       ramal: telefone,
       role: 'usuario'
@@ -1325,11 +1332,9 @@ async function uploadAnexos(ticketNum) {
 async function enviarChamado() {
   const titulo = document.getElementById('c-titulo').value.trim();
   const desc = document.getElementById('c-desc').value.trim();
-  const empresa = document.getElementById('c-empresa').value;
   const area = document.getElementById('c-area').value;
   let ok = true;
   const cat = document.getElementById('c-cat').value;
-  if (!empresa) { document.getElementById('err-empresa').style.display='block'; ok=false; } else document.getElementById('err-empresa').style.display='none';
   if (!area) { document.getElementById('err-area').style.display='block'; ok=false; } else document.getElementById('err-area').style.display='none';
   if (!titulo) { document.getElementById('err-titulo').style.display='block'; ok=false; } else document.getElementById('err-titulo').style.display='none';
   if (!desc) { document.getElementById('err-desc').style.display='block'; ok=false; } else document.getElementById('err-desc').style.display='none';
@@ -1352,7 +1357,7 @@ async function enviarChamado() {
     categoria: cat, prioridade: selectedPrio, status: 'aberto',
     usuario_id: currentUser.id,
     nome_solicitante: currentPerfil?.nome || 'Não identificado',
-    empresa: empresa || currentPerfil?.empresa || 'Não informado',
+    empresa: currentPerfil?.empresa || 'Não informado',
     departamento: area || currentPerfil?.departamento || 'Não informado',
     ramal: currentPerfil.ramal || '',
     ai_analise: '',
@@ -1369,7 +1374,7 @@ async function enviarChamado() {
   const { data: admins } = await sb.from('perfis').select('email,nome').eq('role','admin');
   (admins||[]).forEach(a => {
     enviarEmailNotificacao(a.email, a.nome, ticketNum, titulo,
-      `Novo chamado aberto por ${currentPerfil.nome} (${empresa}/${area}). Prioridade: ${selectedPrio}.`);
+      `Novo chamado aberto por ${currentPerfil.nome} (${currentPerfil.empresa}/${area}). Prioridade: ${selectedPrio}.`);
   });
 
   document.getElementById('chamado-form').style.display = 'none';
@@ -1388,7 +1393,6 @@ function novoChamado() {
   document.getElementById('chamado-success').style.display = 'none';
   document.getElementById('c-cat').value = '';
   document.getElementById('err-cat').style.display = 'none';
-  document.getElementById('c-empresa').value = '';
   document.getElementById('c-area').value = '';
   document.getElementById('c-titulo').value = '';
   document.getElementById('c-desc').value = '';
@@ -2504,7 +2508,7 @@ async function popularSelectsFormulario() {
   if (!CADASTROS.empresas.length && !CADASTROS.areas.length && !CADASTROS.categorias.length) {
     await loadCadastrosLists();
   }
-  const map = { 'c-empresa': 'empresas', 'c-area': 'areas', 'c-cat': 'categorias' };
+  const map = { 'r-empresa': 'empresas', 'c-area': 'areas', 'c-cat': 'categorias' };
   Object.entries(map).forEach(([selectId, tabela]) => {
     const sel = document.getElementById(selectId);
     if (!sel) return;
