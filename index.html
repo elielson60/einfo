@@ -459,10 +459,6 @@ tr:hover td{background:rgba(255,255,255,.02);}
       </div>
       <div class="chips" id="mu-chips">
         <span class="chip active" onclick="filterMeus('todos',this)">Todos</span>
-        <span class="chip" onclick="filterMeus('aberto',this)">Aberto</span>
-        <span class="chip" onclick="filterMeus('andamento',this)">Em andamento</span>
-        <span class="chip" onclick="filterMeus('aguardando',this)">Aguardando</span>
-        <span class="chip" onclick="filterMeus('resolvido',this)">Resolvido</span>
       </div>
       <div class="tbl-wrap">
         <div class="tbl-header">
@@ -593,10 +589,6 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
         <div class="chips" id="filter-chips">
           <span class="chip active" onclick="filterChamados('todos',this)">Todos</span>
-          <span class="chip" onclick="filterChamados('aberto',this)">Aberto</span>
-          <span class="chip" onclick="filterChamados('andamento',this)">Em andamento</span>
-          <span class="chip" onclick="filterChamados('aguardando',this)">Aguardando</span>
-          <span class="chip" onclick="filterChamados('resolvido',this)">Resolvido</span>
         </div>
 
         <div class="tbl-wrap">
@@ -661,6 +653,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <span class="chip" onclick="switchConfigTab('areas',this)">📍 Áreas</span>
           <span class="chip" onclick="switchConfigTab('categorias',this)">🗂️ Categorias</span>
           <span class="chip" onclick="switchConfigTab('avisos',this)">📢 Avisos</span>
+          <span class="chip" onclick="switchConfigTab('status',this)">📌 Status</span>
         </div>
 
         <div class="config-tab" id="cfgtab-sla">
@@ -752,6 +745,34 @@ tr:hover td{background:rgba(255,255,255,.02);}
               <button class="btn btn-primary btn-sm" onclick="addCadastro('categorias','novo-categoria')">+</button>
             </div>
             <div id="lista-categorias"></div>
+          </div>
+        </div>
+
+        <div class="config-tab" id="cfgtab-status" style="display:none;">
+          <div class="tbl-wrap" style="padding:18px;margin-bottom:16px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📌 Status de chamado</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Crie, edite ou remova os status disponíveis para os chamados. Os 4 status padrão do sistema não podem ser excluídos.</div>
+
+            <input type="hidden" id="status-id"/>
+            <div class="grid2" style="align-items:flex-end;">
+              <div class="field">
+                <label>Nome do status</label>
+                <input type="text" id="status-nome" placeholder="Ex: Aguardando aprovação"/>
+              </div>
+              <div class="field">
+                <label>Cor</label>
+                <input type="color" id="status-cor" value="#4f8cff" style="height:40px;padding:4px;cursor:pointer;"/>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-primary" onclick="salvarStatusCadastro()">💾 Salvar status</button>
+              <button class="btn btn-ghost" onclick="limparFormStatus()">Novo / Limpar</button>
+            </div>
+          </div>
+
+          <div class="tbl-wrap" style="padding:18px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">Status cadastrados</div>
+            <div id="lista-status"></div>
           </div>
         </div>
 
@@ -944,12 +965,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <input type="hidden" id="modal-id"/>
     <div class="field">
       <label>Status</label>
-      <select id="modal-status-val">
-        <option value="aberto">Aberto</option>
-        <option value="andamento">Em andamento</option>
-        <option value="aguardando">Aguardando usuário</option>
-        <option value="resolvido">Resolvido</option>
-      </select>
+      <select id="modal-status-val"></select>
     </div>
     <div style="display:flex;gap:10px;margin-top:20px;">
       <button class="btn btn-primary" onclick="salvarStatus()">Salvar</button>
@@ -1020,6 +1036,8 @@ async function init() {
 async function loadPerfil(user) {
   currentUser = user;
   await loadConfig();
+  await loadStatusList();
+  popularChipsStatus();
   const { data, error } = await sb.from('perfis').select('*').eq('id', user.id).single();
   if (error || !data) {
     // perfil nao encontrado — tenta inserir perfil basico
@@ -1378,7 +1396,7 @@ function adminNav(sec, btn) {
   if (sec==='chamados') loadChamados();
   if (sec==='usuarios') loadUsuarios();
   if (sec==='dashboard') loadDashboard();
-  if (sec==='config') { preencherFormConfig(); loadCadastros(); loadAvisosAdmin(); limparFormAviso(); switchConfigTab('sla', document.querySelector('#config-chips .chip')); }
+  if (sec==='config') { preencherFormConfig(); loadCadastros(); loadAvisosAdmin(); limparFormAviso(); renderStatusAdmin(); limparFormStatus(); switchConfigTab('sla', document.querySelector('#config-chips .chip')); }
 }
 
 function switchConfigTab(tab, chip) {
@@ -1506,25 +1524,19 @@ function renderBarChart(containerId, data, colors) {
 }
 
 function renderStatusChart(containerId, list) {
-  const statuses = {
-    'Aberto': list.filter(c=>c.status==='aberto').length,
-    'Em andamento': list.filter(c=>c.status==='andamento').length,
-    'Aguardando': list.filter(c=>c.status==='aguardando').length,
-    'Resolvido': list.filter(c=>c.status==='resolvido').length
-  };
-  const colors = {'Aberto':'#4f8cff','Em andamento':'#f59e0b','Aguardando':'#7a7a8c','Resolvido':'#3ecf8e'};
   const container = document.getElementById(containerId);
   if(!container) return;
   const total = list.length || 1;
-  container.innerHTML = Object.entries(statuses).map(([label,count]) => {
+  container.innerHTML = STATUS_LIST.map(s => {
+    const count = list.filter(c=>c.status===s.chave).length;
     const pct = Math.round((count/total)*100);
     return `<div style="margin-bottom:12px;">
       <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-        <span style="font-size:12px;color:var(--text);">${label}</span>
+        <span style="font-size:12px;color:var(--text);">${s.nome}</span>
         <span style="font-size:12px;font-weight:500;color:var(--muted);">${count} <span style="color:var(--dim)">(${pct}%)</span></span>
       </div>
       <div style="background:var(--surface3);border-radius:4px;height:10px;overflow:hidden;">
-        <div style="width:${pct}%;height:100%;background:${colors[label]};border-radius:4px;transition:width .5s;"></div>
+        <div style="width:${pct}%;height:100%;background:${s.cor};border-radius:4px;transition:width .5s;"></div>
       </div>
     </div>`;
   }).join('');
@@ -1605,8 +1617,7 @@ function renderChamados(list) {
   if (!list.length) { tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:30px;">Nenhum chamado encontrado</td></tr>'; return; }
   const prioE = {critico:'🔴',alto:'🟠',medio:'🔵',baixo:'🟢'};
   const prioL = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
-  const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando',resolvido:'Resolvido'};
-  tb.innerHTML = list.map(c=>`
+    tb.innerHTML = list.map(c=>`
     <tr>
       <td><span style="font-family:var(--mono);font-size:11px;color:var(--accent);">${c.ticket_num}</span></td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${c.titulo}">${c.titulo}</td>
@@ -1614,7 +1625,7 @@ function renderChamados(list) {
       <td style="font-size:12px;">${c.empresa||'—'}</td>
       <td><span class="badge b-${c.prioridade}">${prioE[c.prioridade]||''} ${prioL[c.prioridade]||c.prioridade}</span></td>
       <td>${slaInfo(c).html}</td>
-      <td><span class="badge b-${c.status}">${statusL[c.status]||c.status}</span></td>
+      <td>${statusBadgeHtml(c.status)}</td>
       <td>${c.anexos && c.anexos.length ? c.anexos.map(url=>`<a href="${url}" target="_blank"><img src="${url}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;margin-right:3px;border:1px solid var(--border);" title="Ver imagem"/></a>`).join('') : '<span style="color:var(--dim);font-size:11px;">—</span>'}</td>
       <td style="display:flex;gap:6px;">
         <button class="btn btn-ghost btn-sm" onclick="openModalDetalhe('${c.id}')">👁 Ver</button>
@@ -1723,7 +1734,9 @@ async function toggleAtivoUsuario(id, ativo) {
 // ── MODAL STATUS ─────────────────────────────
 function openModal(id, status) {
   document.getElementById('modal-id').value = id;
-  document.getElementById('modal-status-val').value = status;
+  const sel = document.getElementById('modal-status-val');
+  sel.innerHTML = STATUS_LIST.map(s=>`<option value="${s.chave}">${s.nome}</option>`).join('');
+  sel.value = status;
   document.getElementById('modal-status').classList.add('open');
 }
 function closeModal() { document.getElementById('modal-status').classList.remove('open'); }
@@ -1740,10 +1753,9 @@ async function salvarStatus() {
   if (ticket) {
     const { data: perfil } = await sb.from('perfis').select('email,nome').eq('id', ticket.usuario_id).single();
     if (perfil?.email) {
-      const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando',resolvido:'Resolvido'};
-      enviarEmailNotificacao(
+            enviarEmailNotificacao(
         perfil.email, perfil.nome, ticket.ticket_num, ticket.titulo,
-        `O status do seu chamado foi atualizado para: ${statusL[status]||status}.`
+        `O status do seu chamado foi atualizado para: ${statusLabel(status)}.`
       );
     }
   }
@@ -1801,8 +1813,7 @@ function renderMeusChamados(list) {
   if (!list.length) { tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:30px;">Nenhum chamado encontrado</td></tr>'; return; }
   const prioE = {critico:'🔴',alto:'🟠',medio:'🔵',baixo:'🟢'};
   const prioL = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
-  const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando',resolvido:'Resolvido'};
-  tb.innerHTML = list.map(c => {
+    tb.innerHTML = list.map(c => {
     const data = new Date(c.criado_em).toLocaleDateString('pt-BR');
     const avalBtn = c.status==='resolvido' && !c.avaliacao
       ? `<button class="btn btn-ghost btn-sm" style="font-size:11px;color:#fbbf24;border-color:rgba(245,158,11,.4);" onclick="openModalAval('${c.id}')">⭐ Avaliar</button>`
@@ -1813,7 +1824,7 @@ function renderMeusChamados(list) {
       <td style="font-size:12px;">${c.empresa||'—'}</td>
       <td><span class="badge b-${c.prioridade}">${prioE[c.prioridade]||''} ${prioL[c.prioridade]||c.prioridade}</span></td>
       <td>${slaInfo(c).html}</td>
-      <td><span class="badge b-${c.status}">${statusL[c.status]||c.status}</span></td>
+      <td>${statusBadgeHtml(c.status)}</td>
       <td style="font-size:12px;color:var(--muted);">${data}</td>
       <td>${avalBtn}</td>
       <td><button class="btn btn-ghost btn-sm" onclick="openModalDetalhe('${c.id}')">👁 Ver</button></td>
@@ -1882,6 +1893,118 @@ async function salvarAvaliacao() {
   closeModalAval();
   showToast('✅ Avaliação enviada! Obrigado pelo feedback.','ok');
   loadMeusChamados();
+}
+
+// ── STATUS DE CHAMADO ─────────────────────────
+let STATUS_LIST = [];
+let STATUS_MAP = {};
+
+async function loadStatusList() {
+  const { data } = await sb.from('status_chamado').select('*').order('ordem');
+  STATUS_LIST = data || [];
+  STATUS_MAP = {};
+  STATUS_LIST.forEach(s => STATUS_MAP[s.chave] = s);
+}
+
+function statusLabel(chave) {
+  return STATUS_MAP[chave]?.nome || chave;
+}
+
+function popularChipsStatus() {
+  // Meus chamados
+  const muChips = document.getElementById('mu-chips');
+  if (muChips) {
+    muChips.innerHTML = '<span class="chip active" onclick="filterMeus(\'todos\',this)">Todos</span>' +
+      STATUS_LIST.map(s=>`<span class="chip" onclick="filterMeus('${s.chave}',this)">${s.nome}</span>`).join('');
+  }
+  // Admin chamados
+  const adChips = document.getElementById('filter-chips');
+  if (adChips) {
+    adChips.innerHTML = '<span class="chip active" onclick="filterChamados(\'todos\',this)">Todos</span>' +
+      STATUS_LIST.map(s=>`<span class="chip" onclick="filterChamados('${s.chave}',this)">${s.nome}</span>`).join('');
+  }
+}
+
+function statusBadgeHtml(chave) {
+  const s = STATUS_MAP[chave];
+  const cor = s?.cor || '#7a7a8c';
+  const nome = s?.nome || chave;
+  return `<span class="badge" style="background:${cor}22;color:${cor};border-color:${cor}55;">${nome}</span>`;
+}
+
+// ── CRUD STATUS DE CHAMADO ───────────────────
+function renderStatusAdmin() {
+  const container = document.getElementById('lista-status');
+  if (!STATUS_LIST.length) { container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhum status cadastrado.</p>'; return; }
+  container.innerHTML = STATUS_LIST.map(s => `
+    <div class="cad-item">
+      <span style="display:flex;align-items:center;gap:8px;">
+        <span style="width:14px;height:14px;border-radius:4px;background:${s.cor};display:inline-block;border:1px solid var(--border2);"></span>
+        ${s.nome}
+        ${s.sistema ? '<span style="font-size:10px;color:var(--dim);font-family:var(--mono);">· padrão</span>' : ''}
+      </span>
+      <span style="display:flex;gap:8px;">
+        <button class="cad-del" onclick="editarStatusCadastro('${s.id}')" title="Editar">✎</button>
+        ${s.sistema ? '' : `<button class="cad-del" onclick="excluirStatusCadastro('${s.id}')" title="Excluir">✕</button>`}
+      </span>
+    </div>`).join('');
+}
+
+function limparFormStatus() {
+  document.getElementById('status-id').value = '';
+  document.getElementById('status-nome').value = '';
+  document.getElementById('status-cor').value = '#4f8cff';
+}
+
+function editarStatusCadastro(id) {
+  const s = STATUS_LIST.find(x=>x.id===id);
+  if (!s) return;
+  document.getElementById('status-id').value = s.id;
+  document.getElementById('status-nome').value = s.nome;
+  document.getElementById('status-cor').value = s.cor || '#4f8cff';
+}
+
+async function salvarStatusCadastro() {
+  const id = document.getElementById('status-id').value;
+  const nome = document.getElementById('status-nome').value.trim();
+  const cor = document.getElementById('status-cor').value;
+  if (!nome) { showToast('Informe o nome do status.','err'); return; }
+
+  if (id) {
+    await sb.from('status_chamado').update({ nome, cor }).eq('id', id);
+  } else {
+    const chave = slugify(nome);
+    const { error } = await sb.from('status_chamado').insert({
+      chave, nome, cor, ordem: STATUS_LIST.length, sistema: false
+    });
+    if (error) {
+      showToast(error.message.includes('duplicate') ? 'Já existe um status com esse nome.' : 'Erro ao adicionar.','err');
+      return;
+    }
+  }
+
+  await loadStatusList();
+  renderStatusAdmin();
+  popularChipsStatus();
+  limparFormStatus();
+  showToast('Status salvo!','ok');
+}
+
+async function excluirStatusCadastro(id) {
+  const s = STATUS_LIST.find(x=>x.id===id);
+  if (s?.sistema) { showToast('Status padrão do sistema não pode ser excluído.','err'); return; }
+  if (!confirm(`Excluir o status "${s?.nome}"?`)) return;
+  await sb.from('status_chamado').delete().eq('id', id);
+  await loadStatusList();
+  renderStatusAdmin();
+  popularChipsStatus();
+  showToast('Status excluído!','ok');
+}
+
+function slugify(txt) {
+  return txt.toString().toLowerCase().trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
 }
 
 // ── SLA ──────────────────────────────────────
@@ -2008,15 +2131,14 @@ function openModalDetalhe(id) {
   currentDetalhe = c;
 
   const prioL = {critico:'🔴 Crítico',alto:'🟠 Alto',medio:'🔵 Médio',baixo:'🟢 Baixo'};
-  const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando',resolvido:'Resolvido'};
-  const dataAbertura = new Date(c.criado_em).toLocaleString('pt-BR');
+    const dataAbertura = new Date(c.criado_em).toLocaleString('pt-BR');
 
   document.getElementById('det-titulo').textContent = `${c.ticket_num} — ${c.titulo}`;
   document.getElementById('det-info').innerHTML = `
     <div><strong style="color:var(--text)">Solicitante:</strong> ${c.nome_solicitante||'—'}</div>
     <div><strong style="color:var(--text)">Empresa:</strong> ${c.empresa||'—'} &nbsp;·&nbsp; <strong style="color:var(--text)">Área:</strong> ${c.departamento||'—'}</div>
     <div><strong style="color:var(--text)">Categoria:</strong> ${c.categoria||'—'} &nbsp;·&nbsp; <strong style="color:var(--text)">Prioridade:</strong> ${prioL[c.prioridade]||c.prioridade}</div>
-    <div><strong style="color:var(--text)">Status:</strong> ${statusL[c.status]||c.status} &nbsp;·&nbsp; <strong style="color:var(--text)">Aberto em:</strong> ${dataAbertura}</div>
+    <div><strong style="color:var(--text)">Status:</strong> ${statusLabel(c.status)} &nbsp;·&nbsp; <strong style="color:var(--text)">Aberto em:</strong> ${dataAbertura}</div>
   `;
   document.getElementById('det-sla').innerHTML = slaInfo(c).html;
   document.getElementById('det-desc').textContent = c.descricao || '';
@@ -2098,7 +2220,6 @@ function imprimirChamado() {
   const c = currentDetalhe;
   if (!c) return;
   const prioL = {critico:'🔴 Crítico',alto:'🟠 Alto',medio:'🔵 Médio',baixo:'🟢 Baixo'};
-  const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando usuário',resolvido:'Resolvido'};
 
   // Identifica o atendente (último comentário do admin)
   const comentarios = c.comentarios || [];
@@ -2157,7 +2278,7 @@ function imprimirChamado() {
         <div><b>Assunto:</b> ${c.titulo}</div>
         <div><b>Categoria:</b> ${c.categoria||'—'}</div>
         <div><b>Prioridade:</b> ${prioL[c.prioridade]||c.prioridade}</div>
-        <div><b>Status:</b> ${statusL[c.status]||c.status}</div>
+        <div><b>Status:</b> ${statusLabel(c.status)}</div>
         <div><b>Abertura:</b> ${new Date(c.criado_em).toLocaleString('pt-BR')}</div>
         <div><b>Última atualização:</b> ${c.atualizado_em ? new Date(c.atualizado_em).toLocaleString('pt-BR') : '—'}</div>
       </div>
@@ -2301,8 +2422,7 @@ async function popularSelectsFormulario() {
 // ── EXPORTAÇÃO CSV ───────────────────────────
 function exportarChamadosCSV() {
   if (!allChamados.length) { showToast('Nenhum chamado para exportar.','err'); return; }
-  const statusL = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando',resolvido:'Resolvido'};
-  const prioL = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
+    const prioL = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
 
   const headers = ['Ticket','Assunto','Descrição','Categoria','Prioridade','Status','Solicitante','Empresa','Área/Depto','Contato','Aberto em','Atualizado em','Atendente','Comentários','Nota Avaliação','Avaliação - Resolvido','Avaliação - Tempo','Avaliação - Comentário','SLA'];
 
@@ -2320,7 +2440,7 @@ function exportarChamadosCSV() {
     const slaTxt = slaInfo(c).html.replace(/<[^>]+>/g,'');
 
     return [
-      c.ticket_num, c.titulo, c.descricao, c.categoria, prioL[c.prioridade]||c.prioridade, statusL[c.status]||c.status,
+      c.ticket_num, c.titulo, c.descricao, c.categoria, prioL[c.prioridade]||c.prioridade, statusLabel(c.status),
       c.nome_solicitante, c.empresa, c.departamento, c.ramal,
       new Date(c.criado_em).toLocaleString('pt-BR'),
       c.atualizado_em ? new Date(c.atualizado_em).toLocaleString('pt-BR') : '',
