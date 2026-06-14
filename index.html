@@ -654,6 +654,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <span class="chip" onclick="switchConfigTab('categorias',this)">🗂️ Categorias</span>
           <span class="chip" onclick="switchConfigTab('avisos',this)">📢 Avisos</span>
           <span class="chip" onclick="switchConfigTab('status',this)">📌 Status</span>
+          <span class="chip" onclick="switchConfigTab('atendentes',this)">👤 Atendentes</span>
         </div>
 
         <div class="config-tab" id="cfgtab-sla">
@@ -773,6 +774,14 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <div class="tbl-wrap" style="padding:18px;">
             <div style="font-size:14px;font-weight:500;margin-bottom:10px;">Status cadastrados</div>
             <div id="lista-status"></div>
+          </div>
+        </div>
+
+        <div class="config-tab" id="cfgtab-atendentes" style="display:none;">
+          <div class="tbl-wrap" style="padding:18px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">👤 Atendentes por Departamento</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Selecione os departamentos que cada atendente é responsável por atender. Eles verão apenas os chamados abertos para esses departamentos.</div>
+            <div id="lista-atendentes-deptos"></div>
           </div>
         </div>
 
@@ -1402,7 +1411,7 @@ function adminNav(sec, btn) {
   if (sec==='chamados') loadChamados();
   if (sec==='usuarios') loadUsuarios();
   if (sec==='dashboard') loadDashboard();
-  if (sec==='config') { preencherFormConfig(); loadCadastros(); loadAvisosAdmin(); limparFormAviso(); renderStatusAdmin(); limparFormStatus(); switchConfigTab('sla', document.querySelector('#config-chips .chip')); }
+  if (sec==='config') { preencherFormConfig(); loadCadastros(); loadAvisosAdmin(); limparFormAviso(); renderStatusAdmin(); limparFormStatus(); renderAtendentesDeptos(); switchConfigTab('sla', document.querySelector('#config-chips .chip')); }
 }
 
 function switchConfigTab(tab, chip) {
@@ -1978,6 +1987,43 @@ function statusBadgeHtml(chave) {
   const cor = s?.cor || '#7a7a8c';
   const nome = s?.nome || chave;
   return `<span class="badge" style="background:${cor}22;color:${cor};border-color:${cor}55;">${nome}</span>`;
+}
+
+// ── ATENDENTES POR DEPARTAMENTO ───────────────
+async function renderAtendentesDeptos() {
+  const container = document.getElementById('lista-atendentes-deptos');
+  if (!CADASTROS.areas.length) await loadCadastrosLists();
+  const { data } = await sb.from('perfis').select('*').eq('role','atendente').order('nome');
+  const atendentes = data || [];
+
+  if (!atendentes.length) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhum atendente cadastrado ainda. Crie um usuário em "Usuários" e defina o perfil como "Atendente".</p>';
+    return;
+  }
+  if (!CADASTROS.areas.length) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhum departamento cadastrado. Adicione departamentos na aba "📍 Departamentos".</p>';
+    return;
+  }
+
+  container.innerHTML = atendentes.map(u => `
+    <div class="cad-item" style="display:block;padding:12px;">
+      <div style="font-size:13px;font-weight:500;margin-bottom:8px;">${u.nome} <span style="color:var(--dim);font-size:11px;font-weight:400;">${u.email}</span></div>
+      <div class="aval-opt" id="atd-depts-${u.id}">
+        ${CADASTROS.areas.map(a => `
+          <button type="button" class="aval-btn ${ (u.departamentos||[]).includes(a.nome) ? 'sel' : '' }" data-dept="${a.nome}" onclick="this.classList.toggle('sel')">${a.nome}</button>
+        `).join('')}
+      </div>
+      <button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="salvarDeptosAtendente('${u.id}')">💾 Salvar</button>
+    </div>`).join('');
+}
+
+async function salvarDeptosAtendente(id) {
+  const departamentos = Array.from(document.querySelectorAll(`#atd-depts-${id} .aval-btn.sel`)).map(b=>b.dataset.dept);
+  await sb.from('perfis').update({ departamentos }).eq('id', id);
+  showToast('Departamentos atualizados!','ok');
+  if (currentPerfil && currentPerfil.id === id) {
+    currentPerfil.departamentos = departamentos;
+  }
 }
 
 // ── CRUD STATUS DE CHAMADO ───────────────────
