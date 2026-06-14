@@ -363,11 +363,11 @@ tr:hover td{background:rgba(255,255,255,.02);}
               <div class="field-err" id="err-empresa">Selecione a empresa</div>
             </div>
             <div class="field">
-              <label>Área <span class="req">*</span></label>
+              <label>Departamento <span class="req">*</span></label>
               <select id="c-area">
                 <option value="">Selecionar...</option>
               </select>
-              <div class="field-err" id="err-area">Selecione a área</div>
+              <div class="field-err" id="err-area">Selecione o departamento</div>
             </div>
           </div>
         </div>
@@ -494,8 +494,8 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <span class="sb-section">Visão geral</span>
       <button class="sb-btn" onclick="adminNav('dashboard',this)"><span class="sb-icon">📊</span> Dashboard</button>
       <button class="sb-btn active" onclick="adminNav('chamados',this)"><span class="sb-icon">📋</span> Chamados</button>
-      <button class="sb-btn" onclick="adminNav('usuarios',this)"><span class="sb-icon">👥</span> Usuários</button>
-      <button class="sb-btn" onclick="adminNav('config',this)"><span class="sb-icon">⚙️</span> Administração</button>
+      <button class="sb-btn" id="sb-usuarios" onclick="adminNav('usuarios',this)"><span class="sb-icon">👥</span> Usuários</button>
+      <button class="sb-btn" id="sb-config" onclick="adminNav('config',this)"><span class="sb-icon">⚙️</span> Administração</button>
       <span class="sb-section">Ações</span>
       <button class="sb-btn" onclick="showPage('chamado');novoChamado();atualizarBotaoVoltar();"><span class="sb-icon">➕</span> Novo chamado</button>
     </div>
@@ -553,9 +553,9 @@ tr:hover td{background:rgba(255,255,255,.02);}
             <div style="font-size:14px;font-weight:500;margin-bottom:16px;">🗂️ Chamados por categoria</div>
             <div id="chart-cat"></div>
           </div>
-          <!-- Por Área/Departamento -->
+          <!-- Por Departamento -->
           <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">🏢 Chamados por área</div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">🏢 Chamados por departamento</div>
             <div id="chart-area"></div>
           </div>
         </div>
@@ -650,7 +650,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <span class="chip active" onclick="switchConfigTab('sla',this)">⏰ SLA</span>
           <span class="chip" onclick="switchConfigTab('horarios',this)">🕒 Horários</span>
           <span class="chip" onclick="switchConfigTab('empresas',this)">🏢 Empresas</span>
-          <span class="chip" onclick="switchConfigTab('areas',this)">📍 Áreas</span>
+          <span class="chip" onclick="switchConfigTab('areas',this)">📍 Departamentos</span>
           <span class="chip" onclick="switchConfigTab('categorias',this)">🗂️ Categorias</span>
           <span class="chip" onclick="switchConfigTab('avisos',this)">📢 Avisos</span>
           <span class="chip" onclick="switchConfigTab('status',this)">📌 Status</span>
@@ -726,8 +726,8 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
         <div class="config-tab" id="cfgtab-areas" style="display:none;">
           <div class="tbl-wrap" style="padding:18px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">📍 Áreas</div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Áreas/departamentos disponíveis no formulário de abertura de chamado.</div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">📍 Departamentos</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Departamentos disponíveis no formulário de abertura de chamado e usados para distribuir chamados aos atendentes.</div>
             <div style="display:flex;gap:6px;margin-bottom:12px;max-width:400px;">
               <input type="text" id="novo-area" placeholder="Nova área..."/>
               <button class="btn btn-primary btn-sm" onclick="addCadastro('areas','novo-area')">+</button>
@@ -934,8 +934,9 @@ tr:hover td{background:rgba(255,255,255,.02);}
       </div>
       <div class="field">
         <label>Perfil</label>
-        <select id="usu-role">
+        <select id="usu-role" onchange="toggleAtendenteDepts()">
           <option value="usuario">Usuário</option>
+          <option value="atendente">Atendente</option>
           <option value="admin">Administrador</option>
         </select>
       </div>
@@ -949,6 +950,10 @@ tr:hover td{background:rgba(255,255,255,.02);}
         <label>Departamento</label>
         <input type="text" id="usu-departamento"/>
       </div>
+    </div>
+    <div class="field" id="usu-depts-field" style="display:none;">
+      <label>Departamentos atendidos <span style="color:var(--dim);font-weight:400;">(o atendente verá apenas chamados desses departamentos)</span></label>
+      <div class="aval-opt" id="usu-depts-list"></div>
     </div>
     <div style="display:flex;gap:10px;margin-top:10px;">
       <button class="btn btn-primary" onclick="salvarUsuario()">Salvar</button>
@@ -1064,8 +1069,9 @@ async function loadPerfil(user) {
   updateTopbar(data);
   await popularSelectsFormulario();
   verificarMuralAvisos();
-  if (data.role === 'admin') {
+  if (data.role === 'admin' || data.role === 'atendente') {
     showPage('admin');
+    configurarSidebarPorRole(data);
     loadAdminData();
   } else {
     await loadMeusChamados();
@@ -1102,9 +1108,9 @@ function updateTopbar(p) {
   const ini = p.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
   document.getElementById('tb-avatar').textContent = ini;
   document.getElementById('tb-uname').textContent = p.nome.split(' ')[0];
-  document.getElementById('tb-role').textContent = p.role === 'admin' ? 'admin' : 'usuário';
+  document.getElementById('tb-role').textContent = p.role === 'admin' ? 'admin' : p.role === 'atendente' ? 'atendente' : 'usuário';
   const linkMeus = document.getElementById('btn-meus-link');
-  if (linkMeus) linkMeus.style.display = p.role !== 'admin' ? 'inline-flex' : 'none';
+  if (linkMeus) linkMeus.style.display = (p.role !== 'admin' && p.role !== 'atendente') ? 'inline-flex' : 'none';
 }
 
 function fillPerfil(p) {
@@ -1362,7 +1368,7 @@ async function enviarChamado() {
   ss.style.display = 'flex';
   document.getElementById('ticket-box').textContent = ticketNum + ' — ' + titulo.substring(0,45)+(titulo.length>45?'...':'');
   const btnPainel = document.getElementById('btn-painel');
-  if (btnPainel && currentPerfil && currentPerfil.role === 'admin') {
+  if (btnPainel && currentPerfil && isStaffRole(currentPerfil.role)) {
     btnPainel.style.display = 'inline-flex';
   }
   btn.innerHTML='Abrir chamado →'; btn.disabled=false;
@@ -1432,7 +1438,11 @@ function setSlaKpi(numId, cardId, pct, base) {
 }
 
 async function loadDashboard() {
-  const { data } = await sb.from('chamados').select('*').order('criado_em',{ascending:false});
+  let query = sb.from('chamados').select('*').order('criado_em',{ascending:false});
+  if (currentPerfil?.role === 'atendente') {
+    query = query.in('departamento', currentPerfil.departamentos && currentPerfil.departamentos.length ? currentPerfil.departamentos : ['__nenhum__']);
+  }
+  const { data } = await query;
   const list = data || [];
 
   // KPIs
@@ -1599,7 +1609,11 @@ function renderMonthChart(containerId, list) {
 async function loadAdminData() { await loadChamados(); }
 
 async function loadChamados() {
-  const { data } = await sb.from('chamados').select('*').order('criado_em',{ascending:false});
+  let query = sb.from('chamados').select('*').order('criado_em',{ascending:false});
+  if (currentPerfil?.role === 'atendente') {
+    query = query.in('departamento', currentPerfil.departamentos && currentPerfil.departamentos.length ? currentPerfil.departamentos : ['__nenhum__']);
+  }
+  const { data } = await query;
   allChamados = data || [];
   renderChamados(allChamados);
   updateStats(allChamados);
@@ -1667,9 +1681,9 @@ function renderUsuarios(list) {
       <td style="font-weight:500;">${u.nome}</td>
       <td style="font-size:12px;color:var(--muted);">${u.email}</td>
       <td style="font-size:12px;">${u.empresa||'—'}</td>
-      <td style="font-size:12px;">${u.departamento||'—'}</td>
+      <td style="font-size:12px;">${u.departamento||'—'}${u.role==='atendente' && u.departamentos?.length ? `<br><span style="color:var(--dim);font-size:11px;">${u.departamentos.join(', ')}</span>`:''}</td>
       <td>
-        <span class="badge ${u.role==='admin'?'b-admin':'b-user'}">${u.role}</span>
+        <span class="badge ${u.role==='admin'?'b-admin':u.role==='atendente'?'b-atendente':'b-user'}">${u.role}</span>
         ${u.ativo===false?'<span class="badge" style="background:var(--red-s);color:#f87171;border-color:rgba(239,68,68,.35);margin-left:4px;">Inativo</span>':''}
       </td>
       <td style="display:flex;gap:6px;">
@@ -1691,7 +1705,7 @@ function buscarUsuarios(q) {
   renderUsuarios(filtered);
 }
 
-function openModalUsuario(id) {
+async function openModalUsuario(id) {
   const u = allUsuarios.find(x=>x.id===id);
   if (!u) return;
   document.getElementById('usu-id').value = u.id;
@@ -1701,7 +1715,22 @@ function openModalUsuario(id) {
   document.getElementById('usu-empresa').value = u.empresa || '';
   document.getElementById('usu-departamento').value = u.departamento || '';
   document.getElementById('usu-role').value = u.role || 'usuario';
+
+  // Popular checklist de departamentos
+  if (!CADASTROS.areas.length) await loadCadastrosLists();
+  const atuais = u.departamentos || [];
+  const list = document.getElementById('usu-depts-list');
+  list.innerHTML = CADASTROS.areas.map(a => `
+    <button type="button" class="aval-btn ${atuais.includes(a.nome)?'sel':''}" data-dept="${a.nome}" onclick="this.classList.toggle('sel')">${a.nome}</button>
+  `).join('');
+
+  toggleAtendenteDepts();
   document.getElementById('modal-usuario').classList.add('open');
+}
+
+function toggleAtendenteDepts() {
+  const role = document.getElementById('usu-role').value;
+  document.getElementById('usu-depts-field').style.display = role === 'atendente' ? 'block' : 'none';
 }
 
 function closeModalUsuario() {
@@ -1710,12 +1739,18 @@ function closeModalUsuario() {
 
 async function salvarUsuario() {
   const id = document.getElementById('usu-id').value;
+  const role = document.getElementById('usu-role').value;
+  const departamentos = role === 'atendente'
+    ? Array.from(document.querySelectorAll('#usu-depts-list .aval-btn.sel')).map(b=>b.dataset.dept)
+    : [];
+
   await sb.from('perfis').update({
     nome: document.getElementById('usu-nome').value.trim(),
     ramal: document.getElementById('usu-ramal').value.trim(),
     empresa: document.getElementById('usu-empresa').value.trim(),
     departamento: document.getElementById('usu-departamento').value.trim(),
-    role: document.getElementById('usu-role').value
+    role: role,
+    departamentos: departamentos
   }).eq('id', id);
   closeModalUsuario();
   showToast('Usuário atualizado!','ok');
@@ -1908,6 +1943,14 @@ async function loadStatusList() {
 
 function statusLabel(chave) {
   return STATUS_MAP[chave]?.nome || chave;
+}
+
+function configurarSidebarPorRole(perfil) {
+  const isAdmin = perfil.role === 'admin';
+  const sbUsuarios = document.getElementById('sb-usuarios');
+  const sbConfig = document.getElementById('sb-config');
+  if (sbUsuarios) sbUsuarios.style.display = isAdmin ? 'flex' : 'none';
+  if (sbConfig) sbConfig.style.display = isAdmin ? 'flex' : 'none';
 }
 
 function popularChipsStatus() {
@@ -2136,7 +2179,7 @@ function openModalDetalhe(id) {
   document.getElementById('det-titulo').textContent = `${c.ticket_num} — ${c.titulo}`;
   document.getElementById('det-info').innerHTML = `
     <div><strong style="color:var(--text)">Solicitante:</strong> ${c.nome_solicitante||'—'}</div>
-    <div><strong style="color:var(--text)">Empresa:</strong> ${c.empresa||'—'} &nbsp;·&nbsp; <strong style="color:var(--text)">Área:</strong> ${c.departamento||'—'}</div>
+    <div><strong style="color:var(--text)">Empresa:</strong> ${c.empresa||'—'} &nbsp;·&nbsp; <strong style="color:var(--text)">Departamento:</strong> ${c.departamento||'—'}</div>
     <div><strong style="color:var(--text)">Categoria:</strong> ${c.categoria||'—'} &nbsp;·&nbsp; <strong style="color:var(--text)">Prioridade:</strong> ${prioL[c.prioridade]||c.prioridade}</div>
     <div><strong style="color:var(--text)">Status:</strong> ${statusLabel(c.status)} &nbsp;·&nbsp; <strong style="color:var(--text)">Aberto em:</strong> ${dataAbertura}</div>
   `;
@@ -2180,9 +2223,9 @@ async function addComentario() {
   const texto = input.value.trim();
   if (!texto || !currentDetalhe) return;
 
-  const isAdmin = currentPerfil && currentPerfil.role === 'admin';
+  const isStaff = currentPerfil && (currentPerfil.role === 'admin' || currentPerfil.role === 'atendente');
   const novo = {
-    autor: isAdmin ? 'admin' : 'usuario',
+    autor: isStaff ? 'admin' : 'usuario',
     nome: currentPerfil?.nome || '—',
     texto,
     data: new Date().toISOString()
@@ -2196,23 +2239,25 @@ async function addComentario() {
   showToast('Comentário adicionado!','ok');
 
   // notificar a outra parte por e-mail
-  if (isAdmin) {
+  if (isStaff) {
     const { data: perfil } = await sb.from('perfis').select('email,nome').eq('id', currentDetalhe.usuario_id).single();
     if (perfil?.email) {
       enviarEmailNotificacao(perfil.email, perfil.nome, currentDetalhe.ticket_num, currentDetalhe.titulo,
         `O suporte TI respondeu seu chamado: "${texto}"`);
     }
   } else {
-    // notifica admins
-    const { data: admins } = await sb.from('perfis').select('email,nome').eq('role','admin');
-    (admins||[]).forEach(a => {
-      enviarEmailNotificacao(a.email, a.nome, currentDetalhe.ticket_num, currentDetalhe.titulo,
-        `${currentPerfil?.nome||'Usuário'} respondeu o chamado: "${texto}"`);
+    // notifica admins e atendentes do departamento
+    const { data: staff } = await sb.from('perfis').select('email,nome,role,departamentos').or('role.eq.admin,role.eq.atendente');
+    (staff||[]).forEach(a => {
+      if (a.role==='admin' || (a.departamentos||[]).includes(currentDetalhe.departamento)) {
+        enviarEmailNotificacao(a.email, a.nome, currentDetalhe.ticket_num, currentDetalhe.titulo,
+          `${currentPerfil?.nome||'Usuário'} respondeu o chamado: "${texto}"`);
+      }
     });
   }
 
   // recarrega listas em background
-  if (isAdmin) loadChamados(); else loadMeusChamados();
+  if (isStaff) loadChamados(); else loadMeusChamados();
 }
 
 // ── IMPRIMIR ─────────────────────────────────
@@ -2267,7 +2312,7 @@ function imprimirChamado() {
       <div class="os-grid">
         <div><b>Nome:</b> ${c.nome_solicitante||'—'}</div>
         <div><b>Empresa:</b> ${c.empresa||'—'}</div>
-        <div><b>Área/Depto:</b> ${c.departamento||'—'}</div>
+        <div><b>Departamento:</b> ${c.departamento||'—'}</div>
         <div><b>Contato:</b> ${c.ramal||'—'}</div>
       </div>
     </div>
@@ -2424,7 +2469,7 @@ function exportarChamadosCSV() {
   if (!allChamados.length) { showToast('Nenhum chamado para exportar.','err'); return; }
     const prioL = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
 
-  const headers = ['Ticket','Assunto','Descrição','Categoria','Prioridade','Status','Solicitante','Empresa','Área/Depto','Contato','Aberto em','Atualizado em','Atendente','Comentários','Nota Avaliação','Avaliação - Resolvido','Avaliação - Tempo','Avaliação - Comentário','SLA'];
+  const headers = ['Ticket','Assunto','Descrição','Categoria','Prioridade','Status','Solicitante','Empresa','Departamento','Contato','Aberto em','Atualizado em','Atendente','Comentários','Nota Avaliação','Avaliação - Resolvido','Avaliação - Tempo','Avaliação - Comentário','SLA'];
 
   const csvEscape = (v) => {
     if (v === null || v === undefined) return '';
@@ -2566,9 +2611,14 @@ function closeMural() {
 }
 
 // ── NAVEGAÇÃO VOLTAR ─────────────────────────
+function isStaffRole(role) {
+  return role === 'admin' || role === 'atendente';
+}
+
 function voltarDoChamado() {
-  if (currentPerfil && currentPerfil.role === 'admin') {
+  if (currentPerfil && isStaffRole(currentPerfil.role)) {
     showPage('admin');
+    configurarSidebarPorRole(currentPerfil);
     loadAdminData();
   } else {
     showPage('meus-chamados');
@@ -2579,7 +2629,7 @@ function voltarDoChamado() {
 function atualizarBotaoVoltar() {
   const btn = document.getElementById('btn-voltar-chamado');
   if (!btn) return;
-  if (currentPerfil && (currentPerfil.role === 'admin' || allMeusChamados.length > 0)) {
+  if (currentPerfil && (isStaffRole(currentPerfil.role) || allMeusChamados.length > 0)) {
     btn.style.display = 'inline-flex';
   } else {
     btn.style.display = 'none';
@@ -2588,16 +2638,18 @@ function atualizarBotaoVoltar() {
 
 // ── START ────────────────────────────────────
 function irParaPainel() {
-  if (currentPerfil && currentPerfil.role === 'admin') {
+  if (currentPerfil && isStaffRole(currentPerfil.role)) {
     showPage('admin');
+    configurarSidebarPorRole(currentPerfil);
     loadAdminData();
   } else if (currentUser) {
     // tenta recarregar perfil e ir para o painel
     sb.from('perfis').select('*').eq('id', currentUser.id).single().then(({data}) => {
       if (data) {
         currentPerfil = data;
-        if (data.role === 'admin') {
+        if (isStaffRole(data.role)) {
           showPage('admin');
+          configurarSidebarPorRole(data);
           loadAdminData();
         } else {
           irParaNovoChamado();
