@@ -363,11 +363,11 @@ tr:hover td{background:rgba(255,255,255,.02);}
               <div class="field-err" id="err-empresa">Selecione a empresa</div>
             </div>
             <div class="field">
-              <label>Departamento <span class="req">*</span></label>
+              <label>Área <span class="req">*</span></label>
               <select id="c-area">
                 <option value="">Selecionar...</option>
               </select>
-              <div class="field-err" id="err-area">Selecione o departamento</div>
+              <div class="field-err" id="err-area">Selecione a área</div>
             </div>
           </div>
         </div>
@@ -553,9 +553,9 @@ tr:hover td{background:rgba(255,255,255,.02);}
             <div style="font-size:14px;font-weight:500;margin-bottom:16px;">🗂️ Chamados por categoria</div>
             <div id="chart-cat"></div>
           </div>
-          <!-- Por Departamento -->
+          <!-- Por Área -->
           <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">🏢 Chamados por departamento</div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">🏢 Chamados por área</div>
             <div id="chart-area"></div>
           </div>
         </div>
@@ -632,7 +632,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
                 <th>Nome</th>
                 <th>E-mail</th>
                 <th>Empresa</th>
-                <th>Departamento</th>
+                <th>Área</th>
                 <th>Role</th>
                 <th>Ação</th>
               </tr>
@@ -650,7 +650,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <span class="chip active" onclick="switchConfigTab('sla',this)">⏰ SLA</span>
           <span class="chip" onclick="switchConfigTab('horarios',this)">🕒 Horários</span>
           <span class="chip" onclick="switchConfigTab('empresas',this)">🏢 Empresas</span>
-          <span class="chip" onclick="switchConfigTab('areas',this)">📍 Departamentos</span>
+          <span class="chip" onclick="switchConfigTab('areas',this)">📍 Áreas</span>
           <span class="chip" onclick="switchConfigTab('categorias',this)">🗂️ Categorias</span>
           <span class="chip" onclick="switchConfigTab('avisos',this)">📢 Avisos</span>
           <span class="chip" onclick="switchConfigTab('status',this)">📌 Status</span>
@@ -727,8 +727,8 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
         <div class="config-tab" id="cfgtab-areas" style="display:none;">
           <div class="tbl-wrap" style="padding:18px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">📍 Departamentos</div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Departamentos disponíveis no formulário de abertura de chamado e usados para distribuir chamados aos atendentes.</div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">📍 Áreas</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Áreas disponíveis no formulário de abertura de chamado e usadas para distribuir chamados aos atendentes.</div>
             <div style="display:flex;gap:6px;margin-bottom:12px;max-width:400px;">
               <input type="text" id="novo-area" placeholder="Nova área..."/>
               <button class="btn btn-primary btn-sm" onclick="addCadastro('areas','novo-area')">+</button>
@@ -779,8 +779,8 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
         <div class="config-tab" id="cfgtab-atendentes" style="display:none;">
           <div class="tbl-wrap" style="padding:18px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">👤 Atendentes por Departamento</div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Selecione os departamentos que cada atendente é responsável por atender. Eles verão apenas os chamados abertos para esses departamentos.</div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">👤 Atendentes por Área</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Selecione as áreas que cada atendente é responsável por atender. Eles verão apenas os chamados abertos para essas áreas.</div>
             <div id="lista-atendentes-deptos"></div>
           </div>
         </div>
@@ -956,12 +956,12 @@ tr:hover td{background:rgba(255,255,255,.02);}
         <input type="text" id="usu-empresa"/>
       </div>
       <div class="field">
-        <label>Departamento</label>
+        <label>Área (perfil)</label>
         <input type="text" id="usu-departamento"/>
       </div>
     </div>
     <div class="field" id="usu-depts-field" style="display:none;">
-      <label>Departamentos atendidos <span style="color:var(--dim);font-weight:400;">(o atendente verá apenas chamados desses departamentos)</span></label>
+      <label>Áreas atendidas <span style="color:var(--dim);font-weight:400;">(o atendente verá apenas chamados dessas áreas)</span></label>
       <div class="aval-opt" id="usu-depts-list"></div>
     </div>
     <div style="display:flex;gap:10px;margin-top:10px;">
@@ -1725,7 +1725,7 @@ async function openModalUsuario(id) {
   document.getElementById('usu-departamento').value = u.departamento || '';
   document.getElementById('usu-role').value = u.role || 'usuario';
 
-  // Popular checklist de departamentos
+  // Popular checklist de áreas
   if (!CADASTROS.areas.length) await loadCadastrosLists();
   const atuais = u.departamentos || [];
   const list = document.getElementById('usu-depts-list');
@@ -2001,7 +2001,7 @@ async function renderAtendentesDeptos() {
     return;
   }
   if (!CADASTROS.areas.length) {
-    container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhum departamento cadastrado. Adicione departamentos na aba "📍 Departamentos".</p>';
+    container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhuma área cadastrada. Adicione áreas na aba "📍 Áreas".</p>';
     return;
   }
 
@@ -2020,7 +2020,7 @@ async function renderAtendentesDeptos() {
 async function salvarDeptosAtendente(id) {
   const departamentos = Array.from(document.querySelectorAll(`#atd-depts-${id} .aval-btn.sel`)).map(b=>b.dataset.dept);
   await sb.from('perfis').update({ departamentos }).eq('id', id);
-  showToast('Departamentos atualizados!','ok');
+  showToast('Áreas atualizadas!','ok');
   if (currentPerfil && currentPerfil.id === id) {
     currentPerfil.departamentos = departamentos;
   }
@@ -2520,7 +2520,7 @@ function exportarChamadosCSV() {
   if (!allChamados.length) { showToast('Nenhum chamado para exportar.','err'); return; }
     const prioL = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
 
-  const headers = ['Ticket','Assunto','Descrição','Categoria','Prioridade','Status','Solicitante','Empresa','Departamento','Contato','Aberto em','Atualizado em','Atendente','Comentários','Nota Avaliação','Avaliação - Resolvido','Avaliação - Tempo','Avaliação - Comentário','SLA'];
+  const headers = ['Ticket','Assunto','Descrição','Categoria','Prioridade','Status','Solicitante','Empresa','Área','Contato','Aberto em','Atualizado em','Atendente','Comentários','Nota Avaliação','Avaliação - Resolvido','Avaliação - Tempo','Avaliação - Comentário','SLA'];
 
   const csvEscape = (v) => {
     if (v === null || v === undefined) return '';
