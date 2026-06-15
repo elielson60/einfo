@@ -2493,6 +2493,18 @@ function toggleCampoOpcoes(catId) {
   document.getElementById(`campo-novo-opcoes-field-${catId}`).style.display = precisaOpcoes ? 'block' : 'none';
 }
 
+function toggleTodasCatsCampo(catId) {
+  const container = document.getElementById(`campo-novo-cats-${catId}`);
+  const todosBtn = container.querySelector('[data-todos-cat]');
+  todosBtn.classList.toggle('sel');
+  const ativo = todosBtn.classList.contains('sel');
+  container.querySelectorAll('[data-cat]').forEach(b => {
+    b.disabled = ativo;
+    b.style.opacity = ativo ? '.4' : '1';
+    if (ativo) b.classList.remove('sel');
+  });
+}
+
 function toggleTodosAreasCampo(catId) {
   const container = document.getElementById(`campo-novo-areas-${catId}`);
   const todosBtn = container.querySelector('[data-todos]');
@@ -2541,9 +2553,13 @@ async function addCampoCategoria(catId) {
   const todosMarcado = areasContainer.querySelector('[data-todos]').classList.contains('sel');
   const areasSelecionadas = todosMarcado ? null : Array.from(areasContainer.querySelectorAll('[data-area].sel')).map(b=>b.dataset.area);
 
-  // Categorias selecionadas (cria um registro do campo para cada categoria marcada)
-  const catsSelecionadas = Array.from(document.querySelectorAll(`#campo-novo-cats-${catId} .aval-btn.sel`)).map(b=>b.dataset.cat);
-  if (!catsSelecionadas.length) { showToast('Selecione ao menos uma categoria.','err'); return; }
+  // Categorias selecionadas — "Todos" usa todas as categorias cadastradas
+  const catsContainer = document.getElementById(`campo-novo-cats-${catId}`);
+  const todosCatsMarcado = catsContainer.querySelector('[data-todos-cat]').classList.contains('sel');
+  const catsSelecionadas = todosCatsMarcado
+    ? CADASTROS.categorias.map(c=>c.id)
+    : Array.from(catsContainer.querySelectorAll('[data-cat].sel')).map(b=>b.dataset.cat);
+  if (!catsSelecionadas.length) { showToast('Selecione ao menos uma categoria ou marque "Todos".','err'); return; }
 
   for (const targetCatId of catsSelecionadas) {
     const ordem = (CAMPOS_POR_CATEGORIA[targetCatId]||[]).length;
@@ -2653,6 +2669,7 @@ function renderCadastroLista(tabela) {
               <div class="field" style="margin-bottom:8px;">
                 <label style="font-size:11px;">Categorias <span style="color:var(--dim);font-weight:400;">(em quais categorias este campo aparece)</span></label>
                 <div class="aval-opt" id="campo-novo-cats-${i.id}">
+                  <button type="button" class="aval-btn" data-todos-cat="1" onclick="toggleTodasCatsCampo('${i.id}')">Todos</button>
                   ${CADASTROS.categorias.map(c=>`<button type="button" class="aval-btn ${c.id===i.id?'sel':''}" data-cat="${c.id}" onclick="this.classList.toggle('sel')">${c.nome}</button>`).join('')}
                 </div>
               </div>
