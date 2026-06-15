@@ -840,7 +840,25 @@ tr:hover td{background:rgba(255,255,255,.02);}
               </div>
               <div class="field">
                 <label>E-mail</label>
-                <input type="text" id="atd-edit-email" disabled style="opacity:.6;"/>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                  <input type="text" id="atd-edit-email" disabled style="opacity:.6;flex:1;min-width:200px;"/>
+                  <button class="btn btn-ghost btn-sm" onclick="alterarEmailAtendente()">✉️ Alterar E-mail</button>
+                </div>
+                <div id="atd-email-form" style="display:none;margin-top:8px;">
+                  <input type="email" id="atd-novo-email" placeholder="Novo e-mail..." style="margin-bottom:6px;"/>
+                  <div style="display:flex;gap:6px;">
+                    <button class="btn btn-primary btn-sm" onclick="salvarEmailAtendente()">Confirmar</button>
+                    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('atd-email-form').style.display='none'">Cancelar</button>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label>Senha</label>
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <span style="font-size:13px;color:var(--muted);">••••••••</span>
+                  <button class="btn btn-ghost btn-sm" onclick="redefinirSenhaAtendente()">🔑 Enviar link de redefinição</button>
+                </div>
+                <p id="atd-senha-msg" style="font-size:12px;color:var(--green);margin-top:6px;display:none;">✅ Link enviado para o e-mail do atendente!</p>
               </div>
               <div class="field">
                 <label>Perfil</label>
@@ -856,7 +874,10 @@ tr:hover td{background:rgba(255,255,255,.02);}
                   <input type="checkbox" id="atd-edit-ativo" style="width:auto;"/> Conta ativa
                 </label>
               </div>
-              <button class="btn btn-primary" onclick="salvarInfoAtendente()">💾 Salvar informações</button>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+                <button class="btn btn-primary" onclick="salvarInfoAtendente()">💾 Salvar informações</button>
+                <button class="btn btn-ghost btn-sm" style="color:#f87171;border-color:rgba(239,68,68,.35);" onclick="excluirAtendente()">🗑️ Excluir atendente</button>
+              </div>
             </div>
 
             <!-- Aba Departamentos -->
@@ -2323,6 +2344,42 @@ async function salvarInfoAtendente() {
   showToast('Informações atualizadas!','ok');
   const u = allAtendentes.find(x=>x.id===currentAtdId);
   if (u) { u.role = role; u.ativo = ativo; }
+}
+
+function alterarEmailAtendente() {
+  const form = document.getElementById('atd-email-form');
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  document.getElementById('atd-novo-email').value = '';
+}
+
+async function salvarEmailAtendente() {
+  const novoEmail = document.getElementById('atd-novo-email').value.trim();
+  if (!novoEmail) { showToast('Informe o novo e-mail.','err'); return; }
+  const { error } = await sb.auth.admin.updateUserById(currentAtdId, { email: novoEmail });
+  if (error) { showToast('Erro ao alterar e-mail: ' + error.message,'err'); return; }
+  await sb.from('perfis').update({ email: novoEmail }).eq('id', currentAtdId);
+  document.getElementById('atd-edit-email').value = novoEmail;
+  document.getElementById('atd-email-form').style.display = 'none';
+  showToast('E-mail atualizado!','ok');
+  const u = allAtendentes.find(x=>x.id===currentAtdId);
+  if (u) u.email = novoEmail;
+}
+
+async function redefinirSenhaAtendente() {
+  const email = document.getElementById('atd-edit-email').value;
+  if (!email) return;
+  await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+  const msg = document.getElementById('atd-senha-msg');
+  msg.style.display = 'block';
+  setTimeout(()=>msg.style.display='none', 4000);
+}
+
+async function excluirAtendente() {
+  const u = allAtendentes.find(x=>x.id===currentAtdId);
+  if (!confirm(`Excluir o atendente "${u?.nome}"? Esta ação é irreversível e remove o acesso dele ao sistema.`)) return;
+  await sb.from('perfis').delete().eq('id', currentAtdId);
+  showToast('Atendente excluído!','ok');
+  voltarListaAtendentes();
 }
 
 function voltarListaAtendentes() {
