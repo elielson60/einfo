@@ -200,6 +200,15 @@ tr:hover td{background:rgba(255,255,255,.02);}
 #print-area .os-sign div { border-top:1px solid #000; padding-top:4px; text-align:center; font-size:12px; }
 #print-area .os-footer { margin-top:20px; font-size:10px; color:#777; text-align:center; border-top:1px solid #ccc; padding-top:6px; }
 
+/* ── MODAL CAMPO TABS ── */
+.campo-tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:var(--sans);font-size:13px;padding:10px 18px;cursor:pointer;margin-bottom:-1px;transition:all .15s;}
+.campo-tab-btn:hover{color:var(--text);}
+.campo-tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500;}
+.campo-area-item,.campo-cat-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);margin-bottom:6px;font-size:13px;cursor:pointer;transition:all .15s;}
+.campo-area-item:hover,.campo-cat-item:hover{border-color:var(--border2);}
+.campo-area-item input,.campo-cat-item input{width:auto;flex-shrink:0;}
+.campo-area-todos{background:var(--accent-s);border-color:var(--accent-b);font-weight:500;color:var(--accent);}
+
 /* ── AVISOS ── */
 .aviso-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:8px;}
 .aviso-item-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px;}
@@ -736,8 +745,8 @@ tr:hover td{background:rgba(255,255,255,.02);}
         </div>
 
         <div class="config-tab" id="cfgtab-categorias" style="display:none;">
-          <div class="tbl-wrap" style="padding:18px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">🗂️ Tipos de Categoria</div>
+          <div class="tbl-wrap" style="padding:18px;margin-bottom:16px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🗂️ Tipos de Categoria</div>
             <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Categorias disponíveis no formulário de abertura de chamado.</div>
             <div style="display:flex;gap:6px;margin-bottom:12px;max-width:400px;">
               <input type="text" id="novo-categoria" placeholder="Nova categoria..."/>
@@ -748,6 +757,15 @@ tr:hover td{background:rgba(255,255,255,.02);}
               <div class="aval-opt" id="novo-categoria-atendentes"></div>
             </div>
             <div id="lista-categorias"></div>
+          </div>
+
+          <div class="tbl-wrap" style="padding:18px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <div style="font-size:14px;font-weight:500;">🧩 Campos Personalizados</div>
+              <button class="btn btn-primary btn-sm" onclick="abrirModalCampo()">+ Novo campo</button>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Campos extras que aparecem no formulário de chamado com base na categoria e área.</div>
+            <div id="lista-campos-admin"></div>
           </div>
         </div>
 
@@ -829,6 +847,88 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMPO PERSONALIZADO -->
+<div class="modal-overlay" id="modal-campo" style="align-items:flex-start;padding:40px 20px;overflow-y:auto;">
+  <div class="modal" style="max-width:680px;width:100%;">
+    <button class="modal-close" onclick="fecharModalCampo()">✕</button>
+    <div class="modal-title" id="modal-campo-titulo">Novo Campo Personalizado</div>
+    <input type="hidden" id="campo-edit-id"/>
+
+    <!-- ABAS -->
+    <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;gap:0;">
+      <button class="campo-tab-btn active" onclick="switchCampoTab('info',this)">Informações</button>
+      <button class="campo-tab-btn" onclick="switchCampoTab('exibicao',this)">Exibição</button>
+      <button class="campo-tab-btn" onclick="switchCampoTab('departamentos',this)">Departamentos</button>
+      <button class="campo-tab-btn" onclick="switchCampoTab('categorias',this)">Categorias</button>
+    </div>
+
+    <!-- ABA: INFORMAÇÕES -->
+    <div class="campo-tab-content" id="campo-tab-info">
+      <div class="field">
+        <label>Nome do campo <span class="req">*</span></label>
+        <input type="text" id="campo-label" placeholder="Ex: Número de patrimônio"/>
+      </div>
+      <div class="field">
+        <label>Descrição <span style="color:var(--dim);font-weight:400;">(opcional)</span></label>
+        <input type="text" id="campo-descricao" placeholder="Instrução exibida abaixo do campo"/>
+      </div>
+      <div class="field">
+        <label>Campo obrigatório</label>
+        <label style="display:flex;align-items:center;gap:8px;margin:0;text-transform:none;font-size:13px;cursor:pointer;">
+          <input type="checkbox" id="campo-obrigatorio" style="width:auto;"/> Sim, este campo é obrigatório
+        </label>
+      </div>
+    </div>
+
+    <!-- ABA: EXIBIÇÃO -->
+    <div class="campo-tab-content" id="campo-tab-exibicao" style="display:none;">
+      <div class="field">
+        <label>Modo de exibição <span class="req">*</span></label>
+        <select id="campo-tipo" onchange="toggleCampoModalOpcoes()">
+          <option value="texto">Texto curto</option>
+          <option value="textarea">Texto longo (parágrafo)</option>
+          <option value="numero">Número</option>
+          <option value="data">Data</option>
+          <option value="select">Lista de opções (dropdown)</option>
+          <option value="radio">Seleção única (botões)</option>
+          <option value="checkbox">Seleção múltipla (checkboxes)</option>
+        </select>
+      </div>
+      <div class="field" id="campo-modal-opcoes-field" style="display:none;">
+        <label>Opções <span class="req">*</span> <span style="color:var(--dim);font-weight:400;">(separadas por vírgula)</span></label>
+        <input type="text" id="campo-opcoes" placeholder="Ex: Baixo, Médio, Alto"/>
+      </div>
+    </div>
+
+    <!-- ABA: DEPARTAMENTOS -->
+    <div class="campo-tab-content" id="campo-tab-departamentos" style="display:none;">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Defina em quais áreas este campo irá aparecer ao abrir um chamado:</p>
+      <div class="field">
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <input class="tbl-search" id="campo-area-busca" placeholder="Filtrar..." oninput="filtrarCampoAreas(this.value)" style="max-width:260px;"/>
+        </div>
+        <div id="campo-areas-lista"></div>
+      </div>
+    </div>
+
+    <!-- ABA: CATEGORIAS -->
+    <div class="campo-tab-content" id="campo-tab-categorias" style="display:none;">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Selecione em quais categorias este campo irá aparecer:</p>
+      <div class="field">
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <input class="tbl-search" id="campo-cat-busca" placeholder="Filtrar..." oninput="filtrarCampoCats(this.value)" style="max-width:260px;"/>
+        </div>
+        <div id="campo-cats-lista"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+      <button class="btn btn-primary" onclick="salvarCampoModal()">💾 Salvar campo</button>
+      <button class="btn btn-ghost" onclick="fecharModalCampo()">Cancelar</button>
     </div>
   </div>
 </div>
@@ -1420,7 +1520,7 @@ function adminNav(sec, btn) {
   if (sec==='chamados') loadChamados();
   if (sec==='usuarios') loadUsuarios();
   if (sec==='dashboard') loadDashboard();
-  if (sec==='config') { preencherFormConfig(); loadCadastros(); loadAvisosAdmin(); limparFormAviso(); renderStatusAdmin(); limparFormStatus(); renderAtendentesDeptos(); switchConfigTab('sla', document.querySelector('#config-chips .chip')); }
+  if (sec==='config') { preencherFormConfig(); loadCadastros().then(()=>{renderListaCamposAdmin();}); loadAvisosAdmin(); limparFormAviso(); renderStatusAdmin(); limparFormStatus(); renderAtendentesDeptos(); switchConfigTab('sla', document.querySelector('#config-chips .chip')); }
 }
 
 function switchConfigTab(tab, chip) {
@@ -2477,6 +2577,204 @@ async function loadCamposCategorias() {
     if (!CAMPOS_POR_CATEGORIA[c.categoria_id]) CAMPOS_POR_CATEGORIA[c.categoria_id] = [];
     CAMPOS_POR_CATEGORIA[c.categoria_id].push(c);
   });
+}
+
+// ── MODAL CAMPO PERSONALIZADO ─────────────────
+function switchCampoTab(tab, btn) {
+  document.querySelectorAll('.campo-tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.campo-tab-content').forEach(el=>el.style.display='none');
+  document.getElementById(`campo-tab-${tab}`).style.display='block';
+}
+
+function toggleCampoModalOpcoes() {
+  const tipo = document.getElementById('campo-tipo').value;
+  const precisaOpcoes = ['select','radio','checkbox'].includes(tipo);
+  document.getElementById('campo-modal-opcoes-field').style.display = precisaOpcoes ? 'block' : 'none';
+}
+
+function abrirModalCampo(fieldId) {
+  document.getElementById('campo-edit-id').value = fieldId || '';
+  document.getElementById('modal-campo-titulo').textContent = fieldId ? 'Editar Campo Personalizado' : 'Novo Campo Personalizado';
+  document.getElementById('campo-label').value = '';
+  document.getElementById('campo-descricao').value = '';
+  document.getElementById('campo-obrigatorio').checked = false;
+  document.getElementById('campo-tipo').value = 'texto';
+  document.getElementById('campo-opcoes').value = '';
+  document.getElementById('campo-modal-opcoes-field').style.display = 'none';
+
+  if (fieldId) {
+    // Encontra o campo em CAMPOS_POR_CATEGORIA para preenchimento
+    let found = null;
+    Object.values(CAMPOS_POR_CATEGORIA).forEach(arr => arr.forEach(f => { if (f.id===fieldId) found=f; }));
+    if (found) {
+      document.getElementById('campo-label').value = found.label || '';
+      document.getElementById('campo-descricao').value = found.descricao || '';
+      document.getElementById('campo-obrigatorio').checked = !!found.obrigatorio;
+      document.getElementById('campo-tipo').value = found.tipo || 'texto';
+      document.getElementById('campo-opcoes').value = (found.opcoes||[]).join(', ');
+      toggleCampoModalOpcoes();
+    }
+  }
+
+  // Popular abas de Departamentos e Categorias
+  renderCampoModalAreas(fieldId);
+  renderCampoModalCats(fieldId);
+
+  // Reset para aba Informações
+  document.querySelectorAll('.campo-tab-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  document.querySelectorAll('.campo-tab-content').forEach((el,i)=>el.style.display=i===0?'block':'none');
+
+  document.getElementById('modal-campo').classList.add('open');
+}
+
+function fecharModalCampo() {
+  document.getElementById('modal-campo').classList.remove('open');
+}
+
+function renderCampoModalAreas(fieldId) {
+  const container = document.getElementById('campo-areas-lista');
+  let marcadas = [];
+  if (fieldId) {
+    Object.values(CAMPOS_POR_CATEGORIA).forEach(arr => arr.forEach(f => { if (f.id===fieldId) marcadas = f.areas||[]; }));
+  }
+  const todosAtivo = !marcadas.length;
+  container.innerHTML = `
+    <div class="campo-area-item campo-area-todos">
+      <input type="checkbox" id="campo-area-todos" ${todosAtivo?'checked':''} onchange="toggleCampoAreasTodos()"/>
+      <label for="campo-area-todos" style="cursor:pointer;margin:0;text-transform:none;font-size:13px;">Todos os departamentos</label>
+    </div>
+    ${CADASTROS.areas.map(a=>`
+    <div class="campo-area-item" id="campo-area-wrap-${a.id}">
+      <input type="checkbox" id="campo-area-chk-${a.id}" data-area="${a.nome}" ${marcadas.includes(a.nome)?'checked':''} ${todosAtivo?'disabled':''}/>
+      <label for="campo-area-chk-${a.id}" style="cursor:pointer;margin:0;text-transform:none;font-size:13px;">${a.nome}</label>
+    </div>`).join('')}`;
+}
+
+function toggleCampoAreasTodos() {
+  const todos = document.getElementById('campo-area-todos').checked;
+  document.querySelectorAll('#campo-areas-lista [data-area]').forEach(el=>{
+    el.disabled = todos;
+    if (todos) el.checked = false;
+    el.closest('.campo-area-item').style.opacity = todos ? '.5' : '1';
+  });
+}
+
+function filtrarCampoAreas(q) {
+  const low = q.toLowerCase();
+  document.querySelectorAll('#campo-areas-lista .campo-area-item:not(.campo-area-todos)').forEach(el=>{
+    el.style.display = el.textContent.toLowerCase().includes(low) ? 'flex' : 'none';
+  });
+}
+
+function renderCampoModalCats(fieldId) {
+  const container = document.getElementById('campo-cats-lista');
+  let catsMarcadas = [];
+  if (fieldId) {
+    Object.entries(CAMPOS_POR_CATEGORIA).forEach(([cid, arr]) => arr.forEach(f => { if (f.id===fieldId) catsMarcadas.push(cid); }));
+  }
+  const todosAtivo = !catsMarcadas.length && !fieldId;
+  container.innerHTML = `
+    <div class="campo-cat-item campo-area-todos">
+      <input type="checkbox" id="campo-cat-todos" ${todosAtivo?'checked':''} onchange="toggleCampoCatsTodos()"/>
+      <label for="campo-cat-todos" style="cursor:pointer;margin:0;text-transform:none;font-size:13px;">Todas as categorias</label>
+    </div>
+    ${CADASTROS.categorias.map(c=>`
+    <div class="campo-cat-item">
+      <input type="checkbox" id="campo-cat-chk-${c.id}" data-cat="${c.id}" ${catsMarcadas.includes(c.id)?'checked':''} ${todosAtivo?'disabled':''}/>
+      <label for="campo-cat-chk-${c.id}" style="cursor:pointer;margin:0;text-transform:none;font-size:13px;">${c.nome}</label>
+    </div>`).join('')}`;
+}
+
+function toggleCampoCatsTodos() {
+  const todos = document.getElementById('campo-cat-todos').checked;
+  document.querySelectorAll('#campo-cats-lista [data-cat]').forEach(el=>{
+    el.disabled = todos;
+    if (todos) el.checked = false;
+    el.closest('.campo-cat-item').style.opacity = todos ? '.5' : '1';
+  });
+}
+
+function filtrarCampoCats(q) {
+  const low = q.toLowerCase();
+  document.querySelectorAll('#campo-cats-lista .campo-cat-item:not(.campo-area-todos)').forEach(el=>{
+    el.style.display = el.textContent.toLowerCase().includes(low) ? 'flex' : 'none';
+  });
+}
+
+async function salvarCampoModal() {
+  const label = document.getElementById('campo-label').value.trim();
+  const tipo = document.getElementById('campo-tipo').value;
+  const descricao = document.getElementById('campo-descricao').value.trim();
+  const obrigatorio = document.getElementById('campo-obrigatorio').checked;
+  const opcoesRaw = document.getElementById('campo-opcoes').value.trim();
+  if (!label) { showToast('Informe o nome do campo.','err'); return; }
+  const precisaOpcoes = ['select','radio','checkbox'].includes(tipo);
+  const opcoes = precisaOpcoes ? opcoesRaw.split(',').map(o=>o.trim()).filter(Boolean) : null;
+  if (precisaOpcoes && (!opcoes||!opcoes.length)) { showToast('Informe as opções.','err'); return; }
+
+  // Áreas
+  const todosAreas = document.getElementById('campo-area-todos').checked;
+  const areas = todosAreas ? null : Array.from(document.querySelectorAll('#campo-areas-lista [data-area]:checked')).map(el=>el.dataset.area);
+
+  // Categorias
+  const todosCats = document.getElementById('campo-cat-todos').checked;
+  const catIds = todosCats
+    ? CADASTROS.categorias.map(c=>c.id)
+    : Array.from(document.querySelectorAll('#campo-cats-lista [data-cat]:checked')).map(el=>el.dataset.cat);
+  if (!catIds.length) { showToast('Selecione ao menos uma categoria ou marque "Todas".','err'); return; }
+
+  const editId = document.getElementById('campo-edit-id').value;
+
+  if (editId) {
+    // Atualiza o registro base
+    await sb.from('categoria_campos').update({ label, tipo, descricao, opcoes, obrigatorio, areas }).eq('id', editId);
+  } else {
+    // Insere em todas as categorias selecionadas
+    for (const catId of catIds) {
+      const ordem = (CAMPOS_POR_CATEGORIA[catId]||[]).length;
+      await sb.from('categoria_campos').insert({ categoria_id: catId, label, tipo, descricao, opcoes, obrigatorio, areas, ordem });
+    }
+  }
+
+  fecharModalCampo();
+  await loadCamposCategorias();
+  renderListaCamposAdmin();
+  renderCadastroLista('categorias');
+  showToast(editId ? 'Campo atualizado!' : 'Campo criado!','ok');
+}
+
+function renderListaCamposAdmin() {
+  const container = document.getElementById('lista-campos-admin');
+  if (!container) return;
+  const todos = Object.values(CAMPOS_POR_CATEGORIA).flat();
+  const unicos = Object.values(todos.reduce((acc,f)=>{ if(!acc[f.label]) acc[f.label]=f; return acc; },{}));
+  if (!unicos.length) { container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhum campo personalizado criado ainda.</p>'; return; }
+  container.innerHTML = unicos.map(f => {
+    const areaTxt = (!f.areas||!f.areas.length) ? 'Todos os departamentos' : f.areas.join(', ');
+    const catCount = Object.values(CAMPOS_POR_CATEGORIA).filter(arr=>arr.some(x=>x.label===f.label)).length;
+    return `<div class="cad-item" style="display:grid;grid-template-columns:1fr auto;align-items:center;">
+      <span>
+        <strong>${f.label}</strong>
+        <span style="font-size:11px;color:var(--muted);display:block;margin-top:2px;">${TIPO_CAMPO_LABEL[f.tipo]||f.tipo} · 📍 ${areaTxt} · 🗂️ ${catCount} categoria(s)${f.obrigatorio?' · obrigatório':''}</span>
+      </span>
+      <span style="display:flex;gap:6px;">
+        <button class="cad-del" onclick="abrirModalCampo('${f.id}')" title="Editar">✎</button>
+        <button class="cad-del" onclick="excluirCampoAdmin('${f.label}')" title="Excluir">✕</button>
+      </span>
+    </div>`;
+  }).join('');
+}
+
+async function excluirCampoAdmin(label) {
+  if (!confirm(`Excluir o campo "${label}" de todas as categorias?`)) return;
+  // Deleta todos os registros com esse label
+  const ids = Object.values(CAMPOS_POR_CATEGORIA).flat().filter(f=>f.label===label).map(f=>f.id);
+  for (const id of ids) await sb.from('categoria_campos').delete().eq('id', id);
+  await loadCamposCategorias();
+  renderListaCamposAdmin();
+  renderCadastroLista('categorias');
+  showToast('Campo excluído!','ok');
 }
 
 // ── CAMPOS PERSONALIZADOS POR CATEGORIA (admin) ──
