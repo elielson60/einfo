@@ -200,6 +200,12 @@ tr:hover td{background:rgba(255,255,255,.02);}
 #print-area .os-sign div { border-top:1px solid #000; padding-top:4px; text-align:center; font-size:12px; }
 #print-area .os-footer { margin-top:20px; font-size:10px; color:#777; text-align:center; border-top:1px solid #ccc; padding-top:6px; }
 
+/* ── ADMIN SUBMENU ── */
+#sb-admin-menu .sb-btn{font-size:12px;padding:6px 10px;color:var(--dim);}
+#sb-admin-menu .sb-btn:hover{color:var(--text);background:var(--surface2);}
+#sb-admin-menu .sb-btn.active{color:var(--accent);background:var(--accent-s);font-weight:500;}
+#sb-admin-menu .sb-icon{font-size:13px;}
+
 /* ── MODAL CAMPO TABS ── */
 .campo-tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:var(--sans);font-size:13px;padding:10px 18px;cursor:pointer;margin-bottom:-1px;transition:all .15s;}
 .campo-tab-btn:hover{color:var(--text);}
@@ -502,7 +508,18 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <button class="sb-btn" onclick="adminNav('dashboard',this)"><span class="sb-icon">📊</span> Dashboard</button>
       <button class="sb-btn active" onclick="adminNav('chamados',this)"><span class="sb-icon">📋</span> Chamados</button>
       <button class="sb-btn" id="sb-usuarios" onclick="adminNav('usuarios',this)"><span class="sb-icon">👥</span> Usuários</button>
-      <button class="sb-btn" id="sb-config" onclick="adminNav('config',this)"><span class="sb-icon">⚙️</span> Administração</button>
+      <button class="sb-btn" id="sb-config" onclick="toggleAdminMenu(this)"><span class="sb-icon">⚙️</span> Administração <span id="sb-config-arrow" style="margin-left:auto;font-size:10px;">▶</span></button>
+      <div id="sb-admin-menu" style="display:none;padding-left:14px;">
+        <button class="sb-btn" onclick="adminSubNav('atendentes',this)"><span class="sb-icon">👤</span> Atendentes</button>
+        <button class="sb-btn" onclick="adminSubNav('categorias',this)"><span class="sb-icon">🗂️</span> Categorias</button>
+        <button class="sb-btn" onclick="adminSubNav('campos',this)"><span class="sb-icon">🧩</span> Campos Personalizados</button>
+        <button class="sb-btn" onclick="adminSubNav('areas',this)"><span class="sb-icon">📍</span> Áreas</button>
+        <button class="sb-btn" onclick="adminSubNav('empresas',this)"><span class="sb-icon">🏢</span> Organizações</button>
+        <button class="sb-btn" onclick="adminSubNav('avisos',this)"><span class="sb-icon">📢</span> Avisos</button>
+        <button class="sb-btn" onclick="adminSubNav('status',this)"><span class="sb-icon">📌</span> Status</button>
+        <button class="sb-btn" onclick="adminSubNav('sla',this)"><span class="sb-icon">⏰</span> SLA</button>
+        <button class="sb-btn" onclick="adminSubNav('horarios',this)"><span class="sb-icon">🕒</span> Horários</button>
+      </div>
       <span class="sb-section">Ações</span>
       <button class="sb-btn" onclick="showPage('chamado');novoChamado();atualizarBotaoVoltar();"><span class="sb-icon">➕</span> Novo chamado</button>
     </div>
@@ -651,20 +668,12 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
       <!-- CONFIGURAÇÕES -->
       <div class="admin-section" id="sec-config">
-        <div class="admin-title">Administração</div>
-
-        <div class="chips" id="config-chips">
-          <span class="chip active" onclick="switchConfigTab('sla',this)">⏰ SLA</span>
-          <span class="chip" onclick="switchConfigTab('horarios',this)">🕒 Horários</span>
-          <span class="chip" onclick="switchConfigTab('empresas',this)">🏢 Empresas</span>
-          <span class="chip" onclick="switchConfigTab('areas',this)">📍 Áreas</span>
-          <span class="chip" onclick="switchConfigTab('categorias',this)">🗂️ Categorias</span>
-          <span class="chip" onclick="switchConfigTab('avisos',this)">📢 Avisos</span>
-          <span class="chip" onclick="switchConfigTab('status',this)">📌 Status</span>
-          <span class="chip" onclick="switchConfigTab('atendentes',this)">👤 Atendentes</span>
+        <div class="admin-title" id="admin-sub-title">Administração</div>
+        <div id="admin-sub-home" style="">
+          <p style="font-size:13px;color:var(--muted);">Selecione uma opção no menu lateral para configurar.</p>
         </div>
 
-        <div class="config-tab" id="cfgtab-sla">
+        <div class="config-tab admin-sub-page" id="cfgtab-sla" style="display:none;">
         <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
           <div style="font-size:14px;font-weight:500;margin-bottom:4px;">⏰ SLA por prioridade</div>
           <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Defina o tempo de primeira resposta e o tempo total para resolução, em horas, para cada nível de prioridade.</div>
@@ -699,7 +708,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
         </div><!-- /cfgtab-sla -->
 
-        <div class="config-tab" id="cfgtab-horarios" style="display:none;">
+        <div class="config-tab admin-sub-page" id="cfgtab-horarios" style="display:none;" style="display:none;">
         <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
           <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🕒 Horário de atendimento</div>
           <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Ative os dias de atendimento e defina o horário de cada um — útil quando o sábado ou outro dia tem expediente diferente.</div>
@@ -720,7 +729,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
         </div>
 
         <!-- CADASTROS -->
-        <div class="config-tab" id="cfgtab-empresas" style="display:none;">
+        <div class="config-tab admin-sub-page" id="cfgtab-empresas" style="display:none;" style="display:none;">
           <div class="tbl-wrap" style="padding:18px;">
             <div style="font-size:14px;font-weight:500;margin-bottom:10px;">🏢 Empresas</div>
             <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Empresas disponíveis no formulário de abertura de chamado.</div>
@@ -732,7 +741,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           </div>
         </div>
 
-        <div class="config-tab" id="cfgtab-areas" style="display:none;">
+        <div class="config-tab admin-sub-page" id="cfgtab-areas" style="display:none;" style="display:none;">
           <div class="tbl-wrap" style="padding:18px;">
             <div style="font-size:14px;font-weight:500;margin-bottom:10px;">📍 Áreas</div>
             <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Áreas disponíveis no formulário de abertura de chamado e usadas para distribuir chamados aos atendentes.</div>
@@ -744,7 +753,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           </div>
         </div>
 
-        <div class="config-tab" id="cfgtab-categorias" style="display:none;">
+        <div class="config-tab admin-sub-page" id="cfgtab-categorias" style="display:none;" style="display:none;">
           <div class="tbl-wrap" style="padding:18px;margin-bottom:16px;">
             <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🗂️ Tipos de Categoria</div>
             <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Categorias disponíveis no formulário de abertura de chamado.</div>
@@ -769,7 +778,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           </div>
         </div>
 
-        <div class="config-tab" id="cfgtab-status" style="display:none;">
+        <div class="config-tab admin-sub-page" id="cfgtab-status" style="display:none;" style="display:none;">
           <div class="tbl-wrap" style="padding:18px;margin-bottom:16px;">
             <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📌 Status de chamado</div>
             <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Crie, edite ou remova os status disponíveis para os chamados. Os 4 status padrão do sistema não podem ser excluídos.</div>
@@ -797,7 +806,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           </div>
         </div>
 
-        <div class="config-tab" id="cfgtab-atendentes" style="display:none;">
+        <div class="config-tab admin-sub-page" id="cfgtab-atendentes" style="display:none;" style="display:none;">
           <div class="tbl-wrap" style="padding:18px;">
             <div style="font-size:14px;font-weight:500;margin-bottom:4px;">👤 Atendentes por Área</div>
             <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Selecione as áreas que cada atendente é responsável por atender. Eles verão apenas os chamados abertos para essas áreas.</div>
@@ -805,7 +814,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           </div>
         </div>
 
-        <div class="config-tab" id="cfgtab-avisos" style="display:none;">
+        <div class="config-tab admin-sub-page" id="cfgtab-avisos" style="display:none;" style="display:none;">
           <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
             <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📢 Novo aviso no mural</div>
             <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Avisos ativos aparecem para todos os usuários ao entrarem no sistema.</div>
@@ -1520,7 +1529,74 @@ function adminNav(sec, btn) {
   if (sec==='chamados') loadChamados();
   if (sec==='usuarios') loadUsuarios();
   if (sec==='dashboard') loadDashboard();
-  if (sec==='config') { preencherFormConfig(); loadCadastros().then(()=>{renderListaCamposAdmin();}); loadAvisosAdmin(); limparFormAviso(); renderStatusAdmin(); limparFormStatus(); renderAtendentesDeptos(); switchConfigTab('sla', document.querySelector('#config-chips .chip')); }
+  if (sec==='config') {
+    preencherFormConfig();
+    loadCadastros().then(()=>{renderListaCamposAdmin();});
+    loadAvisosAdmin();
+    limparFormAviso();
+    renderStatusAdmin();
+    limparFormStatus();
+    renderAtendentesDeptos();
+    // Show home screen
+    document.getElementById('admin-sub-home').style.display='block';
+    document.querySelectorAll('.admin-sub-page').forEach(el=>el.style.display='none');
+    document.getElementById('admin-sub-title').textContent='Administração';
+  }
+}
+
+function toggleAdminMenu(btn) {
+  const menu = document.getElementById('sb-admin-menu');
+  const arrow = document.getElementById('sb-config-arrow');
+  const open = menu.style.display === 'none';
+  menu.style.display = open ? 'block' : 'none';
+  arrow.textContent = open ? '▼' : '▶';
+  if (open) {
+    // Navigate to admin section
+    adminNav('config', btn);
+  }
+}
+
+const ADMIN_SUB_TITLES = {'atendentes': 'Atendentes', 'categorias': 'Categorias', 'campos': 'Campos Personalizados', 'areas': 'Áreas', 'empresas': 'Organizações', 'avisos': 'Avisos', 'status': 'Status de Chamado', 'sla': 'SLA', 'horarios': 'Horários de Atendimento'};
+
+function adminSubNav(sub, btn) {
+  // Mark active in sub-sidebar
+  document.querySelectorAll('#sb-admin-menu .sb-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  // Make sure we are on config page
+  if (!document.getElementById('sec-config').classList.contains('active')) {
+    document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
+    document.getElementById('sec-config').classList.add('active');
+    document.querySelectorAll('.sidebar .sb-btn:not(#sb-admin-menu .sb-btn)').forEach(b=>b.classList.remove('active'));
+    document.getElementById('sb-config').classList.add('active');
+  }
+
+  // Hide home, hide all sub pages
+  document.getElementById('admin-sub-home').style.display='none';
+  document.querySelectorAll('.admin-sub-page').forEach(el=>el.style.display='none');
+
+  // Update title
+  document.getElementById('admin-sub-title').textContent = ADMIN_SUB_TITLES[sub] || sub;
+
+  // Show the right sub page
+  if (sub === 'campos') {
+    // Campos uses a standalone list, rendered via renderListaCamposAdmin
+    document.getElementById('cfgtab-categorias').style.display='block';
+    // Scroll to campos section
+    const el = document.getElementById('lista-campos-admin');
+    if (el) setTimeout(()=>el.scrollIntoView({behavior:'smooth'}), 100);
+  } else {
+    const el = document.getElementById(`cfgtab-${sub}`);
+    if (el) el.style.display='block';
+  }
+
+  // Trigger loaders for specific sub-pages
+  if (sub === 'atendentes') renderAtendentesDeptos();
+  if (sub === 'avisos') { loadAvisosAdmin(); limparFormAviso(); }
+  if (sub === 'status') { renderStatusAdmin(); limparFormStatus(); }
+  if (sub === 'sla') preencherFormConfig();
+  if (sub === 'horarios') preencherFormConfig();
+  if (sub === 'campos') renderListaCamposAdmin();
 }
 
 function switchConfigTab(tab, chip) {
