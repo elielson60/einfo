@@ -383,11 +383,12 @@ tr:hover td{background:rgba(255,255,255,.02);}
           </div>
           <div class="field">
             <label>Tipo de Categoria <span class="req">*</span></label>
-            <select id="c-cat">
+            <select id="c-cat" onchange="renderCamposExtra()">
               <option value="">Selecionar...</option>
             </select>
             <div class="field-err" id="err-cat">Selecione o tipo de categoria</div>
           </div>
+          <div id="campos-extra-container"></div>
           <div class="field">
             <label>Anexar imagens <span style="color:var(--dim);font-weight:400;">(opcional)</span></label>
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -1338,6 +1339,10 @@ async function enviarChamado() {
   if (!desc) { document.getElementById('err-desc').style.display='block'; ok=false; } else document.getElementById('err-desc').style.display='none';
   if (!cat) { document.getElementById('err-cat').style.display='block'; ok=false; } else document.getElementById('err-cat').style.display='none';
   if (!selectedPrio) { document.getElementById('err-prio').style.display='block'; ok=false; } else document.getElementById('err-prio').style.display='none';
+
+  const { valores: camposExtra, ok: okExtra } = lerCamposExtra();
+  if (!okExtra) ok = false;
+
   if (!ok) return;
 
   const btn = document.getElementById('btn-chamado');
@@ -1361,7 +1366,8 @@ async function enviarChamado() {
     ai_analise: '',
     ai_acao: '',
     ai_sla: aiResult?.sla_horas ? String(aiResult.sla_horas) : '',
-    anexos: anexoUrls.length ? anexoUrls : null
+    anexos: anexoUrls.length ? anexoUrls : null,
+    campos_personalizados: Object.keys(camposExtra).length ? camposExtra : null
   });
 
   if (error) { showToast('Erro ao salvar chamado. Tente novamente.','err'); btn.innerHTML='Abrir chamado →'; btn.disabled=false; return; }
@@ -1395,6 +1401,7 @@ function novoChamado() {
   document.getElementById('c-titulo').value = '';
   document.getElementById('c-desc').value = '';
   filtrarCategoriasPorArea();
+  document.getElementById('campos-extra-container').innerHTML = '';
   document.querySelectorAll('.prio-pill').forEach(p=>p.className='prio-pill');
   selectedPrio=''; aiResult=null;
   selectedFiles=[];
@@ -2260,12 +2267,16 @@ function openModalDetalhe(id) {
   document.getElementById('det-desc').textContent = c.descricao || '';
 
   const anexosDiv = document.getElementById('det-anexos');
+  let anexosHtml = '';
   if (c.anexos && c.anexos.length) {
-    anexosDiv.innerHTML = '<div style="font-size:12px;color:var(--muted);margin-bottom:6px;">📎 Anexos</div>' +
+    anexosHtml += '<div style="font-size:12px;color:var(--muted);margin-bottom:6px;">📎 Anexos</div>' +
       c.anexos.map(url=>`<a href="${url}" target="_blank"><img src="${url}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;margin-right:6px;border:1px solid var(--border);"/></a>`).join('');
-  } else {
-    anexosDiv.innerHTML = '';
   }
+  if (c.campos_personalizados && Object.keys(c.campos_personalizados).length) {
+    anexosHtml += `<div style="margin-top:${c.anexos&&c.anexos.length?'12px':'0'};font-size:12px;color:var(--muted);margin-bottom:6px;">🧩 Informações adicionais</div>` +
+      Object.entries(c.campos_personalizados).map(([k,v])=>`<div style="font-size:13px;margin-bottom:3px;"><strong style="color:var(--text)">${k}:</strong> ${v}</div>`).join('');
+  }
+  anexosDiv.innerHTML = anexosHtml;
 
   renderComentarios(c.comentarios || []);
   document.getElementById('det-novo-comentario').value = '';
@@ -2357,6 +2368,12 @@ function imprimirChamado() {
     ? `<div class="os-section"><div class="os-title">Anexos</div><div style="font-size:12px;">${c.anexos.length} imagem(ns) anexada(s) — consulte o sistema online.</div></div>`
     : '';
 
+  const camposExtraHtml = (c.campos_personalizados && Object.keys(c.campos_personalizados).length)
+    ? `<div class="os-section"><div class="os-title">Informações adicionais</div><div class="os-grid">
+        ${Object.entries(c.campos_personalizados).map(([k,v])=>`<div><b>${k}:</b> ${v}</div>`).join('')}
+       </div></div>`
+    : '';
+
   const avaliacaoHtml = avaliacao ? `
     <div class="os-section">
       <div class="os-title">Avaliação do atendimento</div>
@@ -2407,6 +2424,8 @@ function imprimirChamado() {
       <div class="os-box">${c.descricao}</div>
     </div>
 
+    ${camposExtraHtml}
+
     ${anexosHtml}
 
     <div class="os-section">
@@ -2441,12 +2460,88 @@ function imprimirChamado() {
 // ── CADASTROS (Empresas / Áreas / Categorias) ──
 let CADASTROS = { empresas: [], areas: [], categorias: [] };
 let ATENDENTES_LIST = [];
+let CAMPOS_POR_CATEGORIA = {};
 
 async function loadCadastrosLists() {
   for (const tabela of ['empresas','areas','categorias']) {
     const { data } = await sb.from(tabela).select('*').order('nome');
     CADASTROS[tabela] = data || [];
   }
+  await loadCamposCategorias();
+}
+
+async function loadCamposCategorias() {
+  const { data } = await sb.from('categoria_campos').select('*').order('ordem');
+  CAMPOS_POR_CATEGORIA = {};
+  (data || []).forEach(c => {
+    if (!CAMPOS_POR_CATEGORIA[c.categoria_id]) CAMPOS_POR_CATEGORIA[c.categoria_id] = [];
+    CAMPOS_POR_CATEGORIA[c.categoria_id].push(c);
+  });
+}
+
+// ── CAMPOS PERSONALIZADOS POR CATEGORIA (admin) ──
+function toggleCamposCategoria(catId) {
+  const panel = document.getElementById(`campos-cat-${catId}`);
+  const show = panel.style.display === 'none';
+  panel.style.display = show ? 'block' : 'none';
+  if (show) renderCamposCategoriaLista(catId);
+}
+
+function toggleCampoOpcoes(catId) {
+  const tipo = document.getElementById(`campo-novo-tipo-${catId}`).value;
+  const precisaOpcoes = ['select','radio','checkbox'].includes(tipo);
+  document.getElementById(`campo-novo-opcoes-field-${catId}`).style.display = precisaOpcoes ? 'block' : 'none';
+}
+
+const TIPO_CAMPO_LABEL = {
+  texto:'Texto curto', textarea:'Texto longo', numero:'Número', data:'Data',
+  select:'Lista (dropdown)', radio:'Seleção única', checkbox:'Seleção múltipla'
+};
+
+function renderCamposCategoriaLista(catId) {
+  const container = document.getElementById(`campos-cat-lista-${catId}`);
+  const campos = CAMPOS_POR_CATEGORIA[catId] || [];
+  if (!campos.length) { container.innerHTML = '<p style="font-size:11px;color:var(--dim);">Nenhum campo personalizado para esta categoria.</p>'; return; }
+  container.innerHTML = campos.map(f => `
+    <div class="cad-item">
+      <span style="font-size:12px;">
+        ${f.label} <span style="color:var(--dim);font-size:11px;">· ${TIPO_CAMPO_LABEL[f.tipo]||f.tipo}${f.opcoes&&f.opcoes.length?' ('+f.opcoes.join(', ')+')':''}${f.obrigatorio?' · obrigatório':''}</span>
+      </span>
+      <button class="cad-del" onclick="delCampoCategoria('${f.id}','${catId}')" title="Excluir">✕</button>
+    </div>`).join('');
+}
+
+async function addCampoCategoria(catId) {
+  const label = document.getElementById(`campo-novo-label-${catId}`).value.trim();
+  const tipo = document.getElementById(`campo-novo-tipo-${catId}`).value;
+  const obrigatorio = document.getElementById(`campo-novo-obrig-${catId}`).checked;
+  const opcoesRaw = document.getElementById(`campo-novo-opcoes-${catId}`).value.trim();
+  if (!label) { showToast('Informe o nome do campo.','err'); return; }
+  const precisaOpcoes = ['select','radio','checkbox'].includes(tipo);
+  const opcoes = precisaOpcoes ? opcoesRaw.split(',').map(o=>o.trim()).filter(Boolean) : null;
+  if (precisaOpcoes && (!opcoes || !opcoes.length)) { showToast('Informe as opções separadas por vírgula.','err'); return; }
+  const ordem = (CAMPOS_POR_CATEGORIA[catId]||[]).length;
+
+  const { error } = await sb.from('categoria_campos').insert({ categoria_id: catId, label, tipo, opcoes, obrigatorio, ordem });
+  if (error) { showToast('Erro ao adicionar campo.','err'); return; }
+
+  document.getElementById(`campo-novo-label-${catId}`).value = '';
+  document.getElementById(`campo-novo-opcoes-${catId}`).value = '';
+  document.getElementById(`campo-novo-obrig-${catId}`).checked = false;
+
+  await loadCamposCategorias();
+  renderCamposCategoriaLista(catId);
+  renderCadastroLista('categorias');
+  showToast('Campo adicionado!','ok');
+}
+
+async function delCampoCategoria(fieldId, catId) {
+  if (!confirm('Excluir este campo personalizado?')) return;
+  await sb.from('categoria_campos').delete().eq('id', fieldId);
+  await loadCamposCategorias();
+  renderCamposCategoriaLista(catId);
+  renderCadastroLista('categorias');
+  showToast('Campo excluído!','ok');
 }
 
 async function loadAtendentesList() {
@@ -2481,12 +2576,51 @@ function renderCadastroLista(tabela) {
       const checklist = ATENDENTES_LIST.length
         ? ATENDENTES_LIST.map(a=>`<button type="button" class="aval-btn ${vinculados.includes(a)?'sel':''}" data-atd="${a.id}" onclick="this.classList.toggle('sel')">${a.nome}</button>`).join('')
         : '<span style="font-size:11px;color:var(--dim);">Nenhum atendente cadastrado.</span>';
+      const campos = CAMPOS_POR_CATEGORIA[i.id] || [];
       extra = `
         <div style="margin-top:6px;">
           ${vinculados.length ? `<div style="font-size:11px;color:var(--dim);margin-bottom:4px;">👤 ${vinculados.map(a=>a.nome).join(', ')}</div>` : ''}
           <button class="cad-del" style="font-size:11px;" onclick="toggleVinculoCategoria('${i.id}')">${vinculados.length?'✎ Editar vínculos':'👤 Vincular atendente'}</button>
           <div id="vinc-cat-${i.id}" class="aval-opt" style="display:none;margin-top:6px;">${checklist}</div>
           <button id="vinc-save-${i.id}" class="btn btn-primary btn-sm" style="display:none;margin-top:6px;" onclick="salvarVinculoCategoria('${i.id}')">Salvar vínculos</button>
+        </div>
+        <div style="margin-top:8px;">
+          ${campos.length ? `<div style="font-size:11px;color:var(--dim);margin-bottom:4px;">🧩 ${campos.map(c=>c.label).join(', ')}</div>` : ''}
+          <button class="cad-del" style="font-size:11px;" onclick="toggleCamposCategoria('${i.id}')">${campos.length?'✎ Editar campos personalizados':'🧩 Adicionar campos personalizados'}</button>
+          <div id="campos-cat-${i.id}" style="display:none;margin-top:8px;">
+            <div id="campos-cat-lista-${i.id}"></div>
+            <div style="margin-top:10px;padding:10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface2);">
+              <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Novo campo personalizado</div>
+              <div class="grid2" style="margin-bottom:8px;">
+                <div class="field" style="margin-bottom:0;">
+                  <label style="font-size:11px;">Nome do campo</label>
+                  <input type="text" id="campo-novo-label-${i.id}" placeholder="Ex: Patrimônio do equipamento"/>
+                </div>
+                <div class="field" style="margin-bottom:0;">
+                  <label style="font-size:11px;">Modo de exibição</label>
+                  <select id="campo-novo-tipo-${i.id}" onchange="toggleCampoOpcoes('${i.id}')">
+                    <option value="texto">Texto curto</option>
+                    <option value="textarea">Texto longo (parágrafo)</option>
+                    <option value="numero">Número</option>
+                    <option value="data">Data</option>
+                    <option value="select">Lista de opções (dropdown)</option>
+                    <option value="radio">Seleção única (botões)</option>
+                    <option value="checkbox">Seleção múltipla (checkboxes)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field" id="campo-novo-opcoes-field-${i.id}" style="display:none;margin-bottom:8px;">
+                <label style="font-size:11px;">Opções <span style="color:var(--dim);font-weight:400;">(separadas por vírgula)</span></label>
+                <input type="text" id="campo-novo-opcoes-${i.id}" placeholder="Ex: Baixo, Médio, Alto"/>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <label style="display:flex;align-items:center;gap:6px;margin:0;text-transform:none;font-size:12px;">
+                  <input type="checkbox" id="campo-novo-obrig-${i.id}" style="width:auto;"/> Campo obrigatório
+                </label>
+                <button class="btn btn-primary btn-sm" onclick="addCampoCategoria('${i.id}')">+ Adicionar campo</button>
+              </div>
+            </div>
+          </div>
         </div>`;
     }
     return `
@@ -2614,6 +2748,82 @@ async function popularSelectsFormulario() {
   });
 
   filtrarCategoriasPorArea();
+}
+
+// Renderiza campos personalizados de acordo com a categoria escolhida
+function renderCamposExtra() {
+  const container = document.getElementById('campos-extra-container');
+  const catNome = document.getElementById('c-cat').value;
+  const cat = CADASTROS.categorias.find(c=>c.nome===catNome);
+  const campos = cat ? (CAMPOS_POR_CATEGORIA[cat.id]||[]) : [];
+
+  if (!campos.length) { container.innerHTML = ''; return; }
+
+  container.innerHTML = campos.map(f => {
+    const reqMark = f.obrigatorio ? '<span class="req">*</span>' : '';
+    const fid = `campo-extra-${f.id}`;
+    let input;
+    if (f.tipo === 'select') {
+      input = `<select id="${fid}">
+        <option value="">Selecionar...</option>
+        ${(f.opcoes||[]).map(o=>`<option value="${o}">${o}</option>`).join('')}
+      </select>`;
+    } else if (f.tipo === 'radio') {
+      input = `<div class="aval-opt" id="${fid}">
+        ${(f.opcoes||[]).map(o=>`<button type="button" class="aval-btn" data-val="${o}" onclick="document.querySelectorAll('#${fid} .aval-btn').forEach(b=>b.classList.remove('sel'));this.classList.add('sel')">${o}</button>`).join('')}
+      </div>`;
+    } else if (f.tipo === 'checkbox') {
+      input = `<div class="aval-opt" id="${fid}">
+        ${(f.opcoes||[]).map(o=>`<button type="button" class="aval-btn" data-val="${o}" onclick="this.classList.toggle('sel')">${o}</button>`).join('')}
+      </div>`;
+    } else if (f.tipo === 'textarea') {
+      input = `<textarea id="${fid}" style="min-height:70px;"></textarea>`;
+    } else if (f.tipo === 'data') {
+      input = `<input type="date" id="${fid}"/>`;
+    } else if (f.tipo === 'numero') {
+      input = `<input type="number" id="${fid}"/>`;
+    } else {
+      input = `<input type="text" id="${fid}"/>`;
+    }
+    return `<div class="field">
+      <label>${f.label} ${reqMark}</label>
+      ${input}
+      <div class="field-err" id="err-${fid}">Campo obrigatório</div>
+    </div>`;
+  }).join('');
+}
+
+// Lê valores preenchidos dos campos personalizados e valida obrigatórios
+function lerCamposExtra() {
+  const catNome = document.getElementById('c-cat').value;
+  const cat = CADASTROS.categorias.find(c=>c.nome===catNome);
+  const campos = cat ? (CAMPOS_POR_CATEGORIA[cat.id]||[]) : [];
+  const valores = {};
+  let ok = true;
+
+  campos.forEach(f => {
+    const fid = `campo-extra-${f.id}`;
+    let val = '';
+    if (f.tipo === 'radio') {
+      const sel = document.querySelector(`#${fid} .aval-btn.sel`);
+      val = sel ? sel.dataset.val : '';
+    } else if (f.tipo === 'checkbox') {
+      val = Array.from(document.querySelectorAll(`#${fid} .aval-btn.sel`)).map(b=>b.dataset.val).join(', ');
+    } else {
+      const el = document.getElementById(fid);
+      val = el ? el.value.trim() : '';
+    }
+    if (f.obrigatorio && !val) {
+      document.getElementById(`err-${fid}`).style.display = 'block';
+      ok = false;
+    } else {
+      const errEl = document.getElementById(`err-${fid}`);
+      if (errEl) errEl.style.display = 'none';
+    }
+    if (val) valores[f.label] = val;
+  });
+
+  return { valores, ok };
 }
 
 // Filtra as categorias disponíveis com base na área selecionada,
