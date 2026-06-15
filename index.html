@@ -362,7 +362,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <div class="card-lbl">Novo Chamado</div>
           <div class="field">
             <label>Área <span class="req">*</span></label>
-            <select id="c-area">
+            <select id="c-area" onchange="filtrarCategoriasPorArea()">
               <option value="">Selecionar...</option>
             </select>
             <div class="field-err" id="err-area">Selecione a área</div>
@@ -1394,7 +1394,7 @@ function novoChamado() {
   document.getElementById('c-area').value = '';
   document.getElementById('c-titulo').value = '';
   document.getElementById('c-desc').value = '';
-  document.getElementById('c-cat').value = '';
+  filtrarCategoriasPorArea();
   document.querySelectorAll('.prio-pill').forEach(p=>p.className='prio-pill');
   selectedPrio=''; aiResult=null;
   selectedFiles=[];
@@ -2601,7 +2601,9 @@ async function popularSelectsFormulario() {
   if (!CADASTROS.empresas.length && !CADASTROS.areas.length && !CADASTROS.categorias.length) {
     await loadCadastrosLists();
   }
-  const map = { 'r-empresa': 'empresas', 'c-area': 'areas', 'c-cat': 'categorias' };
+  if (!ATENDENTES_LIST.length) await loadAtendentesList();
+
+  const map = { 'r-empresa': 'empresas', 'c-area': 'areas' };
   Object.entries(map).forEach(([selectId, tabela]) => {
     const sel = document.getElementById(selectId);
     if (!sel) return;
@@ -2610,6 +2612,31 @@ async function popularSelectsFormulario() {
     sel.innerHTML = `<option value="">Selecionar...</option>${opts}`;
     if (atual) sel.value = atual;
   });
+
+  filtrarCategoriasPorArea();
+}
+
+// Filtra as categorias disponíveis com base na área selecionada,
+// mostrando apenas categorias vinculadas aos atendentes responsáveis por aquela área.
+function filtrarCategoriasPorArea() {
+  const sel = document.getElementById('c-cat');
+  if (!sel) return;
+  const area = document.getElementById('c-area')?.value || '';
+  const atual = sel.value;
+
+  let lista;
+  if (!area) {
+    lista = CADASTROS.categorias;
+  } else {
+    const atendentesArea = ATENDENTES_LIST.filter(a => !(a.departamentos||[]).length || (a.departamentos||[]).includes(area));
+    const set = new Set();
+    atendentesArea.forEach(a => (a.categorias||[]).forEach(c=>set.add(c)));
+    lista = CADASTROS.categorias.filter(c=>set.has(c.nome));
+  }
+
+  const opts = lista.map(c=>`<option value="${c.nome}">${c.nome}</option>`).join('');
+  sel.innerHTML = `<option value="">Selecionar...</option>${opts}`;
+  if (lista.some(c=>c.nome===atual)) sel.value = atual;
 }
 
 // ── EXPORTAÇÃO CSV ───────────────────────────
