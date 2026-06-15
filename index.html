@@ -2493,6 +2493,18 @@ function toggleCampoOpcoes(catId) {
   document.getElementById(`campo-novo-opcoes-field-${catId}`).style.display = precisaOpcoes ? 'block' : 'none';
 }
 
+function toggleTodosAreasCampo(catId) {
+  const container = document.getElementById(`campo-novo-areas-${catId}`);
+  const todosBtn = container.querySelector('[data-todos]');
+  todosBtn.classList.toggle('sel');
+  const ativo = todosBtn.classList.contains('sel');
+  container.querySelectorAll('[data-area]').forEach(b => {
+    b.disabled = ativo;
+    b.style.opacity = ativo ? '.4' : '1';
+    if (ativo) b.classList.remove('sel');
+  });
+}
+
 const TIPO_CAMPO_LABEL = {
   texto:'Texto curto', textarea:'Texto longo', numero:'Número', data:'Data',
   select:'Lista (dropdown)', radio:'Seleção única', checkbox:'Seleção múltipla'
@@ -2502,13 +2514,16 @@ function renderCamposCategoriaLista(catId) {
   const container = document.getElementById(`campos-cat-lista-${catId}`);
   const campos = CAMPOS_POR_CATEGORIA[catId] || [];
   if (!campos.length) { container.innerHTML = '<p style="font-size:11px;color:var(--dim);">Nenhum campo personalizado para esta categoria.</p>'; return; }
-  container.innerHTML = campos.map(f => `
+  container.innerHTML = campos.map(f => {
+    const areasTxt = (!f.areas || !f.areas.length) ? 'Todos os departamentos' : f.areas.join(', ');
+    return `
     <div class="cad-item">
       <span style="font-size:12px;">
-        ${f.label} <span style="color:var(--dim);font-size:11px;">· ${TIPO_CAMPO_LABEL[f.tipo]||f.tipo}${f.opcoes&&f.opcoes.length?' ('+f.opcoes.join(', ')+')':''}${f.obrigatorio?' · obrigatório':''}</span>
+        ${f.label} <span style="color:var(--dim);font-size:11px;">· ${TIPO_CAMPO_LABEL[f.tipo]||f.tipo}${f.opcoes&&f.opcoes.length?' ('+f.opcoes.join(', ')+')':''}${f.obrigatorio?' · obrigatório':''} · 📍 ${areasTxt}</span>
       </span>
       <button class="cad-del" onclick="delCampoCategoria('${f.id}','${catId}')" title="Excluir">✕</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 async function addCampoCategoria(catId) {
@@ -2520,10 +2535,23 @@ async function addCampoCategoria(catId) {
   const precisaOpcoes = ['select','radio','checkbox'].includes(tipo);
   const opcoes = precisaOpcoes ? opcoesRaw.split(',').map(o=>o.trim()).filter(Boolean) : null;
   if (precisaOpcoes && (!opcoes || !opcoes.length)) { showToast('Informe as opções separadas por vírgula.','err'); return; }
-  const ordem = (CAMPOS_POR_CATEGORIA[catId]||[]).length;
 
-  const { error } = await sb.from('categoria_campos').insert({ categoria_id: catId, label, tipo, opcoes, obrigatorio, ordem });
-  if (error) { showToast('Erro ao adicionar campo.','err'); return; }
+  // Áreas selecionadas ("Todos" = null = aplica a todos os departamentos)
+  const areasContainer = document.getElementById(`campo-novo-areas-${catId}`);
+  const todosMarcado = areasContainer.querySelector('[data-todos]').classList.contains('sel');
+  const areasSelecionadas = todosMarcado ? null : Array.from(areasContainer.querySelectorAll('[data-area].sel')).map(b=>b.dataset.area);
+
+  // Categorias selecionadas (cria um registro do campo para cada categoria marcada)
+  const catsSelecionadas = Array.from(document.querySelectorAll(`#campo-novo-cats-${catId} .aval-btn.sel`)).map(b=>b.dataset.cat);
+  if (!catsSelecionadas.length) { showToast('Selecione ao menos uma categoria.','err'); return; }
+
+  for (const targetCatId of catsSelecionadas) {
+    const ordem = (CAMPOS_POR_CATEGORIA[targetCatId]||[]).length;
+    await sb.from('categoria_campos').insert({
+      categoria_id: targetCatId, label, tipo, opcoes, obrigatorio, ordem,
+      areas: areasSelecionadas
+    });
+  }
 
   document.getElementById(`campo-novo-label-${catId}`).value = '';
   document.getElementById(`campo-novo-opcoes-${catId}`).value = '';
@@ -2613,6 +2641,22 @@ function renderCadastroLista(tabela) {
                 <label style="font-size:11px;">Opções <span style="color:var(--dim);font-weight:400;">(separadas por vírgula)</span></label>
                 <input type="text" id="campo-novo-opcoes-${i.id}" placeholder="Ex: Baixo, Médio, Alto"/>
               </div>
+
+              <div class="field" style="margin-bottom:8px;">
+                <label style="font-size:11px;">Departamentos para Chamados <span style="color:var(--dim);font-weight:400;">(em quais áreas este campo aparece)</span></label>
+                <div class="aval-opt" id="campo-novo-areas-${i.id}">
+                  <button type="button" class="aval-btn" data-todos="1" onclick="toggleTodosAreasCampo('${i.id}')">Todos</button>
+                  ${CADASTROS.areas.map(a=>`<button type="button" class="aval-btn" data-area="${a.nome}" onclick="this.classList.toggle('sel')">${a.nome}</button>`).join('')}
+                </div>
+              </div>
+
+              <div class="field" style="margin-bottom:8px;">
+                <label style="font-size:11px;">Categorias <span style="color:var(--dim);font-weight:400;">(em quais categorias este campo aparece)</span></label>
+                <div class="aval-opt" id="campo-novo-cats-${i.id}">
+                  ${CADASTROS.categorias.map(c=>`<button type="button" class="aval-btn ${c.id===i.id?'sel':''}" data-cat="${c.id}" onclick="this.classList.toggle('sel')">${c.nome}</button>`).join('')}
+                </div>
+              </div>
+
               <div style="display:flex;justify-content:space-between;align-items:center;">
                 <label style="display:flex;align-items:center;gap:6px;margin:0;text-transform:none;font-size:12px;">
                   <input type="checkbox" id="campo-novo-obrig-${i.id}" style="width:auto;"/> Campo obrigatório
@@ -2754,8 +2798,10 @@ async function popularSelectsFormulario() {
 function renderCamposExtra() {
   const container = document.getElementById('campos-extra-container');
   const catNome = document.getElementById('c-cat').value;
+  const area = document.getElementById('c-area')?.value || '';
   const cat = CADASTROS.categorias.find(c=>c.nome===catNome);
-  const campos = cat ? (CAMPOS_POR_CATEGORIA[cat.id]||[]) : [];
+  const todosCampos = cat ? (CAMPOS_POR_CATEGORIA[cat.id]||[]) : [];
+  const campos = todosCampos.filter(f => !f.areas || !f.areas.length || f.areas.includes(area));
 
   if (!campos.length) { container.innerHTML = ''; return; }
 
@@ -2796,8 +2842,10 @@ function renderCamposExtra() {
 // Lê valores preenchidos dos campos personalizados e valida obrigatórios
 function lerCamposExtra() {
   const catNome = document.getElementById('c-cat').value;
+  const area = document.getElementById('c-area')?.value || '';
   const cat = CADASTROS.categorias.find(c=>c.nome===catNome);
-  const campos = cat ? (CAMPOS_POR_CATEGORIA[cat.id]||[]) : [];
+  const todosCampos = cat ? (CAMPOS_POR_CATEGORIA[cat.id]||[]) : [];
+  const campos = todosCampos.filter(f => !f.areas || !f.areas.length || f.areas.includes(area));
   const valores = {};
   let ok = true;
 
