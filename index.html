@@ -629,7 +629,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
                 <th>Nome</th>
                 <th>E-mail</th>
                 <th>Empresa</th>
-                <th>Área</th>
+                <th>Áreas (atendente)</th>
                 <th>Role</th>
                 <th>Ação</th>
               </tr>
@@ -741,6 +741,10 @@ tr:hover td{background:rgba(255,255,255,.02);}
             <div style="display:flex;gap:6px;margin-bottom:12px;max-width:400px;">
               <input type="text" id="novo-categoria" placeholder="Nova categoria..."/>
               <button class="btn btn-primary btn-sm" onclick="addCadastro('categorias','novo-categoria')">+</button>
+            </div>
+            <div class="field" style="max-width:500px;">
+              <label>Vincular a atendentes <span style="color:var(--dim);font-weight:400;">(opcional)</span></label>
+              <div class="aval-opt" id="novo-categoria-atendentes"></div>
             </div>
             <div id="lista-categorias"></div>
           </div>
@@ -947,15 +951,9 @@ tr:hover td{background:rgba(255,255,255,.02);}
         </select>
       </div>
     </div>
-    <div class="grid2">
-      <div class="field">
-        <label>Organização</label>
-        <select id="usu-empresa"></select>
-      </div>
-      <div class="field">
-        <label>Área (perfil)</label>
-        <input type="text" id="usu-departamento"/>
-      </div>
+    <div class="field">
+      <label>Organização</label>
+      <select id="usu-empresa"></select>
     </div>
     <div class="field" id="usu-depts-field" style="display:none;">
       <label>Áreas atendidas <span style="color:var(--dim);font-weight:400;">(o atendente verá apenas chamados dessas áreas)</span></label>
@@ -1133,7 +1131,7 @@ function fillPerfil(p) {
   const ini = p.nome.split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || '?';
   document.getElementById('pf-avatar').textContent = ini;
   document.getElementById('pf-nome').textContent = p.nome || '—';
-  document.getElementById('pf-meta').textContent = `${p.empresa||''} — ${p.departamento||''}${p.ramal?' · '+p.ramal:''}`;
+  document.getElementById('pf-meta').textContent = `${p.empresa||''}${p.ramal?' · '+p.ramal:''}`;
 }
 
 // ── AUTH TABS ────────────────────────────────
@@ -1697,7 +1695,7 @@ function renderUsuarios(list) {
       <td style="font-weight:500;">${u.nome}</td>
       <td style="font-size:12px;color:var(--muted);">${u.email}</td>
       <td style="font-size:12px;">${u.empresa||'—'}</td>
-      <td style="font-size:12px;">${u.departamento||'—'}${u.role==='atendente' && u.departamentos?.length ? `<br><span style="color:var(--dim);font-size:11px;">${u.departamentos.join(', ')}</span>`:''}</td>
+      <td style="font-size:12px;">${u.role==='atendente' && u.departamentos?.length ? u.departamentos.join(', ') : '<span style="color:var(--dim);">—</span>'}</td>
       <td>
         <span class="badge ${u.role==='admin'?'b-admin':u.role==='atendente'?'b-atendente':'b-user'}">${u.role}</span>
         ${u.ativo===false?'<span class="badge" style="background:var(--red-s);color:#f87171;border-color:rgba(239,68,68,.35);margin-left:4px;">Inativo</span>':''}
@@ -1736,7 +1734,6 @@ async function openModalUsuario(id) {
   selEmpresa.innerHTML = `<option value="">Selecionar...</option>${optsEmpresa}`;
   selEmpresa.value = u.empresa || '';
 
-  document.getElementById('usu-departamento').value = u.departamento || '';
   document.getElementById('usu-role').value = u.role || 'usuario';
 
   // Popular checklist de áreas
@@ -1771,7 +1768,6 @@ async function salvarUsuario() {
     nome: document.getElementById('usu-nome').value.trim(),
     ramal: document.getElementById('usu-ramal').value.trim(),
     empresa: document.getElementById('usu-empresa').value.trim(),
-    departamento: document.getElementById('usu-departamento').value.trim(),
     role: role,
     departamentos: departamentos
   }).eq('id', id);
@@ -2444,6 +2440,7 @@ function imprimirChamado() {
 
 // ── CADASTROS (Empresas / Áreas / Categorias) ──
 let CADASTROS = { empresas: [], areas: [], categorias: [] };
+let ATENDENTES_LIST = [];
 
 async function loadCadastrosLists() {
   for (const tabela of ['empresas','areas','categorias']) {
@@ -2452,25 +2449,84 @@ async function loadCadastrosLists() {
   }
 }
 
+async function loadAtendentesList() {
+  const { data } = await sb.from('perfis').select('*').eq('role','atendente').order('nome');
+  ATENDENTES_LIST = data || [];
+}
+
 async function loadCadastros() {
   await loadCadastrosLists();
+  await loadAtendentesList();
   renderCadastroLista('empresas');
   renderCadastroLista('areas');
   renderCadastroLista('categorias');
+  populateNovoCategoriaAtendentes();
+}
+
+function populateNovoCategoriaAtendentes() {
+  const el = document.getElementById('novo-categoria-atendentes');
+  if (!el) return;
+  if (!ATENDENTES_LIST.length) { el.innerHTML = '<span style="font-size:11px;color:var(--dim);">Nenhum atendente cadastrado ainda.</span>'; return; }
+  el.innerHTML = ATENDENTES_LIST.map(a=>`<button type="button" class="aval-btn" data-atd="${a.id}" onclick="this.classList.toggle('sel')">${a.nome}</button>`).join('');
 }
 
 function renderCadastroLista(tabela) {
   const container = document.getElementById('lista-'+tabela);
   const items = CADASTROS[tabela];
   if (!items.length) { container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhum item cadastrado.</p>'; return; }
-  container.innerHTML = items.map(i => `
-    <div class="cad-item" id="cad-${tabela}-${i.id}">
-      <span class="cad-nome" id="cad-nome-${tabela}-${i.id}">${i.nome}</span>
-      <span style="display:flex;gap:8px;">
-        <button class="cad-del" onclick="editCadastro('${tabela}','${i.id}')" title="Editar">✎</button>
-        <button class="cad-del" onclick="delCadastro('${tabela}','${i.id}')" title="Excluir">✕</button>
-      </span>
-    </div>`).join('');
+  container.innerHTML = items.map(i => {
+    let extra = '';
+    if (tabela === 'categorias') {
+      const vinculados = ATENDENTES_LIST.filter(a=>(a.categorias||[]).includes(i.nome));
+      const checklist = ATENDENTES_LIST.length
+        ? ATENDENTES_LIST.map(a=>`<button type="button" class="aval-btn ${vinculados.includes(a)?'sel':''}" data-atd="${a.id}" onclick="this.classList.toggle('sel')">${a.nome}</button>`).join('')
+        : '<span style="font-size:11px;color:var(--dim);">Nenhum atendente cadastrado.</span>';
+      extra = `
+        <div style="margin-top:6px;">
+          ${vinculados.length ? `<div style="font-size:11px;color:var(--dim);margin-bottom:4px;">👤 ${vinculados.map(a=>a.nome).join(', ')}</div>` : ''}
+          <button class="cad-del" style="font-size:11px;" onclick="toggleVinculoCategoria('${i.id}')">${vinculados.length?'✎ Editar vínculos':'👤 Vincular atendente'}</button>
+          <div id="vinc-cat-${i.id}" class="aval-opt" style="display:none;margin-top:6px;">${checklist}</div>
+          <button id="vinc-save-${i.id}" class="btn btn-primary btn-sm" style="display:none;margin-top:6px;" onclick="salvarVinculoCategoria('${i.id}')">Salvar vínculos</button>
+        </div>`;
+    }
+    return `
+    <div class="cad-item" id="cad-${tabela}-${i.id}" style="${tabela==='categorias'?'display:block;':''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span class="cad-nome" id="cad-nome-${tabela}-${i.id}">${i.nome}</span>
+        <span style="display:flex;gap:8px;">
+          <button class="cad-del" onclick="editCadastro('${tabela}','${i.id}')" title="Editar">✎</button>
+          <button class="cad-del" onclick="delCadastro('${tabela}','${i.id}')" title="Excluir">✕</button>
+        </span>
+      </div>
+      ${extra}
+    </div>`;
+  }).join('');
+}
+
+function toggleVinculoCategoria(catId) {
+  const panel = document.getElementById(`vinc-cat-${catId}`);
+  const btn = document.getElementById(`vinc-save-${catId}`);
+  const show = panel.style.display === 'none';
+  panel.style.display = show ? 'flex' : 'none';
+  if (btn) btn.style.display = show ? 'inline-flex' : 'none';
+}
+
+async function salvarVinculoCategoria(catId) {
+  const cat = CADASTROS.categorias.find(c=>c.id===catId);
+  if (!cat) return;
+  const catNome = cat.nome;
+  const checked = Array.from(document.querySelectorAll(`#vinc-cat-${catId} .aval-btn.sel`)).map(b=>b.dataset.atd);
+  for (const a of ATENDENTES_LIST) {
+    const has = (a.categorias||[]).includes(catNome);
+    const should = checked.includes(a.id);
+    if (has === should) continue;
+    const novas = should ? [...(a.categorias||[]), catNome] : (a.categorias||[]).filter(c=>c!==catNome);
+    await sb.from('perfis').update({ categorias: novas }).eq('id', a.id);
+    a.categorias = novas;
+    if (currentPerfil && currentPerfil.id === a.id) currentPerfil.categorias = novas;
+  }
+  renderCadastroLista('categorias');
+  showToast('Vínculos atualizados!','ok');
 }
 
 function editCadastro(tabela, id) {
@@ -2510,8 +2566,23 @@ async function addCadastro(tabela, inputId) {
     return;
   }
   input.value = '';
+
+  if (tabela === 'categorias') {
+    const checked = Array.from(document.querySelectorAll('#novo-categoria-atendentes .aval-btn.sel')).map(b=>b.dataset.atd);
+    for (const atdId of checked) {
+      const a = ATENDENTES_LIST.find(x=>x.id===atdId);
+      if (a) {
+        const novas = [...(a.categorias||[]), nome];
+        await sb.from('perfis').update({ categorias: novas }).eq('id', atdId);
+        a.categorias = novas;
+      }
+    }
+  }
+
   await loadCadastrosLists();
+  await loadAtendentesList();
   renderCadastroLista(tabela);
+  if (tabela === 'categorias') populateNovoCategoriaAtendentes();
   await popularSelectsFormulario();
   showToast('Item adicionado!','ok');
 }
