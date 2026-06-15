@@ -2193,41 +2193,32 @@ async function renderAtendentesDeptos() {
     container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhum atendente cadastrado ainda. Crie um usuário em "Usuários" e defina o perfil como "Atendente".</p>';
     return;
   }
-  if (!CADASTROS.areas.length && !CADASTROS.categorias.length) {
-    container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhuma área ou categoria cadastrada. Adicione em "📍 Áreas" ou "🗂️ Categorias".</p>';
+  if (!CADASTROS.areas.length) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhuma área cadastrada. Adicione em Administração → Áreas.</p>';
     return;
   }
 
   container.innerHTML = atendentes.map(u => `
-    <div class="cad-item" style="display:block;padding:12px;">
-      <div style="font-size:13px;font-weight:500;margin-bottom:10px;">${u.nome} <span style="color:var(--dim);font-size:11px;font-weight:400;">${u.email}</span></div>
-
-      <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">📍 Áreas atendidas <span style="font-weight:400;text-transform:none;">(vazio = todas)</span></div>
+    <div class="cad-item" style="display:block;padding:14px;">
+      <div style="font-size:13px;font-weight:500;margin-bottom:12px;">
+        ${u.nome} <span style="color:var(--dim);font-size:11px;font-weight:400;">${u.email}</span>
+      </div>
+      <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Áreas atendidas <span style="font-weight:400;text-transform:none;color:var(--dim);">· Deixar vazio para atender todas</span></div>
       <div class="aval-opt" id="atd-depts-${u.id}">
         ${CADASTROS.areas.map(a => `
           <button type="button" class="aval-btn ${ (u.departamentos||[]).includes(a.nome) ? 'sel' : '' }" data-dept="${a.nome}" onclick="this.classList.toggle('sel')">${a.nome}</button>
         `).join('')}
       </div>
-
-      <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px;">🗂️ Categorias exclusivas <span style="font-weight:400;text-transform:none;">(vazio = todas)</span></div>
-      <div class="aval-opt" id="atd-cats-${u.id}">
-        ${CADASTROS.categorias.map(c => `
-          <button type="button" class="aval-btn ${ (u.categorias||[]).includes(c.nome) ? 'sel' : '' }" data-cat="${c.nome}" onclick="this.classList.toggle('sel')">${c.nome}</button>
-        `).join('')}
-      </div>
-
-      <button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="salvarDeptosAtendente('${u.id}')">💾 Salvar</button>
+      <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="salvarDeptosAtendente('${u.id}')">💾 Salvar</button>
     </div>`).join('');
 }
 
 async function salvarDeptosAtendente(id) {
   const departamentos = Array.from(document.querySelectorAll(`#atd-depts-${id} .aval-btn.sel`)).map(b=>b.dataset.dept);
-  const categorias = Array.from(document.querySelectorAll(`#atd-cats-${id} .aval-btn.sel`)).map(b=>b.dataset.cat);
-  await sb.from('perfis').update({ departamentos, categorias }).eq('id', id);
-  showToast('Vínculos atualizados!','ok');
+  await sb.from('perfis').update({ departamentos }).eq('id', id);
+  showToast('Áreas atualizadas!','ok');
   if (currentPerfil && currentPerfil.id === id) {
     currentPerfil.departamentos = departamentos;
-    currentPerfil.categorias = categorias;
   }
 }
 
