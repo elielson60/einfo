@@ -200,6 +200,14 @@ tr:hover td{background:rgba(255,255,255,.02);}
 #print-area .os-sign div { border-top:1px solid #000; padding-top:4px; text-align:center; font-size:12px; }
 #print-area .os-footer { margin-top:20px; font-size:10px; color:#777; text-align:center; border-top:1px solid #ccc; padding-top:6px; }
 
+/* ── CUSTOM CHECKBOX ── */
+.chk-wrap{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font-size:13px;}
+.chk-wrap input[type="checkbox"]{display:none;}
+.chk-box{width:20px;height:20px;border-radius:5px;border:2px solid var(--border2);background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.chk-wrap input[type="checkbox"]:checked + .chk-box{background:var(--accent);border-color:var(--accent);}
+.chk-wrap input[type="checkbox"]:checked + .chk-box::after{content:"✓";color:#fff;font-size:13px;font-weight:700;line-height:1;}
+.chk-wrap input[type="checkbox"]:disabled + .chk-box{opacity:.4;cursor:not-allowed;}
+
 /* ── ADMIN SUBMENU ── */
 #sb-admin-menu .sb-btn{font-size:12px;padding:6px 10px;color:var(--dim);}
 #sb-admin-menu .sb-btn:hover{color:var(--text);background:var(--surface2);}
@@ -901,7 +909,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
               <div class="field">
                 <label>Status da conta</label>
                 <label style="display:flex;align-items:center;gap:8px;margin:0;text-transform:none;font-size:13px;cursor:pointer;">
-                  <input type="checkbox" id="atd-edit-ativo" style="width:auto;"/> Conta ativa
+                  <label class="chk-wrap"><input type="checkbox" id="atd-edit-ativo"/><span class="chk-box"></span><span>Conta ativa</span></label>
                 </label>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
@@ -940,9 +948,8 @@ tr:hover td{background:rgba(255,255,255,.02);}
                 <div class="field"><label>Início da exibição (opcional)</label><input type="date" id="aviso-inicio"/></div>
                 <div class="field"><label>Fim da exibição (opcional)</label><input type="date" id="aviso-fim"/></div>
               </div>
-              <div class="field" style="display:flex;align-items:center;gap:8px;">
-                <input type="checkbox" id="aviso-ativo" checked style="width:auto;"/>
-                <label style="margin:0;text-transform:none;font-size:13px;">Exibir mensagem (ativo)</label>
+              <div class="field">
+                <label class="chk-wrap"><input type="checkbox" id="aviso-ativo" checked/><span class="chk-box"></span><span>Exibir mensagem (ativo)</span></label>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
                 <button class="btn btn-primary" onclick="salvarAviso()">💾 Salvar aviso</button>
@@ -994,7 +1001,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <div class="field">
         <label>Campo obrigatório</label>
         <label style="display:flex;align-items:center;gap:8px;margin:0;text-transform:none;font-size:13px;cursor:pointer;">
-          <input type="checkbox" id="campo-obrigatorio" style="width:auto;"/> Sim, este campo é obrigatório
+          <label class="chk-wrap"><input type="checkbox" id="campo-obrigatorio"/><span class="chk-box"></span><span>Sim, este campo é obrigatório</span></label>
         </label>
       </div>
     </div>
@@ -3149,13 +3156,12 @@ function renderCampoModalAreas(fieldId) {
   const todosAtivo = !marcadas.length;
   container.innerHTML = `
     <div class="campo-area-item campo-area-todos">
-      <input type="checkbox" id="campo-area-todos" ${todosAtivo?'checked':''} onchange="toggleCampoAreasTodos()"/>
-      <label for="campo-area-todos" style="cursor:pointer;margin:0;text-transform:none;font-size:13px;">Todos os departamentos</label>
+      <label class="chk-wrap"><input type="checkbox" id="campo-area-todos" ${todosAtivo?'checked':''} onchange="toggleCampoAreasTodos()"/><span class="chk-box"></span>
+      <span>Todos os departamentos</span></label>
     </div>
     ${CADASTROS.areas.map(a=>`
     <div class="campo-area-item" id="campo-area-wrap-${a.id}">
-      <input type="checkbox" id="campo-area-chk-${a.id}" data-area="${a.nome}" ${marcadas.includes(a.nome)?'checked':''} ${todosAtivo?'disabled':''}/>
-      <label for="campo-area-chk-${a.id}" style="cursor:pointer;margin:0;text-transform:none;font-size:13px;">${a.nome}</label>
+      <label class="chk-wrap"><input type="checkbox" id="campo-area-chk-${a.id}" data-area="${a.nome}" ${marcadas.includes(a.nome)?'checked':''} ${todosAtivo?'disabled':''}/><span class="chk-box"></span><span>${a.nome}</span></label>
     </div>`).join('')}`;
 }
 
@@ -3184,13 +3190,12 @@ function renderCampoModalCats(fieldId) {
   const todosAtivo = !catsMarcadas.length && !fieldId;
   container.innerHTML = `
     <div class="campo-cat-item campo-area-todos">
-      <input type="checkbox" id="campo-cat-todos" ${todosAtivo?'checked':''} onchange="toggleCampoCatsTodos()"/>
-      <label for="campo-cat-todos" style="cursor:pointer;margin:0;text-transform:none;font-size:13px;">Todas as categorias</label>
+      <label class="chk-wrap"><input type="checkbox" id="campo-cat-todos" ${todosAtivo?'checked':''} onchange="toggleCampoCatsTodos()"/><span class="chk-box"></span>
+      <span>Todas as categorias</span></label>
     </div>
     ${CADASTROS.categorias.map(c=>`
     <div class="campo-cat-item">
-      <input type="checkbox" id="campo-cat-chk-${c.id}" data-cat="${c.id}" ${catsMarcadas.includes(c.id)?'checked':''} ${todosAtivo?'disabled':''}/>
-      <label for="campo-cat-chk-${c.id}" style="cursor:pointer;margin:0;text-transform:none;font-size:13px;">${c.nome}</label>
+      <label class="chk-wrap"><input type="checkbox" id="campo-cat-chk-${c.id}" data-cat="${c.id}" ${catsMarcadas.includes(c.id)?'checked':''} ${todosAtivo?'disabled':''}/><span class="chk-box"></span><span>${c.nome}</span></label>
     </div>`).join('')}`;
 }
 
@@ -3482,7 +3487,7 @@ function renderCadastroLista(tabela) {
 
               <div style="display:flex;justify-content:space-between;align-items:center;">
                 <label style="display:flex;align-items:center;gap:6px;margin:0;text-transform:none;font-size:12px;">
-                  <input type="checkbox" id="campo-novo-obrig-${i.id}" style="width:auto;"/> Campo obrigatório
+                  <label class="chk-wrap"><input type="checkbox" id="campo-novo-obrig-${i.id}"/><span class="chk-box"></span><span>Campo obrigatório</span></label>
                 </label>
                 <button class="btn btn-primary btn-sm" onclick="addCampoCategoria('${i.id}')">+ Adicionar campo</button>
               </div>
