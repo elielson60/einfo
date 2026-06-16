@@ -792,7 +792,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
               <!-- Abas -->
               <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;">
                 <button class="campo-tab-btn active" onclick="switchCatTab('info',this)">Informações</button>
-                <button class="campo-tab-btn" onclick="switchCatTab('atendentes',this)">Atendentes</button>
+                <button class="campo-tab-btn" onclick="switchCatTab('deptos',this)">Departamentos</button>
               </div>
 
               <div class="cat-tab" id="cat-tab-info">
@@ -802,9 +802,9 @@ tr:hover td{background:rgba(255,255,255,.02);}
                   <button class="btn btn-ghost btn-sm" id="categorias-btn-excluir" style="color:#f87171;border-color:rgba(239,68,68,.35);display:none;" onclick="excluirItemCadastro('categorias')">🗑️ Excluir</button>
                 </div>
               </div>
-              <div class="cat-tab" id="cat-tab-atendentes" style="display:none;">
-                <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Vincule esta categoria a atendentes específicos:</p>
-                <div class="aval-opt" id="cat-detalhe-atendentes"></div>
+              <div class="cat-tab" id="cat-tab-deptos" style="display:none;">
+                <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Defina em quais departamentos esta categoria estará disponível. Deixar vazio para todos.</p>
+                <div class="aval-opt" id="cat-detalhe-deptos"></div>
                 <div style="margin-top:12px;">
                   <button class="btn btn-primary" onclick="salvarVinculoCategoriaDetalhe()">💾 Salvar vínculos</button>
                 </div>
@@ -2328,8 +2328,8 @@ function abrirDetalheItem(secao, id) {
     if (secao === 'categorias') {
       document.querySelectorAll('#categorias-detail-view .campo-tab-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
       document.querySelectorAll('.cat-tab').forEach((el,i)=>el.style.display=i===0?'block':'none');
-      document.getElementById('cat-detalhe-atendentes').innerHTML = ATENDENTES_LIST.map(a=>`
-        <button type="button" class="aval-btn" data-atd="${a.id}" onclick="this.classList.toggle('sel')">${a.nome}</button>
+      document.getElementById('cat-detalhe-deptos').innerHTML = CADASTROS.areas.map(a=>`
+        <button type="button" class="aval-btn" data-dept="${a.nome}" onclick="this.classList.toggle('sel')">${a.nome}</button>
       `).join('');
     }
   }
@@ -2370,25 +2370,18 @@ async function excluirItemCadastro(secao) {
 async function salvarVinculoCategoriaDetalhe() {
   const id = document.getElementById('categorias-edit-id').value;
   if (!id) return;
+  const departamentos = Array.from(document.querySelectorAll('#cat-detalhe-deptos .aval-btn.sel')).map(b=>b.dataset.dept);
+  await sb.from('categorias').update({ departamentos }).eq('id', id);
   const cat = CADASTROS.categorias.find(c=>c.id===id);
-  if (!cat) return;
-  const checked = Array.from(document.querySelectorAll('#cat-detalhe-atendentes .aval-btn.sel')).map(b=>b.dataset.atd);
-  for (const a of ATENDENTES_LIST) {
-    const has = (a.categorias||[]).includes(cat.nome);
-    const should = checked.includes(a.id);
-    if (has === should) continue;
-    const novas = should ? [...(a.categorias||[]), cat.nome] : (a.categorias||[]).filter(c=>c!==cat.nome);
-    await sb.from('perfis').update({ categorias: novas }).eq('id', a.id);
-    a.categorias = novas;
-  }
-  showToast('Vínculos salvos!','ok');
+  if (cat) cat.departamentos = departamentos;
+  showToast('Departamentos salvos!','ok');
 }
 
 function switchCatTab(tab, btn) {
   document.querySelectorAll('#categorias-detail-view .campo-tab-btn').forEach(b=>b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   document.querySelectorAll('.cat-tab').forEach(el=>el.style.display='none');
-  document.getElementById(`cat-tab-${tab}`).style.display='block';
+  document.getElementById('cat-tab-'+tab).style.display='block';
 }
 
 function renderCadastroListaTabela(secao) {
