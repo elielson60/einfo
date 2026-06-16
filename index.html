@@ -3707,17 +3707,18 @@ function filtrarCategoriasPorArea() {
 
   let lista;
   if (!area) {
-    lista = CADASTROS.categorias;
+    // Sem departamento selecionado: não exibe nenhuma categoria
+    sel.innerHTML = '<option value="">Selecionar...</option>';
+    return;
   } else {
-    // Usa o campo departamentos da própria categoria
-    // vazio = disponível para todos os departamentos
+    // Mostra SOMENTE categorias com aquele departamento explicitamente vinculado
     lista = CADASTROS.categorias.filter(c =>
-      !c.departamentos || !c.departamentos.length || c.departamentos.includes(area)
+      c.departamentos && c.departamentos.length && c.departamentos.includes(area)
     );
   }
 
   if (!lista.length) {
-    sel.innerHTML = '<option value="">Nenhuma categoria disponível para esta área</option>';
+    sel.innerHTML = '<option value="">Selecionar...</option>';
     return;
   }
 
