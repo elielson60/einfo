@@ -674,6 +674,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
         </div>
 
         <div class="config-tab admin-sub-page" id="cfgtab-sla" style="display:none;">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Configure os prazos de resposta e resolução por prioridade.</p>
         <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
           <div style="font-size:14px;font-weight:500;margin-bottom:4px;">⏰ SLA por prioridade</div>
           <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Defina o tempo de primeira resposta e o tempo total para resolução, em horas, para cada nível de prioridade.</div>
@@ -708,7 +709,8 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
         </div><!-- /cfgtab-sla -->
 
-        <div class="config-tab admin-sub-page" id="cfgtab-horarios" style="display:none;" style="display:none;">
+        <div class="config-tab admin-sub-page" id="cfgtab-horarios" style="display:none;">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Configure os dias e horários de atendimento da sua equipe.</p>
         <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
           <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🕒 Horário de atendimento</div>
           <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Ative os dias de atendimento e defina o horário de cada um — útil quando o sábado ou outro dia tem expediente diferente.</div>
@@ -729,80 +731,108 @@ tr:hover td{background:rgba(255,255,255,.02);}
         </div>
 
         <!-- CADASTROS -->
-        <div class="config-tab admin-sub-page" id="cfgtab-empresas" style="display:none;" style="display:none;">
-          <div class="tbl-wrap" style="padding:18px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">🏢 Empresas</div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Empresas disponíveis no formulário de abertura de chamado.</div>
-            <div style="display:flex;gap:6px;margin-bottom:12px;max-width:400px;">
-              <input type="text" id="novo-empresa" placeholder="Nova empresa..."/>
-              <button class="btn btn-primary btn-sm" onclick="addCadastro('empresas','novo-empresa')">+</button>
+        <div class="config-tab admin-sub-page" id="cfgtab-empresas" style="display:none;">
+          <div id="empresas-list-view">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <p style="font-size:13px;color:var(--muted);">Organizações disponíveis no formulário de abertura de chamado.</p>
+              <button class="btn btn-primary btn-sm" onclick="abrirDetalheItem('empresas')">+ Nova organização</button>
             </div>
             <div id="lista-empresas"></div>
           </div>
+          <div id="empresas-detail-view" style="display:none;">
+            <button class="btn btn-ghost btn-sm" onclick="voltarLista('empresas')" style="margin-bottom:16px;">← Voltar</button>
+            <div class="tbl-wrap" style="padding:20px;">
+              <div id="empresas-detail-titulo" style="font-size:16px;font-weight:600;margin-bottom:16px;">Nova Organização</div>
+              <input type="hidden" id="empresas-edit-id"/>
+              <div class="field"><label>Nome <span class="req">*</span></label><input type="text" id="empresas-edit-nome" placeholder="Ex: Martins Import"/></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+                <button class="btn btn-primary" onclick="salvarItemCadastro('empresas')">💾 Salvar</button>
+                <button class="btn btn-ghost btn-sm" id="empresas-btn-excluir" style="color:#f87171;border-color:rgba(239,68,68,.35);display:none;" onclick="excluirItemCadastro('empresas')">🗑️ Excluir</button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="config-tab admin-sub-page" id="cfgtab-areas" style="display:none;" style="display:none;">
-          <div class="tbl-wrap" style="padding:18px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">📍 Departamentos</div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Departamentos disponíveis no formulário de abertura de chamado e usados para distribuir chamados aos atendentes.</div>
-            <div style="display:flex;gap:6px;margin-bottom:12px;max-width:400px;">
-              <input type="text" id="novo-area" placeholder="Novo departamento..."/>
-              <button class="btn btn-primary btn-sm" onclick="addCadastro('areas','novo-area')">+</button>
+        <div class="config-tab admin-sub-page" id="cfgtab-areas" style="display:none;">
+          <div id="areas-list-view">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <p style="font-size:13px;color:var(--muted);">Departamentos usados no formulário e para distribuir chamados aos atendentes.</p>
+              <button class="btn btn-primary btn-sm" onclick="abrirDetalheItem('areas')">+ Novo departamento</button>
             </div>
             <div id="lista-areas"></div>
           </div>
+          <div id="areas-detail-view" style="display:none;">
+            <button class="btn btn-ghost btn-sm" onclick="voltarLista('areas')" style="margin-bottom:16px;">← Voltar</button>
+            <div class="tbl-wrap" style="padding:20px;">
+              <div id="areas-detail-titulo" style="font-size:16px;font-weight:600;margin-bottom:16px;">Novo Departamento</div>
+              <input type="hidden" id="areas-edit-id"/>
+              <div class="field"><label>Nome <span class="req">*</span></label><input type="text" id="areas-edit-nome" placeholder="Ex: Informática / TI"/></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+                <button class="btn btn-primary" onclick="salvarItemCadastro('areas')">💾 Salvar</button>
+                <button class="btn btn-ghost btn-sm" id="areas-btn-excluir" style="color:#f87171;border-color:rgba(239,68,68,.35);display:none;" onclick="excluirItemCadastro('areas')">🗑️ Excluir</button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="config-tab admin-sub-page" id="cfgtab-categorias" style="display:none;" style="display:none;">
-          <div class="tbl-wrap" style="padding:18px;margin-bottom:16px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🗂️ Tipos de Categoria</div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Categorias disponíveis no formulário de abertura de chamado.</div>
-            <div style="display:flex;gap:6px;margin-bottom:12px;max-width:400px;">
-              <input type="text" id="novo-categoria" placeholder="Nova categoria..."/>
-              <button class="btn btn-primary btn-sm" onclick="addCadastro('categorias','novo-categoria')">+</button>
-            </div>
-            <div class="field" style="max-width:500px;">
-              <label>Vincular a atendentes <span style="color:var(--dim);font-weight:400;">(opcional)</span></label>
-              <div class="aval-opt" id="novo-categoria-atendentes"></div>
+        <div class="config-tab admin-sub-page" id="cfgtab-categorias" style="display:none;">
+          <div id="categorias-list-view">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <p style="font-size:13px;color:var(--muted);">Categorias disponíveis no formulário de abertura de chamado.</p>
+              <button class="btn btn-primary btn-sm" onclick="abrirDetalheItem('categorias')">+ Nova categoria</button>
             </div>
             <div id="lista-categorias"></div>
           </div>
+          <div id="categorias-detail-view" style="display:none;">
+            <button class="btn btn-ghost btn-sm" onclick="voltarLista('categorias')" style="margin-bottom:16px;">← Voltar</button>
+            <div class="tbl-wrap" style="padding:20px;">
+              <div id="categorias-detail-titulo" style="font-size:16px;font-weight:600;margin-bottom:16px;">Nova Categoria</div>
+              <input type="hidden" id="categorias-edit-id"/>
 
-          <div class="tbl-wrap" style="padding:18px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-              <div style="font-size:14px;font-weight:500;">🧩 Campos Personalizados</div>
-              <button class="btn btn-primary btn-sm" onclick="abrirModalCampo()">+ Novo campo</button>
+              <!-- Abas -->
+              <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;">
+                <button class="campo-tab-btn active" onclick="switchCatTab('info',this)">Informações</button>
+                <button class="campo-tab-btn" onclick="switchCatTab('atendentes',this)">Atendentes</button>
+              </div>
+
+              <div class="cat-tab" id="cat-tab-info">
+                <div class="field"><label>Nome <span class="req">*</span></label><input type="text" id="categorias-edit-nome" placeholder="Ex: Hardware"/></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+                  <button class="btn btn-primary" onclick="salvarItemCadastro('categorias')">💾 Salvar</button>
+                  <button class="btn btn-ghost btn-sm" id="categorias-btn-excluir" style="color:#f87171;border-color:rgba(239,68,68,.35);display:none;" onclick="excluirItemCadastro('categorias')">🗑️ Excluir</button>
+                </div>
+              </div>
+              <div class="cat-tab" id="cat-tab-atendentes" style="display:none;">
+                <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Vincule esta categoria a atendentes específicos:</p>
+                <div class="aval-opt" id="cat-detalhe-atendentes"></div>
+                <div style="margin-top:12px;">
+                  <button class="btn btn-primary" onclick="salvarVinculoCategoriaDetalhe()">💾 Salvar vínculos</button>
+                </div>
+              </div>
             </div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Campos extras que aparecem no formulário de chamado com base na categoria e área.</div>
-            <div id="lista-campos-admin"></div>
           </div>
         </div>
 
-        <div class="config-tab admin-sub-page" id="cfgtab-status" style="display:none;" style="display:none;">
-          <div class="tbl-wrap" style="padding:18px;margin-bottom:16px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📌 Status de chamado</div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Crie, edite ou remova os status disponíveis para os chamados. Os 4 status padrão do sistema não podem ser excluídos.</div>
-
-            <input type="hidden" id="status-id"/>
-            <div class="grid2" style="align-items:flex-end;">
-              <div class="field">
-                <label>Nome do status</label>
-                <input type="text" id="status-nome" placeholder="Ex: Aguardando aprovação"/>
-              </div>
-              <div class="field">
-                <label>Cor</label>
-                <input type="color" id="status-cor" value="#4f8cff" style="height:40px;padding:4px;cursor:pointer;"/>
-              </div>
+        <div class="config-tab admin-sub-page" id="cfgtab-status" style="display:none;">
+          <div id="status-list-view">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <p style="font-size:13px;color:var(--muted);">Status disponíveis nos chamados. Os 4 padrões do sistema não podem ser excluídos.</p>
+              <button class="btn btn-primary btn-sm" onclick="abrirDetalheStatusItem()">+ Novo status</button>
             </div>
-            <div style="display:flex;gap:10px;">
-              <button class="btn btn-primary" onclick="salvarStatusCadastro()">💾 Salvar status</button>
-              <button class="btn btn-ghost" onclick="limparFormStatus()">Novo / Limpar</button>
-            </div>
+            <div id="lista-status-admin"></div>
           </div>
-
-          <div class="tbl-wrap" style="padding:18px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">Status cadastrados</div>
-            <div id="lista-status"></div>
+          <div id="status-detail-view" style="display:none;">
+            <button class="btn btn-ghost btn-sm" onclick="voltarLista('status')" style="margin-bottom:16px;">← Voltar</button>
+            <div class="tbl-wrap" style="padding:20px;">
+              <div id="status-detail-titulo" style="font-size:16px;font-weight:600;margin-bottom:16px;">Novo Status</div>
+              <input type="hidden" id="status-detail-id"/>
+              <div class="field"><label>Nome <span class="req">*</span></label><input type="text" id="status-detail-nome" placeholder="Ex: Aguardando aprovação"/></div>
+              <div class="field"><label>Cor</label><input type="color" id="status-detail-cor" value="#4f8cff" style="height:40px;padding:4px;cursor:pointer;"/></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+                <button class="btn btn-primary" onclick="salvarStatusDetalhe()">💾 Salvar</button>
+                <button class="btn btn-ghost btn-sm" id="status-btn-excluir" style="color:#f87171;border-color:rgba(239,68,68,.35);display:none;" onclick="excluirStatusDetalhe()">🗑️ Excluir</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -889,43 +919,36 @@ tr:hover td{background:rgba(255,255,255,.02);}
           </div>
         </div>
 
-        <div class="config-tab admin-sub-page" id="cfgtab-avisos" style="display:none;" style="display:none;">
-          <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📢 Novo aviso no mural</div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Avisos ativos aparecem para todos os usuários ao entrarem no sistema.</div>
-
-            <input type="hidden" id="aviso-id"/>
-            <div class="field">
-              <label>Título</label>
-              <input type="text" id="aviso-titulo" placeholder="Ex: Manutenção programada"/>
+        <div class="config-tab admin-sub-page" id="cfgtab-avisos" style="display:none;">
+          <!-- Lista -->
+          <div id="avisos-list-view">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <p style="font-size:13px;color:var(--muted);">Avisos exibidos no mural ao entrar no sistema.</p>
+              <button class="btn btn-primary btn-sm" onclick="abrirDetalheAviso()">+ Novo aviso</button>
             </div>
-            <div class="field">
-              <label>Mensagem</label>
-              <textarea id="aviso-mensagem" placeholder="Escreva o aviso que será exibido no mural..." style="min-height:90px;"></textarea>
-            </div>
-            <div class="grid2">
-              <div class="field">
-                <label>Início da exibição (opcional)</label>
-                <input type="date" id="aviso-inicio"/>
-              </div>
-              <div class="field">
-                <label>Fim da exibição (opcional)</label>
-                <input type="date" id="aviso-fim"/>
-              </div>
-            </div>
-            <div class="field" style="display:flex;align-items:center;gap:8px;">
-              <input type="checkbox" id="aviso-ativo" checked style="width:auto;"/>
-              <label style="margin:0;text-transform:none;font-size:13px;">Exibir mensagem (ativo)</label>
-            </div>
-            <div style="display:flex;gap:10px;">
-              <button class="btn btn-primary" onclick="salvarAviso()">💾 Salvar aviso</button>
-              <button class="btn btn-ghost" onclick="limparFormAviso()">Novo / Limpar</button>
-            </div>
-          </div>
-
-          <div class="tbl-wrap" style="padding:18px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:10px;">Avisos cadastrados</div>
             <div id="lista-avisos"></div>
+          </div>
+          <!-- Detalhe -->
+          <div id="avisos-detail-view" style="display:none;">
+            <button class="btn btn-ghost btn-sm" onclick="voltarLista('avisos')" style="margin-bottom:16px;">← Voltar</button>
+            <div class="tbl-wrap" style="padding:20px;">
+              <div id="avisos-detail-titulo" style="font-size:16px;font-weight:600;margin-bottom:16px;">Novo Aviso</div>
+              <input type="hidden" id="aviso-id"/>
+              <div class="field"><label>Título <span class="req">*</span></label><input type="text" id="aviso-titulo" placeholder="Ex: Manutenção programada"/></div>
+              <div class="field"><label>Mensagem <span class="req">*</span></label><textarea id="aviso-mensagem" placeholder="Escreva o aviso..." style="min-height:90px;"></textarea></div>
+              <div class="grid2">
+                <div class="field"><label>Início da exibição (opcional)</label><input type="date" id="aviso-inicio"/></div>
+                <div class="field"><label>Fim da exibição (opcional)</label><input type="date" id="aviso-fim"/></div>
+              </div>
+              <div class="field" style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" id="aviso-ativo" checked style="width:auto;"/>
+                <label style="margin:0;text-transform:none;font-size:13px;">Exibir mensagem (ativo)</label>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+                <button class="btn btn-primary" onclick="salvarAviso()">💾 Salvar aviso</button>
+                <button class="btn btn-ghost btn-sm" id="aviso-btn-excluir" style="color:#f87171;border-color:rgba(239,68,68,.35);display:none;" onclick="excluirAvisoDetalhe()">🗑️ Excluir</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1667,11 +1690,18 @@ function adminSubNav(sub, btn) {
 
   // Trigger loaders for specific sub-pages
   if (sub === 'atendentes') renderAtendentesDeptos();
-  if (sub === 'avisos') { loadAvisosAdmin(); limparFormAviso(); }
-  if (sub === 'status') { renderStatusAdmin(); limparFormStatus(); }
+  if (sub === 'avisos') { loadAvisosAdmin(); document.getElementById('avisos-list-view').style.display='block'; document.getElementById('avisos-detail-view').style.display='none'; }
+  if (sub === 'status') { loadStatusList().then(()=>{ renderStatusListaTabela(); document.getElementById('status-list-view').style.display='block'; document.getElementById('status-detail-view').style.display='none'; }); }
   if (sub === 'sla') preencherFormConfig();
   if (sub === 'horarios') preencherFormConfig();
   if (sub === 'campos') renderListaCamposAdmin();
+  if (['empresas','areas','categorias'].includes(sub)) {
+    loadCadastros().then(()=>{
+      renderCadastroListaTabela(sub);
+      document.getElementById(`${sub}-list-view`).style.display='block';
+      document.getElementById(`${sub}-detail-view`).style.display='none';
+    });
+  }
 }
 
 function switchConfigTab(tab, chip) {
@@ -2255,6 +2285,217 @@ function statusBadgeHtml(chave) {
   const cor = s?.cor || '#7a7a8c';
   const nome = s?.nome || chave;
   return `<span class="badge" style="background:${cor}22;color:${cor};border-color:${cor}55;">${nome}</span>`;
+}
+
+// ── ADMINISTRAÇÃO: GENERIC LIST/DETAIL PATTERN ──
+function voltarLista(secao) {
+  document.getElementById(`${secao}-list-view`).style.display = 'block';
+  document.getElementById(`${secao}-detail-view`).style.display = 'none';
+  // Reload list
+  if (secao === 'empresas' || secao === 'areas') renderCadastroListaTabela(secao);
+  if (secao === 'categorias') renderCadastroListaTabela('categorias');
+  if (secao === 'status') renderStatusListaTabela();
+  if (secao === 'avisos') { loadAvisosAdmin(); }
+}
+
+function abrirDetalheItem(secao, id) {
+  document.getElementById(`${secao}-list-view`).style.display = 'none';
+  document.getElementById(`${secao}-detail-view`).style.display = 'block';
+  const titulo = document.getElementById(`${secao}-detail-titulo`);
+  const exluirBtn = document.getElementById(`${secao}-btn-excluir`);
+  document.getElementById(`${secao}-edit-id`).value = id || '';
+  if (id) {
+    const item = CADASTROS[secao]?.find(i=>i.id===id);
+    if (item) {
+      if (titulo) titulo.textContent = 'Editar ' + (secao==='areas'?'Departamento':secao==='empresas'?'Organização':'Categoria');
+      document.getElementById(`${secao}-edit-nome`).value = item.nome;
+      if (exluirBtn) exluirBtn.style.display = 'inline-flex';
+      if (secao === 'categorias') {
+        // Reset abas
+        document.querySelectorAll('#categorias-detail-view .campo-tab-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+        document.querySelectorAll('.cat-tab').forEach((el,i)=>el.style.display=i===0?'block':'none');
+        // Populate atendentes tab
+        const vinculados = ATENDENTES_LIST.filter(a=>(a.categorias||[]).includes(item.nome));
+        document.getElementById('cat-detalhe-atendentes').innerHTML = ATENDENTES_LIST.map(a=>`
+          <button type="button" class="aval-btn ${vinculados.some(v=>v.id===a.id)?'sel':''}" data-atd="${a.id}" onclick="this.classList.toggle('sel')">${a.nome}</button>
+        `).join('');
+      }
+    }
+  } else {
+    if (titulo) titulo.textContent = 'Nova ' + (secao==='areas'?'Departamento':secao==='empresas'?'Organização':'Categoria');
+    document.getElementById(`${secao}-edit-nome`).value = '';
+    if (exluirBtn) exluirBtn.style.display = 'none';
+    if (secao === 'categorias') {
+      document.querySelectorAll('#categorias-detail-view .campo-tab-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+      document.querySelectorAll('.cat-tab').forEach((el,i)=>el.style.display=i===0?'block':'none');
+      document.getElementById('cat-detalhe-atendentes').innerHTML = ATENDENTES_LIST.map(a=>`
+        <button type="button" class="aval-btn" data-atd="${a.id}" onclick="this.classList.toggle('sel')">${a.nome}</button>
+      `).join('');
+    }
+  }
+}
+
+async function salvarItemCadastro(secao) {
+  const id = document.getElementById(`${secao}-edit-id`).value;
+  const nome = document.getElementById(`${secao}-edit-nome`).value.trim();
+  if (!nome) { showToast('Informe o nome.','err'); return; }
+  if (id) {
+    const { error } = await sb.from(secao).update({ nome }).eq('id', id);
+    if (error) { showToast('Erro ao atualizar.','err'); return; }
+  } else {
+    const { error } = await sb.from(secao).insert({ nome });
+    if (error) {
+      showToast(error.message.includes('duplicate') ? 'Esse item já existe.' : 'Erro ao adicionar.','err');
+      return;
+    }
+  }
+  await loadCadastrosLists();
+  await popularSelectsFormulario();
+  renderCadastroListaTabela(secao);
+  voltarLista(secao);
+  showToast('Salvo com sucesso!','ok');
+}
+
+async function excluirItemCadastro(secao) {
+  const id = document.getElementById(`${secao}-edit-id`).value;
+  const item = CADASTROS[secao]?.find(i=>i.id===id);
+  if (!confirm(`Excluir "${item?.nome}"?`)) return;
+  await sb.from(secao).delete().eq('id', id);
+  await loadCadastrosLists();
+  await popularSelectsFormulario();
+  voltarLista(secao);
+  showToast('Item excluído!','ok');
+}
+
+async function salvarVinculoCategoriaDetalhe() {
+  const id = document.getElementById('categorias-edit-id').value;
+  if (!id) return;
+  const cat = CADASTROS.categorias.find(c=>c.id===id);
+  if (!cat) return;
+  const checked = Array.from(document.querySelectorAll('#cat-detalhe-atendentes .aval-btn.sel')).map(b=>b.dataset.atd);
+  for (const a of ATENDENTES_LIST) {
+    const has = (a.categorias||[]).includes(cat.nome);
+    const should = checked.includes(a.id);
+    if (has === should) continue;
+    const novas = should ? [...(a.categorias||[]), cat.nome] : (a.categorias||[]).filter(c=>c!==cat.nome);
+    await sb.from('perfis').update({ categorias: novas }).eq('id', a.id);
+    a.categorias = novas;
+  }
+  showToast('Vínculos salvos!','ok');
+}
+
+function switchCatTab(tab, btn) {
+  document.querySelectorAll('#categorias-detail-view .campo-tab-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.querySelectorAll('.cat-tab').forEach(el=>el.style.display='none');
+  document.getElementById(`cat-tab-${tab}`).style.display='block';
+}
+
+function renderCadastroListaTabela(secao) {
+  const items = CADASTROS[secao] || [];
+  const container = document.getElementById(`lista-${secao}`);
+  if (!container) return;
+  if (!items.length) {
+    container.innerHTML = `<div class="tbl-wrap" style="padding:24px;text-align:center;"><p style="color:var(--muted);font-size:13px;">Nenhum item cadastrado ainda.</p></div>`;
+    return;
+  }
+  container.innerHTML = `<div class="tbl-wrap"><table>
+    <thead><tr><th>Nome</th><th>Ação</th></tr></thead>
+    <tbody>${items.map(i=>`
+      <tr>
+        <td>${i.nome}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="abrirDetalheItem('${secao}','${i.id}')">✎ Editar</button></td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+function renderStatusListaTabela() {
+  const container = document.getElementById('lista-status-admin');
+  if (!container) return;
+  if (!STATUS_LIST.length) { container.innerHTML = '<div class="tbl-wrap" style="padding:24px;text-align:center;"><p style="color:var(--muted);font-size:13px;">Nenhum status cadastrado.</p></div>'; return; }
+  container.innerHTML = `<div class="tbl-wrap"><table>
+    <thead><tr><th>Status</th><th>Cor</th><th>Tipo</th><th>Ação</th></tr></thead>
+    <tbody>${STATUS_LIST.map(s=>`
+      <tr>
+        <td style="display:flex;align-items:center;gap:8px;">
+          <span style="width:12px;height:12px;border-radius:3px;background:${s.cor};display:inline-block;"></span>
+          ${s.nome}
+        </td>
+        <td><code style="font-size:11px;">${s.cor}</code></td>
+        <td><span style="font-size:11px;color:var(--dim);">${s.sistema?'Padrão':'Personalizado'}</span></td>
+        <td><button class="btn btn-ghost btn-sm" onclick="abrirDetalheStatusItem('${s.id}')">✎ Editar</button></td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+function abrirDetalheStatusItem(id) {
+  document.getElementById('status-list-view').style.display='none';
+  document.getElementById('status-detail-view').style.display='block';
+  document.getElementById('status-detail-id').value = id || '';
+  const excluirBtn = document.getElementById('status-btn-excluir');
+  if (id) {
+    const s = STATUS_LIST.find(x=>x.id===id);
+    document.getElementById('status-detail-titulo').textContent = 'Editar Status';
+    document.getElementById('status-detail-nome').value = s?.nome || '';
+    document.getElementById('status-detail-cor').value = s?.cor || '#4f8cff';
+    if (excluirBtn) excluirBtn.style.display = s?.sistema ? 'none' : 'inline-flex';
+  } else {
+    document.getElementById('status-detail-titulo').textContent = 'Novo Status';
+    document.getElementById('status-detail-nome').value = '';
+    document.getElementById('status-detail-cor').value = '#4f8cff';
+    if (excluirBtn) excluirBtn.style.display = 'none';
+  }
+}
+
+async function salvarStatusDetalhe() {
+  const id = document.getElementById('status-detail-id').value;
+  const nome = document.getElementById('status-detail-nome').value.trim();
+  const cor = document.getElementById('status-detail-cor').value;
+  if (!nome) { showToast('Informe o nome do status.','err'); return; }
+  if (id) {
+    await sb.from('status_chamado').update({ nome, cor }).eq('id', id);
+  } else {
+    const chave = slugify(nome);
+    await sb.from('status_chamado').insert({ chave, nome, cor, ordem: STATUS_LIST.length, sistema: false });
+  }
+  await loadStatusList();
+  popularChipsStatus();
+  voltarLista('status');
+  showToast('Status salvo!','ok');
+}
+
+async function excluirStatusDetalhe() {
+  const id = document.getElementById('status-detail-id').value;
+  const s = STATUS_LIST.find(x=>x.id===id);
+  if (s?.sistema) { showToast('Status padrão não pode ser excluído.','err'); return; }
+  if (!confirm(`Excluir o status "${s?.nome}"?`)) return;
+  await sb.from('status_chamado').delete().eq('id', id);
+  await loadStatusList();
+  popularChipsStatus();
+  voltarLista('status');
+  showToast('Status excluído!','ok');
+}
+
+function abrirDetalheAviso(id) {
+  document.getElementById('avisos-list-view').style.display='none';
+  document.getElementById('avisos-detail-view').style.display='block';
+  const excluirBtn = document.getElementById('aviso-btn-excluir');
+  document.getElementById('aviso-id').value = id || '';
+  if (id) {
+    editarAviso(id).then(()=>{ document.getElementById('avisos-detail-titulo').textContent='Editar Aviso'; if(excluirBtn) excluirBtn.style.display='inline-flex'; });
+  } else {
+    limparFormAviso();
+    document.getElementById('avisos-detail-titulo').textContent='Novo Aviso';
+    if (excluirBtn) excluirBtn.style.display='none';
+  }
+}
+
+async function excluirAvisoDetalhe() {
+  const id = document.getElementById('aviso-id').value;
+  if (!confirm('Excluir este aviso?')) return;
+  await sb.from('avisos').delete().eq('id', id);
+  voltarLista('avisos');
+  showToast('Aviso excluído!','ok');
 }
 
 // ── ATENDENTES POR DEPARTAMENTO ───────────────
@@ -3510,23 +3751,18 @@ async function loadAvisosAdmin() {
 function renderAvisosAdmin(list) {
   const container = document.getElementById('lista-avisos');
   if (!list.length) { container.innerHTML = '<p style="font-size:12px;color:var(--dim);">Nenhum aviso cadastrado.</p>'; return; }
-  container.innerHTML = list.map(a => {
-    const periodo = (a.data_inicio || a.data_fim)
-      ? `${a.data_inicio ? new Date(a.data_inicio+'T00:00:00').toLocaleDateString('pt-BR') : '—'} até ${a.data_fim ? new Date(a.data_fim+'T00:00:00').toLocaleDateString('pt-BR') : '—'}`
-      : 'Sempre';
-    return `<div class="aviso-item">
-      <div class="aviso-item-head">
-        <span class="aviso-item-title">${a.titulo}</span>
-        <span class="badge ${a.ativo?'b-resolvido':'b-aguardando'}">${a.ativo?'Ativo':'Inativo'}</span>
-      </div>
-      <div class="aviso-item-msg">${a.mensagem}</div>
-      <div class="aviso-item-meta">📅 ${periodo}</div>
-      <div style="display:flex;gap:6px;margin-top:8px;">
-        <button class="btn btn-ghost btn-sm" onclick="editarAviso('${a.id}')">✎ Editar</button>
-        <button class="btn btn-ghost btn-sm" style="color:#f87171;border-color:rgba(239,68,68,.35);" onclick="excluirAviso('${a.id}')">✕ Excluir</button>
-      </div>
-    </div>`;
+  function fmt(d) { return d ? new Date(d+'T00:00:00').toLocaleDateString('pt-BR') : '—'; }
+  const rows = list.map(a => {
+    const periodo = (a.data_inicio||a.data_fim) ? fmt(a.data_inicio)+' até '+fmt(a.data_fim) : 'Sempre';
+    const preview = a.mensagem.length>60 ? a.mensagem.substring(0,60)+'...' : a.mensagem;
+    const badgeClass = a.ativo ? 'b-resolvido' : 'b-aguardando';
+    const badgeTxt = a.ativo ? 'Ativo' : 'Inativo';
+    return '<tr><td><strong>'+a.titulo+'</strong><br><span style="font-size:12px;color:var(--muted);">'+preview+'</span></td>'
+      +'<td><span class="badge '+badgeClass+'">'+badgeTxt+'</span></td>'
+      +'<td style="font-size:12px;">'+periodo+'</td>'
+      +'<td><button class="btn btn-ghost btn-sm" onclick="abrirDetalheAviso(this.dataset.id)" data-id="'+a.id+'">✎ Editar</button></td></tr>';
   }).join('');
+  container.innerHTML = '<div class="tbl-wrap"><table><thead><tr><th>Título</th><th>Status</th><th>Período</th><th>Ação</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 
 function limparFormAviso() {
