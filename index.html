@@ -954,6 +954,14 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
       </div>
 
+        <div class="config-tab admin-sub-page" id="cfgtab-campos" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <p style="font-size:13px;color:var(--muted);">Campos extras exibidos no formulário de chamado com base na categoria e área.</p>
+            <button class="btn btn-primary btn-sm" onclick="abrirModalCampo()">+ Novo campo</button>
+          </div>
+          <div id="lista-campos-admin"></div>
+        </div>
+
     </div>
   </div>
 </div>
@@ -1677,16 +1685,8 @@ function adminSubNav(sub, btn) {
   document.getElementById('admin-sub-title').textContent = ADMIN_SUB_TITLES[sub] || sub;
 
   // Show the right sub page
-  if (sub === 'campos') {
-    // Campos uses a standalone list, rendered via renderListaCamposAdmin
-    document.getElementById('cfgtab-categorias').style.display='block';
-    // Scroll to campos section
-    const el = document.getElementById('lista-campos-admin');
-    if (el) setTimeout(()=>el.scrollIntoView({behavior:'smooth'}), 100);
-  } else {
-    const el = document.getElementById(`cfgtab-${sub}`);
-    if (el) el.style.display='block';
-  }
+  const el = document.getElementById(`cfgtab-${sub}`);
+  if (el) el.style.display='block';
 
   // Trigger loaders for specific sub-pages
   if (sub === 'atendentes') renderAtendentesDeptos();
@@ -1694,12 +1694,12 @@ function adminSubNav(sub, btn) {
   if (sub === 'status') { loadStatusList().then(()=>{ renderStatusListaTabela(); document.getElementById('status-list-view').style.display='block'; document.getElementById('status-detail-view').style.display='none'; }); }
   if (sub === 'sla') preencherFormConfig();
   if (sub === 'horarios') preencherFormConfig();
-  if (sub === 'campos') renderListaCamposAdmin();
+  if (sub === 'campos') { renderListaCamposAdmin(); }
   if (['empresas','areas','categorias'].includes(sub)) {
     loadCadastros().then(()=>{
       renderCadastroListaTabela(sub);
-      document.getElementById(`${sub}-list-view`).style.display='block';
-      document.getElementById(`${sub}-detail-view`).style.display='none';
+      if (document.getElementById(`${sub}-list-view`)) document.getElementById(`${sub}-list-view`).style.display='block';
+      if (document.getElementById(`${sub}-detail-view`)) document.getElementById(`${sub}-detail-view`).style.display='none';
     });
   }
 }
