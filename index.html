@@ -2314,10 +2314,10 @@ function abrirDetalheItem(secao, id) {
         // Reset abas
         document.querySelectorAll('#categorias-detail-view .campo-tab-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
         document.querySelectorAll('.cat-tab').forEach((el,i)=>el.style.display=i===0?'block':'none');
-        // Populate atendentes tab
-        const vinculados = ATENDENTES_LIST.filter(a=>(a.categorias||[]).includes(item.nome));
-        document.getElementById('cat-detalhe-atendentes').innerHTML = ATENDENTES_LIST.map(a=>`
-          <button type="button" class="aval-btn ${vinculados.some(v=>v.id===a.id)?'sel':''}" data-atd="${a.id}" onclick="this.classList.toggle('sel')">${a.nome}</button>
+        // Populate departamentos tab
+        const catDeptos = item.departamentos || [];
+        document.getElementById('cat-detalhe-deptos').innerHTML = CADASTROS.areas.map(a=>`
+          <button type="button" class="aval-btn ${catDeptos.includes(a.nome)?'sel':''}" data-dept="${a.nome}" onclick="this.classList.toggle('sel')">${a.nome}</button>
         `).join('');
       }
     }
