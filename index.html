@@ -3709,10 +3709,16 @@ function filtrarCategoriasPorArea() {
   if (!area) {
     lista = CADASTROS.categorias;
   } else {
-    const atendentesArea = ATENDENTES_LIST.filter(a => !(a.departamentos||[]).length || (a.departamentos||[]).includes(area));
-    const set = new Set();
-    atendentesArea.forEach(a => (a.categorias||[]).forEach(c=>set.add(c)));
-    lista = CADASTROS.categorias.filter(c=>set.has(c.nome));
+    // Usa o campo departamentos da própria categoria
+    // vazio = disponível para todos os departamentos
+    lista = CADASTROS.categorias.filter(c =>
+      !c.departamentos || !c.departamentos.length || c.departamentos.includes(area)
+    );
+  }
+
+  if (!lista.length) {
+    sel.innerHTML = '<option value="">Nenhuma categoria disponível para esta área</option>';
+    return;
   }
 
   const opts = lista.map(c=>`<option value="${c.nome}">${c.nome}</option>`).join('');
