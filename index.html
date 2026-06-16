@@ -849,8 +849,47 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <div id="atd-list-view">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
               <p style="font-size:13px;color:var(--muted);">Gerencie os atendentes e seus departamentos.</p>
+              <button class="btn btn-primary btn-sm" onclick="abrirNovoAtendente()">+ Novo atendente</button>
             </div>
             <div id="lista-atendentes-deptos"></div>
+          </div>
+
+          <!-- Tela criação novo atendente -->
+          <div id="atd-create-view" style="display:none;">
+            <button class="btn btn-ghost btn-sm" onclick="voltarListaAtendentes()" style="margin-bottom:16px;">← Voltar</button>
+            <div class="tbl-wrap" style="padding:20px;">
+              <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Novo Atendente</div>
+              <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">O atendente receberá um link para definir sua senha após o cadastro.</p>
+              <div class="field">
+                <label>Nome completo <span class="req">*</span></label>
+                <input type="text" id="novo-atd-nome" placeholder="Ex: João Silva"/>
+              </div>
+              <div class="field">
+                <label>Telefone / WhatsApp</label>
+                <input type="tel" id="novo-atd-tel" placeholder="(92) 99999-0000"/>
+              </div>
+              <div class="field">
+                <label>E-mail <span class="req">*</span></label>
+                <input type="email" id="novo-atd-email" placeholder="atendente@empresa.com"/>
+              </div>
+              <div class="field">
+                <label>Senha <span class="req">*</span></label>
+                <input type="password" id="novo-atd-senha" placeholder="Mínimo 6 caracteres"/>
+              </div>
+              <div class="field">
+                <label>Organização</label>
+                <select id="novo-atd-empresa"></select>
+              </div>
+              <div class="field">
+                <label>Departamentos atendidos <span style="color:var(--dim);font-weight:400;">(opcional)</span></label>
+                <div class="aval-opt" id="novo-atd-deptos"></div>
+              </div>
+              <p id="novo-atd-err" style="font-size:12px;color:#f87171;margin-bottom:10px;display:none;"></p>
+              <div style="display:flex;gap:10px;">
+                <button class="btn btn-primary" onclick="criarNovoAtendente()">💾 Criar atendente</button>
+                <button class="btn btn-ghost" onclick="voltarListaAtendentes()">Cancelar</button>
+              </div>
+            </div>
           </div>
 
           <!-- Tela dedicada por atendente -->
@@ -2655,8 +2694,65 @@ async function excluirAtendente() {
 function voltarListaAtendentes() {
   document.getElementById('atd-list-view').style.display='block';
   document.getElementById('atd-detail-view').style.display='none';
+  document.getElementById('atd-create-view').style.display='none';
   currentAtdId = null;
   renderAtendentesDeptos();
+}
+
+async function abrirNovoAtendente() {
+  document.getElementById('atd-list-view').style.display='none';
+  document.getElementById('atd-create-view').style.display='block';
+  document.getElementById('novo-atd-nome').value='';
+  document.getElementById('novo-atd-tel').value='';
+  document.getElementById('novo-atd-email').value='';
+  document.getElementById('novo-atd-senha').value='';
+  document.getElementById('novo-atd-err').style.display='none';
+
+  // Popular select de organizações
+  if (!CADASTROS.empresas.length) await loadCadastrosLists();
+  const selEmp = document.getElementById('novo-atd-empresa');
+  selEmp.innerHTML = '<option value="">Selecionar...</option>' + CADASTROS.empresas.map(e=>`<option value="${e.nome}">${e.nome}</option>`).join('');
+
+  // Popular chips de departamentos
+  document.getElementById('novo-atd-deptos').innerHTML = CADASTROS.areas.map(a=>`
+    <button type="button" class="aval-btn" data-dept="${a.nome}" onclick="this.classList.toggle('sel')">${a.nome}</button>
+  `).join('');
+}
+
+async function criarNovoAtendente() {
+  const nome = document.getElementById('novo-atd-nome').value.trim();
+  const email = document.getElementById('novo-atd-email').value.trim();
+  const senha = document.getElementById('novo-atd-senha').value;
+  const tel = document.getElementById('novo-atd-tel').value.trim();
+  const empresa = document.getElementById('novo-atd-empresa').value;
+  const departamentos = Array.from(document.querySelectorAll('#novo-atd-deptos .aval-btn.sel')).map(b=>b.dataset.dept);
+  const err = document.getElementById('novo-atd-err');
+  err.style.display='none';
+
+  if (!nome) { err.textContent='Informe o nome.'; err.style.display='block'; return; }
+  if (!email) { err.textContent='Informe o e-mail.'; err.style.display='block'; return; }
+  if (!senha || senha.length < 6) { err.textContent='Informe uma senha com ao menos 6 caracteres.'; err.style.display='block'; return; }
+
+  const { data, error } = await sb.auth.signUp({ email, password: senha });
+  if (error) {
+    err.textContent = error.message.includes('already') ? 'E-mail já cadastrado.' : 'Erro ao criar conta: '+error.message;
+    err.style.display='block'; return;
+  }
+  if (data.user) {
+    await sb.from('perfis').insert({
+      id: data.user.id, nome, email,
+      empresa: empresa || 'Não informado',
+      departamento: 'Não informado',
+      ramal: tel,
+      role: 'atendente',
+      ativo: true,
+      departamentos
+    });
+    showToast('Atendente criado com sucesso!','ok');
+    voltarListaAtendentes();
+  } else {
+    err.textContent='Erro ao criar atendente.'; err.style.display='block';
+  }
 }
 
 async function salvarDeptosAtendente(id) {
