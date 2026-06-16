@@ -803,7 +803,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
                 </div>
               </div>
               <div class="cat-tab" id="cat-tab-deptos" style="display:none;">
-                <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Defina em quais departamentos esta categoria estará disponível. Deixar vazio para todos.</p>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Selecione ao menos um departamento <span class="req">*</span> — define onde esta categoria ficará disponível no formulário de chamado.</p>
                 <div class="aval-opt" id="cat-detalhe-deptos"></div>
                 <div style="margin-top:12px;">
                   <button class="btn btn-primary" onclick="salvarVinculoCategoriaDetalhe()">💾 Salvar vínculos</button>
@@ -2339,6 +2339,35 @@ async function salvarItemCadastro(secao) {
   const id = document.getElementById(`${secao}-edit-id`).value;
   const nome = document.getElementById(`${secao}-edit-nome`).value.trim();
   if (!nome) { showToast('Informe o nome.','err'); return; }
+
+  // Categorias: validar e salvar departamentos junto
+  if (secao === 'categorias') {
+    const deptosSel = Array.from(document.querySelectorAll('#cat-detalhe-deptos .aval-btn.sel')).map(b=>b.dataset.dept);
+    if (!deptosSel.length) {
+      showToast('Selecione ao menos um departamento para a categoria.','err');
+      // Switch to deptos tab
+      document.querySelectorAll('#categorias-detail-view .campo-tab-btn').forEach((b,i)=>b.classList.toggle('active',i===1));
+      document.querySelectorAll('.cat-tab').forEach((el,i)=>el.style.display=i===1?'block':'none');
+      return;
+    }
+    if (id) {
+      const { error } = await sb.from(secao).update({ nome, departamentos: deptosSel }).eq('id', id);
+      if (error) { showToast('Erro ao atualizar.','err'); return; }
+    } else {
+      const { error } = await sb.from(secao).insert({ nome, departamentos: deptosSel });
+      if (error) {
+        showToast(error.message.includes('duplicate') ? 'Esse item já existe.' : 'Erro ao adicionar.','err');
+        return;
+      }
+    }
+    await loadCadastrosLists();
+    await popularSelectsFormulario();
+    renderCadastroListaTabela(secao);
+    voltarLista(secao);
+    showToast('Categoria salva com sucesso!','ok');
+    return;
+  }
+
   if (id) {
     const { error } = await sb.from(secao).update({ nome }).eq('id', id);
     if (error) { showToast('Erro ao atualizar.','err'); return; }
