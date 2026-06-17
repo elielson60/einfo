@@ -715,6 +715,10 @@ tr:hover td{background:rgba(255,255,255,.02);}
           </div>
         </div>
 
+          <div style="margin-top:16px;">
+            <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
+            <p id="config-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Configurações salvas com sucesso!</p>
+          </div>
         </div><!-- /cfgtab-sla -->
 
         <div class="config-tab admin-sub-page" id="cfgtab-horarios" style="display:none;">
@@ -731,12 +735,13 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
           <div id="cfg-dias-list"></div>
         </div>
+          <div style="margin-top:16px;">
+            <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
+            <p id="config-msg-h" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Configurações salvas com sucesso!</p>
+          </div>
         </div><!-- /cfgtab-horarios -->
 
-        <div id="cfg-save-row" style="margin-bottom:24px;">
-          <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
-          <p id="config-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Configurações salvas com sucesso!</p>
-        </div>
+
 
         <!-- CADASTROS -->
         <div class="config-tab admin-sub-page" id="cfgtab-empresas" style="display:none;">
@@ -1755,7 +1760,7 @@ function switchConfigTab(tab, chip) {
   if (chip) chip.classList.add('active');
   document.querySelectorAll('.config-tab').forEach(el=>el.style.display='none');
   document.getElementById('cfgtab-'+tab).style.display = 'block';
-  document.getElementById('cfg-save-row').style.display = (tab==='sla'||tab==='horarios') ? 'block' : 'none';
+
 }
 
 // ── DASHBOARD ────────────────────────────────
