@@ -2387,8 +2387,13 @@ function configurarSidebarPorRole(perfil) {
   const isAdmin = perfil.role === 'admin';
   const sbUsuarios = document.getElementById('sb-usuarios');
   const sbConfig = document.getElementById('sb-config');
+  const sbAdminMenu = document.getElementById('sb-admin-menu');
+  const sbConfigArrow = document.getElementById('sb-config-arrow');
+
   if (sbUsuarios) sbUsuarios.style.display = isAdmin ? 'flex' : 'none';
   if (sbConfig) sbConfig.style.display = isAdmin ? 'flex' : 'none';
+  if (sbAdminMenu) sbAdminMenu.style.display = 'none';
+  if (sbConfigArrow) sbConfigArrow.textContent = '▶';
 
   const btnExport = document.getElementById('btn-exportar-csv');
   if (btnExport) {
