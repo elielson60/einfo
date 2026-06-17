@@ -391,6 +391,14 @@ tr:hover td{background:rgba(255,255,255,.02);}
             </select>
             <div class="field-err" id="err-area">Selecione o departamento</div>
           </div>
+          <div class="field">
+            <label>Tipo de Categoria <span class="req">*</span></label>
+            <select id="c-cat" onchange="renderCamposExtra()">
+              <option value="">Selecionar...</option>
+            </select>
+            <div class="field-err" id="err-cat">Selecione o tipo de categoria</div>
+          </div>
+          <div id="campos-extra-container"></div>
         </div>
 
         <div class="card">
@@ -405,14 +413,6 @@ tr:hover td{background:rgba(255,255,255,.02);}
             <textarea id="c-desc" placeholder="O que aconteceu? Quando começou? Afeta mais alguém? O que já foi tentado?"></textarea>
             <div class="field-err" id="err-desc">Descreva com mais detalhes</div>
           </div>
-          <div class="field">
-            <label>Tipo de Categoria <span class="req">*</span></label>
-            <select id="c-cat" onchange="renderCamposExtra()">
-              <option value="">Selecionar...</option>
-            </select>
-            <div class="field-err" id="err-cat">Selecione o tipo de categoria</div>
-          </div>
-          <div id="campos-extra-container"></div>
           <div class="field">
             <label>Anexar imagens <span style="color:var(--dim);font-weight:400;">(opcional)</span></label>
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
