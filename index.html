@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>E-INFO Consultoria — Portal de Chamados TI</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
@@ -537,71 +538,112 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
       <!-- DASHBOARD -->
       <div class="admin-section" id="sec-dashboard">
-        <div class="admin-title">Dashboard</div>
-
-        <!-- KPIs -->
-        <div class="stats-row" id="dash-kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px;">
-          <div class="stat stat-accent"><div class="stat-n" id="dk-total">—</div><div class="stat-l">Total chamados</div></div>
-          <div class="stat stat-red"><div class="stat-n" id="dk-aberto">—</div><div class="stat-l">Em aberto</div></div>
-          <div class="stat stat-green"><div class="stat-n" id="dk-resolvido">—</div><div class="stat-l">Resolvidos</div></div>
-          <div class="stat"><div class="stat-n" id="dk-nota">—</div><div class="stat-l">Nota média avaliações</div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div class="admin-title" style="margin-bottom:0;">Dashboard</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:12px;color:var(--muted);">Período:</span>
+            <select id="dash-periodo" onchange="loadDashboard()" style="font-size:12px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);cursor:pointer;">
+              <option value="7">Últimos 7 dias</option>
+              <option value="30" selected>Últimos 30 dias</option>
+              <option value="90">Últimos 90 dias</option>
+              <option value="365">Último ano</option>
+              <option value="0">Todos</option>
+            </select>
+          </div>
         </div>
 
-        <div class="stats-row" id="dash-sla-kpis" style="grid-template-columns:repeat(2,1fr);margin-bottom:24px;">
+        <!-- KPIs Row 1 -->
+        <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px;">
+          <div class="stat stat-accent">
+            <div class="stat-n" id="dk-total">—</div>
+            <div class="stat-l">Total de chamados</div>
+          </div>
+          <div class="stat stat-red">
+            <div class="stat-n" id="dk-aberto">—</div>
+            <div class="stat-l">Em aberto</div>
+          </div>
+          <div class="stat stat-green">
+            <div class="stat-n" id="dk-resolvido">—</div>
+            <div class="stat-l">Resolvidos</div>
+          </div>
+          <div class="stat">
+            <div class="stat-n" id="dk-nota">—</div>
+            <div class="stat-l">Nota média avaliações</div>
+          </div>
+        </div>
+
+        <!-- KPIs Row 2 -->
+        <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
           <div class="stat" id="sla-resposta-card">
             <div class="stat-n" id="dk-sla-resposta">—</div>
-            <div class="stat-l">SLA de Inicialização (1ª resposta) <span style="color:var(--dim);">· meta ≥90%</span></div>
+            <div class="stat-l">SLA Inicialização <span style="color:var(--dim);">· meta ≥90%</span></div>
           </div>
           <div class="stat" id="sla-resolucao-card">
             <div class="stat-n" id="dk-sla-resolucao">—</div>
-            <div class="stat-l">SLA de Resolução <span style="color:var(--dim);">· meta ≥90%</span></div>
+            <div class="stat-l">SLA Resolução <span style="color:var(--dim);">· meta ≥90%</span></div>
+          </div>
+          <div class="stat">
+            <div class="stat-n" id="dk-hoje">—</div>
+            <div class="stat-l">Abertos hoje</div>
+          </div>
+          <div class="stat">
+            <div class="stat-n" id="dk-tempo-medio">—</div>
+            <div class="stat-l">Tempo médio resolução</div>
           </div>
         </div>
 
-        <!-- EVOLUÇÃO MENSAL -->
-        <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
-          <div style="font-size:14px;font-weight:500;margin-bottom:16px;">📈 Chamados por mês</div>
-          <div id="chart-mes"></div>
+        <!-- ROW 1: Linha + Rosca Status -->
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;">
+          <div class="tbl-wrap" style="padding:20px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📈 Tendência — Chamados abertos e fechados por dia</div>
+            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Linha temporal do período selecionado</div>
+            <canvas id="chart-linha" height="100"></canvas>
+          </div>
+          <div class="tbl-wrap" style="padding:20px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🍩 Proporção por Status</div>
+            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Distribuição percentual</div>
+            <canvas id="chart-rosca-status" height="180"></canvas>
+          </div>
         </div>
 
-        <!-- CHARTS ROW 1 -->
+        <!-- ROW 2: Colunas Departamento + Pizza Prioridade -->
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;">
+          <div class="tbl-wrap" style="padding:20px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📊 Chamados por Departamento</div>
+            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Comparativo entre departamentos</div>
+            <canvas id="chart-colunas-depto" height="100"></canvas>
+          </div>
+          <div class="tbl-wrap" style="padding:20px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🍕 Distribuição por Prioridade</div>
+            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Percentual por nível de impacto</div>
+            <canvas id="chart-pizza-prio" height="180"></canvas>
+          </div>
+        </div>
+
+        <!-- ROW 3: Barras Categoria + Barras Empresa -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-          <!-- Por Empresa -->
           <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">📊 Chamados por empresa</div>
-            <div id="chart-empresa"></div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🗂️ Chamados por Categoria</div>
+            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Categorias mais solicitadas</div>
+            <canvas id="chart-barras-cat" height="120"></canvas>
           </div>
-          <!-- Por Prioridade -->
           <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">🎯 Chamados por impacto</div>
-            <div id="chart-prio"></div>
-          </div>
-        </div>
-
-        <!-- CHARTS ROW 2 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-          <!-- Por Categoria -->
-          <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">🗂️ Chamados por categoria</div>
-            <div id="chart-cat"></div>
-          </div>
-          <!-- Por Área -->
-          <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">🏢 Chamados por departamento</div>
-            <div id="chart-area"></div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🏢 Chamados por Organização</div>
+            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Volume por empresa</div>
+            <canvas id="chart-barras-empresa" height="120"></canvas>
           </div>
         </div>
 
-        <!-- CHARTS ROW 3 -->
+        <!-- ROW 4: Heatmap horários + Top solicitantes -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-          <!-- Status Backlog -->
           <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">📌 Backlog por status</div>
-            <div id="chart-status"></div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🗓️ Volume por Dia da Semana</div>
+            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Quais dias concentram mais chamados</div>
+            <canvas id="chart-diasemana" height="100"></canvas>
           </div>
-          <!-- Top solicitantes -->
           <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:16px;">👤 Top solicitantes</div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">👤 Top Solicitantes</div>
+            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Usuários com mais chamados no período</div>
             <div id="chart-users"></div>
           </div>
         </div>
@@ -1787,115 +1829,187 @@ function setSlaKpi(numId, cardId, pct, base) {
   else { labelEl.insertAdjacentHTML('beforeend', `<span class="sla-base" style="color:var(--dim);">${txt}</span>`); }
 }
 
+// ── CHART INSTANCES (para destruir antes de recriar) ──
+const CHARTS = {};
+function destroyChart(id) { if (CHARTS[id]) { CHARTS[id].destroy(); delete CHARTS[id]; } }
+
+function getDashPeriodo() {
+  const sel = document.getElementById('dash-periodo');
+  return sel ? parseInt(sel.value) : 30;
+}
+
+function filtrarPeriodo(list, dias) {
+  if (!dias) return list;
+  const limite = new Date(Date.now() - dias * 24 * 60 * 60 * 1000);
+  return list.filter(c => new Date(c.criado_em) >= limite);
+}
+
 async function loadDashboard() {
   const { data } = await sb.from('chamados').select('*').order('criado_em',{ascending:false});
-  const list = filtrarChamadosPorAtendente(data || []);
+  const todos = filtrarChamadosPorAtendente(data || []);
+  const dias = getDashPeriodo();
+  const list = filtrarPeriodo(todos, dias);
+  const hoje = new Date().toISOString().slice(0,10);
 
-  // KPIs
+  // ── KPIs ──
   document.getElementById('dk-total').textContent = list.length;
-  const abertos = list.filter(c=>c.status!=='resolvido').length;
-  document.getElementById('dk-aberto').textContent = abertos;
+  document.getElementById('dk-aberto').textContent = list.filter(c=>c.status!=='resolvido').length;
   document.getElementById('dk-resolvido').textContent = list.filter(c=>c.status==='resolvido').length;
+  document.getElementById('dk-hoje').textContent = list.filter(c=>c.criado_em.slice(0,10)===hoje).length;
 
-  // SLA de Inicialização (1ª resposta do admin dentro do prazo)
-  const comResposta = list.filter(c => (c.comentarios||[]).some(cm=>cm.autor==='admin'));
-  if (comResposta.length) {
-    const dentroResposta = comResposta.filter(c => {
-      const cfg = SLA_CONFIG[c.prioridade] || {resposta:4};
-      const prazoResposta = new Date(new Date(c.criado_em).getTime() + (cfg.resposta||4)*60*60*1000);
-      const primeiraResposta = (c.comentarios||[]).find(cm=>cm.autor==='admin');
-      return new Date(primeiraResposta.data) <= prazoResposta;
-    }).length;
-    const pctResposta = Math.round((dentroResposta/comResposta.length)*100);
-    setSlaKpi('dk-sla-resposta','sla-resposta-card', pctResposta, comResposta.length);
-  } else {
-    setSlaKpi('dk-sla-resposta','sla-resposta-card', null, 0);
-  }
+  // Tempo médio resolução
+  const resolvidos = list.filter(c=>c.status==='resolvido'&&c.atualizado_em);
+  if (resolvidos.length) {
+    const media = resolvidos.reduce((acc,c)=>{
+      return acc + (new Date(c.atualizado_em)-new Date(c.criado_em))/(1000*60*60);
+    },0)/resolvidos.length;
+    document.getElementById('dk-tempo-medio').textContent = media<24?Math.round(media)+'h':Math.round(media/24)+'d';
+  } else document.getElementById('dk-tempo-medio').textContent='—';
 
-  // SLA de Resolução (resolvidos dentro do prazo)
-  const resolvidosSla = list.filter(c=>c.status==='resolvido' && c.atualizado_em);
-  if (resolvidosSla.length) {
-    const dentroResolucao = resolvidosSla.filter(c => {
-      const cfg = SLA_CONFIG[c.prioridade] || {resolucao:24};
-      const prazo = new Date(new Date(c.criado_em).getTime() + (cfg.resolucao||24)*60*60*1000);
-      return new Date(c.atualizado_em) <= prazo;
-    }).length;
-    const pctResolucao = Math.round((dentroResolucao/resolvidosSla.length)*100);
-    setSlaKpi('dk-sla-resolucao','sla-resolucao-card', pctResolucao, resolvidosSla.length);
-  } else {
-    setSlaKpi('dk-sla-resolucao','sla-resolucao-card', null, 0);
-  }
-
-  // Nota média das avaliações
+  // Nota
   const avaliados = list.filter(c=>c.avaliacao);
   if(avaliados.length) {
-    const mediaAval = avaliados.reduce((acc,c)=>{
-      try { return acc + JSON.parse(c.avaliacao).nota; } catch{ return acc; }
-    },0) / avaliados.length;
-    document.getElementById('dk-nota').textContent = mediaAval.toFixed(1)+' ⭐';
-  } else {
-    document.getElementById('dk-nota').textContent = '—';
+    const m = avaliados.reduce((a,c)=>{try{return a+JSON.parse(c.avaliacao).nota;}catch{return a;}},0)/avaliados.length;
+    document.getElementById('dk-nota').textContent = m.toFixed(1)+' ⭐';
+  } else document.getElementById('dk-nota').textContent='—';
+
+  // SLA
+  const comResp = list.filter(c=>(c.comentarios||[]).some(cm=>cm.autor==='admin'));
+  if(comResp.length){
+    const ok=comResp.filter(c=>{const cfg=SLA_CONFIG[c.prioridade]||{resposta:4};const prazo=new Date(new Date(c.criado_em).getTime()+(cfg.resposta||4)*3600000);const pr=(c.comentarios||[]).find(cm=>cm.autor==='admin');return new Date(pr.data)<=prazo;}).length;
+    setSlaKpi('dk-sla-resposta','sla-resposta-card',Math.round(ok/comResp.length*100),comResp.length);
+  } else setSlaKpi('dk-sla-resposta','sla-resposta-card',null,0);
+  const resSla=list.filter(c=>c.status==='resolvido'&&c.atualizado_em);
+  if(resSla.length){
+    const ok=resSla.filter(c=>{const cfg=SLA_CONFIG[c.prioridade]||{resolucao:24};const prazo=new Date(new Date(c.criado_em).getTime()+(cfg.resolucao||24)*3600000);return new Date(c.atualizado_em)<=prazo;}).length;
+    setSlaKpi('dk-sla-resolucao','sla-resolucao-card',Math.round(ok/resSla.length*100),resSla.length);
+  } else setSlaKpi('dk-sla-resolucao','sla-resolucao-card',null,0);
+
+  // ── CHART 1: Linha — Tendência diária ──
+  renderLinha(list, dias);
+
+  // ── CHART 2: Rosca — Status ──
+  renderRosca(list);
+
+  // ── CHART 3: Colunas — Departamentos ──
+  renderColunas(list, 'departamento', 'chart-colunas-depto');
+
+  // ── CHART 4: Pizza — Prioridade ──
+  renderPizza(list);
+
+  // ── CHART 5: Barras horizontais — Categoria ──
+  renderBarrasH(list, 'categoria', 'chart-barras-cat');
+
+  // ── CHART 6: Barras horizontais — Empresa ──
+  renderBarrasH(list, 'empresa', 'chart-barras-empresa');
+
+  // ── CHART 7: Colunas — Dia da semana ──
+  renderDiaSemana(list);
+
+  // ── Top solicitantes ──
+  renderTopUsers('chart-users', list);
+}
+
+const PALETA = ['#4f8cff','#3ecf8e','#f59e0b','#ef4444','#a78bfa','#06b6d4','#f97316','#ec4899','#14b8a6','#84cc16'];
+const CHART_OPTS = { responsive:true, plugins:{ legend:{ labels:{ color:'#a1a1aa', font:{size:11} } } }, scales:{ x:{ ticks:{color:'#a1a1aa',font:{size:11}}, grid:{color:'rgba(255,255,255,.05)'} }, y:{ ticks:{color:'#a1a1aa',font:{size:11}}, grid:{color:'rgba(255,255,255,.05)'} } } };
+
+function renderLinha(list, dias) {
+  destroyChart('linha');
+  const ctx = document.getElementById('chart-linha');
+  if (!ctx) return;
+
+  // Gerar últimos N dias
+  const numDias = Math.min(dias||30, 90);
+  const labels = [], abertosPorDia = [], fechadosPorDia = [];
+  for (let i = numDias-1; i >= 0; i--) {
+    const d = new Date(Date.now() - i*24*60*60*1000);
+    const str = d.toISOString().slice(0,10);
+    const label = d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+    labels.push(label);
+    abertosPorDia.push(list.filter(c=>c.criado_em.slice(0,10)===str).length);
+    fechadosPorDia.push(list.filter(c=>c.atualizado_em&&c.atualizado_em.slice(0,10)===str&&c.status==='resolvido').length);
   }
 
-  // Render charts
-  renderBarChart('chart-empresa', countBy(list,'empresa'), ['#4f8cff','#3ecf8e','#f59e0b','#ef4444','#a78bfa','#06b6d4','#f97316']);
-  renderBarChart('chart-prio', countBy(list,'prioridade'), {'critico':'#ef4444','alto':'#f59e0b','medio':'#4f8cff','baixo':'#3ecf8e'});
-  renderBarChart('chart-cat', countBy(list,'categoria'), ['#4f8cff','#3ecf8e','#f59e0b','#ef4444','#a78bfa','#06b6d4','#f97316','#ec4899']);
-  renderBarChart('chart-area', countBy(list,'departamento'), ['#4f8cff','#3ecf8e','#f59e0b','#ef4444','#a78bfa','#06b6d4','#f97316']);
-  renderStatusChart('chart-status', list);
-  renderTopUsers('chart-users', list);
-  renderMonthChart('chart-mes', list);
-}
-
-function countBy(list, field) {
-  const counts = {};
-  list.forEach(item => {
-    const val = item[field] || 'Não informado';
-    const key = val.length > 28 ? val.substring(0,28)+'…' : val;
-    counts[key] = (counts[key]||0) + 1;
+  CHARTS['linha'] = new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'Abertos', data:abertosPorDia, borderColor:'#4f8cff', backgroundColor:'rgba(79,140,255,.15)', fill:true, tension:.4, pointRadius:2 },
+      { label:'Resolvidos', data:fechadosPorDia, borderColor:'#3ecf8e', backgroundColor:'rgba(62,207,142,.1)', fill:true, tension:.4, pointRadius:2 }
+    ]},
+    options:{ ...CHART_OPTS, plugins:{ ...CHART_OPTS.plugins, legend:{ position:'top', labels:{ color:'#a1a1aa', font:{size:11} } } } }
   });
-  return Object.fromEntries(Object.entries(counts).sort((a,b)=>b[1]-a[1]));
 }
 
-function renderBarChart(containerId, data, colors) {
-  const container = document.getElementById(containerId);
-  if(!container) return;
-  const entries = Object.entries(data);
-  if(!entries.length) { container.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Sem dados</p>'; return; }
-  const max = Math.max(...entries.map(e=>e[1]));
-  const isObj = typeof colors === 'object' && !Array.isArray(colors);
-  container.innerHTML = entries.map(([label,count],i) => {
-    const pct = Math.round((count/max)*100);
-    const color = isObj ? (colors[label]||'#4f8cff') : colors[i % colors.length];
-    return `<div style="margin-bottom:10px;">
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-        <span style="font-size:12px;color:var(--text);">${label}</span>
-        <span style="font-size:12px;font-weight:500;color:var(--muted);">${count}</span>
-      </div>
-      <div style="background:var(--surface3);border-radius:4px;height:8px;overflow:hidden;">
-        <div style="width:${pct}%;height:100%;background:${color};border-radius:4px;transition:width .5s;"></div>
-      </div>
-    </div>`;
-  }).join('');
+function renderRosca(list) {
+  destroyChart('rosca-status');
+  const ctx = document.getElementById('chart-rosca-status');
+  if (!ctx) return;
+  const dados = STATUS_LIST.map(s=>({ nome:s.nome, count:list.filter(c=>c.status===s.chave).length, cor:s.cor })).filter(d=>d.count>0);
+  if (!dados.length) return;
+  CHARTS['rosca-status'] = new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels:dados.map(d=>d.nome), datasets:[{ data:dados.map(d=>d.count), backgroundColor:dados.map(d=>d.cor), borderWidth:2, borderColor:'#1a1a2e' }] },
+    options:{ responsive:true, cutout:'65%', plugins:{ legend:{ position:'bottom', labels:{ color:'#a1a1aa', font:{size:11}, padding:8 } } } }
+  });
 }
 
-function renderStatusChart(containerId, list) {
-  const container = document.getElementById(containerId);
-  if(!container) return;
-  const total = list.length || 1;
-  container.innerHTML = STATUS_LIST.map(s => {
-    const count = list.filter(c=>c.status===s.chave).length;
-    const pct = Math.round((count/total)*100);
-    return `<div style="margin-bottom:12px;">
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-        <span style="font-size:12px;color:var(--text);">${s.nome}</span>
-        <span style="font-size:12px;font-weight:500;color:var(--muted);">${count} <span style="color:var(--dim)">(${pct}%)</span></span>
-      </div>
-      <div style="background:var(--surface3);border-radius:4px;height:10px;overflow:hidden;">
-        <div style="width:${pct}%;height:100%;background:${s.cor};border-radius:4px;transition:width .5s;"></div>
-      </div>
-    </div>`;
-  }).join('');
+function renderColunas(list, field, canvasId) {
+  destroyChart(canvasId);
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  const counts = {};
+  list.forEach(c=>{ const v=c[field]||'Não informado'; counts[v]=(counts[v]||0)+1; });
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  if (!entries.length) return;
+  CHARTS[canvasId] = new Chart(ctx, {
+    type:'bar',
+    data:{ labels:entries.map(e=>e[0].length>18?e[0].substring(0,18)+'…':e[0]), datasets:[{ label:'Chamados', data:entries.map(e=>e[1]), backgroundColor:PALETA, borderRadius:4 }] },
+    options:{ ...CHART_OPTS, plugins:{ legend:{ display:false } } }
+  });
+}
+
+function renderPizza(list) {
+  destroyChart('pizza-prio');
+  const ctx = document.getElementById('chart-pizza-prio');
+  if (!ctx) return;
+  const prioL = { critico:'🔴 Crítico', alto:'🟠 Alto', medio:'🔵 Médio', baixo:'🟢 Baixo' };
+  const prioC = { critico:'#ef4444', alto:'#f59e0b', medio:'#4f8cff', baixo:'#3ecf8e' };
+  const dados = Object.entries(prioL).map(([k,nome])=>({ nome, count:list.filter(c=>c.prioridade===k).length, cor:prioC[k] })).filter(d=>d.count>0);
+  if (!dados.length) return;
+  CHARTS['pizza-prio'] = new Chart(ctx, {
+    type:'pie',
+    data:{ labels:dados.map(d=>d.nome), datasets:[{ data:dados.map(d=>d.count), backgroundColor:dados.map(d=>d.cor), borderWidth:2, borderColor:'#1a1a2e' }] },
+    options:{ responsive:true, plugins:{ legend:{ position:'bottom', labels:{ color:'#a1a1aa', font:{size:11}, padding:8 } } } }
+  });
+}
+
+function renderBarrasH(list, field, canvasId) {
+  destroyChart(canvasId);
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  const counts = {};
+  list.forEach(c=>{ const v=c[field]||'Não informado'; counts[v]=(counts[v]||0)+1; });
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if (!entries.length) return;
+  CHARTS[canvasId] = new Chart(ctx, {
+    type:'bar',
+    data:{ labels:entries.map(e=>e[0].length>22?e[0].substring(0,22)+'…':e[0]), datasets:[{ label:'Chamados', data:entries.map(e=>e[1]), backgroundColor:PALETA, borderRadius:4 }] },
+    options:{ ...CHART_OPTS, indexAxis:'y', plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{color:'#a1a1aa',font:{size:11}}, grid:{color:'rgba(255,255,255,.05)'} }, y:{ ticks:{color:'#a1a1aa',font:{size:11}}, grid:{display:false} } } }
+  });
+}
+
+function renderDiaSemana(list) {
+  destroyChart('diasemana');
+  const ctx = document.getElementById('chart-diasemana');
+  if (!ctx) return;
+  const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const counts = [0,0,0,0,0,0,0];
+  list.forEach(c=>{ counts[new Date(c.criado_em).getDay()]++; });
+  CHARTS['diasemana'] = new Chart(ctx, {
+    type:'bar',
+    data:{ labels:dias, datasets:[{ label:'Chamados', data:counts, backgroundColor:counts.map((_,i)=>i===0||i===6?'rgba(79,140,255,.4)':'#4f8cff'), borderRadius:4 }] },
+    options:{ ...CHART_OPTS, plugins:{ legend:{ display:false } } }
+  });
 }
 
 function renderTopUsers(containerId, list) {
@@ -1904,55 +2018,25 @@ function renderTopUsers(containerId, list) {
   const counts = {};
   list.forEach(c => {
     const name = c.nome_solicitante || 'Desconhecido';
-    if(!counts[name]) counts[name] = {total:0,aberto:0,resolvido:0};
+    if(!counts[name]) counts[name]={total:0,aberto:0,resolvido:0};
     counts[name].total++;
     if(c.status==='aberto'||c.status==='andamento') counts[name].aberto++;
     if(c.status==='resolvido') counts[name].resolvido++;
   });
-  const sorted = Object.entries(counts).sort((a,b)=>b[1].total-a[1].total).slice(0,6);
-  if(!sorted.length) { container.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Sem dados</p>'; return; }
-  container.innerHTML = sorted.map(([name,data],i)=>`
-    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--accent-s);border:1px solid var(--accent-b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--accent);flex-shrink:0;">${i+1}</div>
+  const sorted = Object.entries(counts).sort((a,b)=>b[1].total-a[1].total).slice(0,7);
+  if(!sorted.length){container.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Sem dados</p>';return;}
+  container.innerHTML = sorted.map(([name,d],i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);">
+      <div style="width:22px;height:22px;border-radius:50%;background:var(--accent-s);border:1px solid var(--accent-b);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--accent);flex-shrink:0;">${i+1}</div>
       <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
-        <div style="font-size:11px;color:var(--muted);">Total: ${data.total} · Aberto: ${data.aberto} · Resolvido: ${data.resolvido}</div>
+        <div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
+        <div style="font-size:11px;color:var(--dim);">Total: ${d.total} · Aberto: ${d.aberto} · Resolvido: ${d.resolvido}</div>
       </div>
-      <span style="font-size:18px;font-weight:600;color:var(--accent);">${data.total}</span>
+      <span style="font-size:16px;font-weight:700;color:var(--accent);">${d.total}</span>
     </div>`).join('');
 }
 
-function renderMonthChart(containerId, list) {
-  const container = document.getElementById(containerId);
-  if(!container) return;
-  if(!list.length) { container.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Sem dados</p>'; return; }
-
-  const counts = {};
-  list.forEach(c => {
-    const d = new Date(c.criado_em);
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    counts[key] = (counts[key]||0) + 1;
-  });
-
-  const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const sortedKeys = Object.keys(counts).sort();
-  const max = Math.max(...Object.values(counts));
-
-  container.innerHTML = `<div style="display:flex;align-items:flex-end;gap:16px;height:140px;padding-top:10px;justify-content:flex-start;">` +
-    sortedKeys.map(key => {
-      const [ano,mes] = key.split('-');
-      const count = counts[key];
-      const heightPct = Math.max(8, Math.round((count/max)*100));
-      return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;width:48px;flex-shrink:0;">
-        <span style="font-size:12px;font-weight:600;color:var(--accent);">${count}</span>
-        <div style="width:36px;background:var(--accent);border-radius:4px 4px 0 0;height:${heightPct}%;transition:height .5s;"></div>
-        <span style="font-size:11px;color:var(--muted);">${meses[parseInt(mes)-1]}/${ano.slice(2)}</span>
-      </div>`;
-    }).join('') +
-  `</div>`;
-}
-
-async function loadAdminData() { await loadChamados(); }
+async function loadAdminData() { await loadChamados(); }async function loadAdminData() { await loadChamados(); }
 
 function filtrarChamadosPorAtendente(list) {
   if (currentPerfil?.role !== 'atendente') return list;
