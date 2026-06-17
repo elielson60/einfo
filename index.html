@@ -1729,14 +1729,7 @@ function adminNav(sec, btn) {
   if (sec==='usuarios') loadUsuarios();
   if (sec==='dashboard') loadDashboard();
   if (sec==='config') {
-    preencherFormConfig();
-    loadCadastros().then(()=>{renderListaCamposAdmin();});
-    loadAvisosAdmin();
-    limparFormAviso();
-    renderStatusAdmin();
-    limparFormStatus();
-    renderAtendentesDeptos();
-    // Show home screen
+    // Show home screen only - sub-pages are loaded on demand by adminSubNav
     document.getElementById('admin-sub-home').style.display='block';
     document.querySelectorAll('.admin-sub-page').forEach(el=>el.style.display='none');
     document.getElementById('admin-sub-title').textContent='Administração';
@@ -1749,8 +1742,8 @@ function toggleAdminMenu(btn) {
   const open = menu.style.display === 'none';
   menu.style.display = open ? 'block' : 'none';
   arrow.textContent = open ? '▼' : '▶';
-  if (open) {
-    // Navigate to admin section
+  if (open && !document.getElementById('sec-config').classList.contains('active')) {
+    // Only navigate if not already on config page
     adminNav('config', btn);
   }
 }
@@ -1777,9 +1770,12 @@ function adminSubNav(sub, btn) {
   // Update title
   document.getElementById('admin-sub-title').textContent = ADMIN_SUB_TITLES[sub] || sub;
 
-  // Show the right sub page
+  // Show the right sub page - force after a tick to avoid race condition
   const el = document.getElementById(`cfgtab-${sub}`);
-  if (el) el.style.display='block';
+  if (el) {
+    el.style.display='none'; // force reset
+    setTimeout(()=>{ el.style.display='block'; }, 10);
+  }
 
   // Trigger loaders for specific sub-pages
   if (sub === 'atendentes') renderAtendentesDeptos();
