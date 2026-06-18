@@ -11,20 +11,29 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0f0f11;--surface:#17171b;--surface2:#1e1e24;--surface3:#242430;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
-  --text:#f0f0f2;--muted:#7a7a8c;--dim:#3a3a4a;
-  --accent:#4f8cff;--accent-s:rgba(79,140,255,0.12);--accent-b:rgba(79,140,255,0.3);
-  --green:#3ecf8e;--green-s:rgba(62,207,142,0.1);
-  --red:#ef4444;--red-s:rgba(239,68,68,0.1);
-  --orange:#f59e0b;--orange-s:rgba(245,158,11,0.1);
-  --r:10px;--r-sm:7px;
+  --bg:#070711;
+  --surface:rgba(255,255,255,0.04);
+  --surface2:rgba(255,255,255,0.06);
+  --surface3:rgba(255,255,255,0.09);
+  --border:rgba(255,255,255,0.08);
+  --border2:rgba(255,255,255,0.16);
+  --text:#f0f0f8;--muted:#8888a0;--dim:#3a3a55;
+  --accent:#5b8def;--accent-s:rgba(91,141,239,0.14);--accent-b:rgba(91,141,239,0.35);
+  --green:#2fd89a;--green-s:rgba(47,216,154,0.1);
+  --red:#f05a5a;--red-s:rgba(240,90,90,0.1);
+  --orange:#f5a623;--orange-s:rgba(245,166,35,0.1);
+  --glass:rgba(255,255,255,0.04);
+  --glass-border:rgba(255,255,255,0.1);
+  --shadow-sm:0 2px 16px rgba(0,0,0,0.4);
+  --shadow-md:0 8px 32px rgba(0,0,0,0.5);
+  --shadow-glow:0 0 40px rgba(91,141,239,0.12);
+  --r:14px;--r-sm:10px;--r-xs:8px;
   --sans:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
 }
-body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;background-image:radial-gradient(ellipse at 20% 0%,rgba(91,141,239,0.06) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(167,139,250,0.05) 0%,transparent 60%);}
 
 /* ── TOPBAR ── */
-.topbar{position:sticky;top:0;z-index:200;height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;}
+.topbar{position:sticky;top:0;z-index:200;height:56px;background:rgba(7,7,17,0.75);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;padding:0 24px;}
 .tb-brand{display:flex;align-items:center;gap:10px;}
 .tb-logo{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0;}
 .tb-name{font-size:14px;font-weight:500;}
@@ -42,7 +51,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 
 /* ── AUTH PAGE ── */
 .auth-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;}
-.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:36px 32px;width:100%;max-width:420px;}
+.auth-card{background:rgba(255,255,255,0.04);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:36px 32px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
 .auth-logo{width:44px;height:44px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;margin-bottom:20px;}
 .auth-title{font-size:22px;font-weight:600;margin-bottom:4px;}
 .auth-sub{font-size:13px;color:var(--muted);margin-bottom:28px;}
@@ -55,9 +64,9 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 .field:last-of-type{margin-bottom:0;}
 label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
 label .req{color:var(--accent);margin-left:2px;}
-input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:var(--sans);font-size:14px;padding:10px 13px;outline:none;transition:border-color .2s,box-shadow .2s;appearance:none;-webkit-appearance:none;}
+input,select,textarea{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:var(--text);font-family:var(--sans);font-size:14px;padding:10px 13px;outline:none;transition:all .2s;appearance:none;-webkit-appearance:none;}
 input::placeholder,textarea::placeholder{color:var(--dim);}
-input:focus,select:focus,textarea:focus{border-color:var(--accent-b);box-shadow:0 0 0 3px var(--accent-s);}
+input:focus,select:focus,textarea:focus{border-color:rgba(91,141,239,0.5);box-shadow:0 0 0 3px rgba(91,141,239,0.12);background:rgba(255,255,255,0.07);}
 select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a7a8c' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;cursor:pointer;}
 textarea{resize:vertical;min-height:90px;line-height:1.6;}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -66,39 +75,45 @@ textarea{resize:vertical;min-height:90px;line-height:1.6;}
 
 /* ── BUTTONS ── */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 18px;border-radius:var(--r-sm);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--border);}
-.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);}
-.btn-primary:hover{background:#3a7de8;}
+.btn-primary{background:linear-gradient(135deg,#5b8def,#7c6cf5);color:#fff;border:none;box-shadow:0 4px 18px rgba(91,141,239,0.35);letter-spacing:.01em;}
+.btn-primary:hover{background:linear-gradient(135deg,#4a7de0,#6b5ce7);box-shadow:0 6px 24px rgba(91,141,239,0.45);transform:translateY(-1px);}
 .btn-primary:disabled{opacity:.4;pointer-events:none;}
-.btn-ghost{background:var(--surface2);color:var(--muted);}
-.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.btn-ghost{background:rgba(255,255,255,0.05);color:var(--muted);border-color:rgba(255,255,255,0.1);backdrop-filter:blur(4px);}
+.btn-ghost:hover{background:rgba(255,255,255,0.09);color:var(--text);border-color:rgba(255,255,255,0.18);}
 .btn-danger{background:var(--red-s);color:#f87171;border-color:rgba(239,68,68,.3);}
 .btn-full{width:100%;}
 .btn-sm{padding:6px 12px;font-size:12px;}
 
 /* ── ADMIN LAYOUT ── */
 .admin-layout{flex:1;display:flex;width:100%;min-height:calc(100vh - 52px);}
-.sidebar{width:220px;min-width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:20px 12px;display:flex;flex-direction:column;gap:4px;}
+.sidebar{width:220px;min-width:220px;flex-shrink:0;background:rgba(255,255,255,0.025);backdrop-filter:blur(10px);border-right:1px solid rgba(255,255,255,0.07);padding:20px 12px;display:flex;flex-direction:column;gap:3px;}
 .sb-section{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:4px 10px;margin-top:12px;margin-bottom:4px;display:block;}
-.sb-btn{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r-sm);cursor:pointer;font-size:13px;color:var(--muted);background:none;border:none;font-family:var(--sans);width:100%;text-align:left;transition:all .15s;}
-.sb-btn:hover{background:var(--surface2);color:var(--text);}
-.sb-btn.active{background:var(--surface2);color:var(--text);font-weight:500;}
+.sb-btn{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:10px;cursor:pointer;font-size:13px;color:rgba(160,160,190,0.8);background:none;border:1px solid transparent;font-family:var(--sans);width:100%;text-align:left;transition:all .18s;}
+.sb-btn:hover{background:rgba(255,255,255,0.06);color:#e0e0f0;border-color:rgba(255,255,255,0.07);}
+.sb-btn.active{background:rgba(91,141,239,0.14);color:#8ab4ff;border-color:rgba(91,141,239,0.28);font-weight:500;box-shadow:0 2px 12px rgba(91,141,239,0.12);}
 .sb-icon{font-size:15px;width:18px;text-align:center;}
 .admin-content{flex:1;overflow-y:auto;padding:28px;min-width:0;}
 .admin-section{display:none;}
 .admin-section.active{display:block;}
 .admin-title{font-size:20px;font-weight:600;margin-bottom:20px;}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;}
-.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
-.stat-n{font-size:28px;font-weight:600;}
-.stat-l{font-size:12px;color:var(--muted);margin-top:2px;}
-.stat-accent{border-color:var(--accent-b);background:var(--accent-s);}
-.stat-accent .stat-n{color:var(--accent);}
-.stat-red{border-color:rgba(239,68,68,.3);background:var(--red-s);}
+.stat{position:relative;background:rgba(255,255,255,0.04);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.09);border-radius:16px;padding:16px;overflow:hidden;transition:transform .2s,box-shadow .2s;}
+.stat:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(79,140,255,.12);}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(79,140,255,.4),transparent);}
+.stat-n{font-size:28px;font-weight:700;color:#e0e0f0;}
+.stat-l{font-size:11px;color:rgba(161,161,170,.7);margin-top:2px;text-transform:uppercase;letter-spacing:.05em;}
+.stat-accent{border-color:rgba(79,140,255,.3)!important;}
+.stat-accent .stat-n{color:#4f8cff;}
+.stat-accent::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top left,rgba(79,140,255,.1),transparent 70%);pointer-events:none;}
+.stat-red{border-color:rgba(239,68,68,.3)!important;}
 .stat-red .stat-n{color:#f87171;}
-.stat-green{border-color:rgba(62,207,142,.3);background:var(--green-s);}
-.stat-green .stat-n{color:var(--green);}
-.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
-.tbl-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.stat-red::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top left,rgba(239,68,68,.08),transparent 70%);pointer-events:none;}
+.stat-green{border-color:rgba(62,207,142,.3)!important;}
+.stat-green .stat-n{color:#3ecf8e;}
+.stat-green::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top left,rgba(62,207,142,.08),transparent 70%);pointer-events:none;}
+.tbl-wrap{position:relative;background:rgba(255,255,255,0.035);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.09);border-radius:16px;overflow:hidden;transition:box-shadow .2s,transform .2s;}
+.tbl-wrap::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(91,141,239,.5),rgba(124,108,245,.5),transparent);pointer-events:none;z-index:1;}
+.tbl-header{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(255,255,255,0.025);}
 .tbl-search{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:7px 12px;outline:none;width:220px;}
 .tbl-search:focus{border-color:var(--accent-b);}
 table{width:100%;border-collapse:collapse;}
@@ -117,11 +132,11 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .form-header{margin-bottom:24px;}
 .form-title{font-size:22px;font-weight:600;margin-bottom:4px;}
 .form-sub{font-size:13px;color:var(--muted);}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:14px;}
-.card-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:16px;}
+.card{position:relative;background:rgba(255,255,255,0.04);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:22px;margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow-sm);}.card::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(91,141,239,0.6),rgba(124,108,245,0.6),transparent);}
+.card-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#4f8cff;margin-bottom:16px;opacity:.9;}
 
 /* PERFIL BADGE */
-.perfil-badge{background:var(--accent-s);border:1px solid var(--accent-b);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+.perfil-badge{background:rgba(91,141,239,0.1);backdrop-filter:blur(8px);border:1px solid rgba(91,141,239,0.25);border-radius:14px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px;}
 .perfil-avatar{width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;flex-shrink:0;}
 .perfil-info{flex:1;}
 .perfil-nome{font-size:14px;font-weight:500;}
@@ -174,7 +189,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .sla-done{background:var(--surface3);color:var(--muted);border-color:var(--border);}
 
 /* ── COMENTARIOS ── */
-.comment-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:8px;}
+.comment-item{background:rgba(255,255,255,0.04);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.09);border-radius:12px;padding:10px 14px;margin-bottom:8px;}
 .comment-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
 .comment-author{font-size:12px;font-weight:500;color:var(--accent);}
 .comment-date{font-size:11px;color:var(--dim);}
@@ -210,10 +225,27 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .chk-wrap input[type="checkbox"]:disabled + .chk-box{opacity:.4;cursor:not-allowed;}
 
 /* ── DASHBOARD ATENDENTES ── */
+/* ── DASHBOARD GERAL FUTURÍSTICO ── */
+.dk-kpi{position:relative;background:rgba(255,255,255,0.04);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.09);border-radius:16px;padding:18px;overflow:hidden;transition:transform .2s,box-shadow .2s;}
+.dk-kpi:hover{transform:translateY(-3px);box-shadow:0 12px 36px var(--k-glow,rgba(91,141,239,.25));}
+.dk-kpi::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top left,var(--k-glow,rgba(79,140,255,.15)),transparent 70%);pointer-events:none;}
+.dk-kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--k-color,#4f8cff),transparent);border-radius:14px 14px 0 0;}
+.dk-kpi-icon{font-size:22px;margin-bottom:8px;line-height:1;}
+.dk-kpi-n{font-size:28px;font-weight:800;color:var(--k-color,#f0f0ff);line-height:1.1;letter-spacing:-.02em;}
+.dk-kpi-l{font-size:11px;color:rgba(161,161,170,.7);margin-top:4px;text-transform:uppercase;letter-spacing:.06em;}
+.dk-kpi-bar{height:3px;background:rgba(255,255,255,.06);border-radius:10px;overflow:hidden;margin-top:10px;}
+.dk-kpi-bar-fill{height:100%;border-radius:10px;transition:width .8s cubic-bezier(.4,0,.2,1);box-shadow:0 0 8px var(--k-color,#4f8cff);}
+.dk-chart-wrap{position:relative;background:rgba(255,255,255,0.035);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.09);border-radius:16px;padding:20px;overflow:hidden;transition:box-shadow .2s,transform .15s;}
+.dk-chart-wrap:hover{box-shadow:0 8px 36px rgba(91,141,239,.15);transform:translateY(-1px);}
+.dk-chart-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(79,140,255,.4),rgba(167,139,250,.4),transparent);}
+.dk-chart-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+.dk-chart-title{font-size:14px;font-weight:600;color:#e0e0f0;letter-spacing:.01em;}
+.dk-chart-sub{font-size:11px;color:rgba(161,161,170,.5);margin-top:3px;text-transform:uppercase;letter-spacing:.05em;}
+
 /* ── DASHBOARD ATENDENTES FUTURÍSTICO ── */
 .atd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:20px;}
-.atd-card{position:relative;background:linear-gradient(135deg,rgba(15,15,30,.95) 0%,rgba(20,20,45,.95) 100%);border:1px solid rgba(79,140,255,.2);border-radius:16px;padding:22px;overflow:hidden;transition:transform .2s,box-shadow .2s;}
-.atd-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(79,140,255,.2);}
+.atd-card{position:relative;background:rgba(255,255,255,0.04);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:22px;overflow:hidden;transition:transform .2s,box-shadow .2s;}
+.atd-card:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(91,141,239,.22),0 0 0 1px rgba(91,141,239,.15);}
 .atd-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#4f8cff,#a78bfa,transparent);}
 .atd-card::after{content:'';position:absolute;top:-60px;right:-60px;width:180px;height:180px;background:radial-gradient(circle,rgba(79,140,255,.08) 0%,transparent 70%);pointer-events:none;}
 .atd-card-header{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
@@ -227,7 +259,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .atd-score-val{font-size:22px;font-weight:800;background:linear-gradient(135deg,#4f8cff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
 .atd-score-lbl{font-size:9px;color:rgba(161,161,170,.6);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
 .atd-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
-.atd-kpi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 6px;text-align:center;position:relative;overflow:hidden;}
+.atd-kpi{background:rgba(255,255,255,0.05);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.09);border-radius:12px;padding:12px 6px;text-align:center;position:relative;overflow:hidden;transition:transform .15s;}
 .atd-kpi::before{content:'';position:absolute;inset:0;background:var(--kpi-glow,transparent);opacity:.4;}
 .atd-kpi-n{font-size:20px;font-weight:800;color:var(--kpi-color,#f0f0ff);line-height:1.1;}
 .atd-kpi-l{font-size:9px;color:rgba(161,161,170,.6);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
@@ -253,10 +285,10 @@ tr:hover td{background:rgba(255,255,255,.02);}
 #sb-admin-menu .sb-icon{font-size:13px;}
 
 /* ── MODAL CAMPO TABS ── */
-.campo-tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:var(--sans);font-size:13px;padding:10px 18px;cursor:pointer;margin-bottom:-1px;transition:all .15s;}
-.campo-tab-btn:hover{color:var(--text);}
-.campo-tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500;}
-.campo-area-item,.campo-cat-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);margin-bottom:6px;font-size:13px;cursor:pointer;transition:all .15s;}
+.campo-tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:rgba(160,160,190,0.7);font-family:var(--sans);font-size:13px;padding:10px 18px;cursor:pointer;margin-bottom:-1px;transition:all .18s;}
+.campo-tab-btn:hover{color:#e0e0f0;}
+.campo-tab-btn.active{color:#8ab4ff;border-bottom-color:#5b8def;font-weight:500;}
+.campo-area-item,.campo-cat-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);margin-bottom:6px;font-size:13px;cursor:pointer;transition:all .15s;}.campo-area-item:hover,.campo-cat-item:hover{border-color:rgba(79,140,255,.3);background:rgba(79,140,255,.06);}
 .campo-area-item:hover,.campo-cat-item:hover{border-color:var(--border2);}
 .campo-area-item input,.campo-cat-item input{width:auto;flex-shrink:0;}
 .campo-area-todos{background:var(--accent-s);border-color:var(--accent-b);font-weight:500;color:var(--accent);}
@@ -551,8 +583,8 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <!-- SIDEBAR -->
     <div class="sidebar">
       <span class="sb-section">Visão geral</span>
-      <button class="sb-btn" onclick="adminNav('dashboard',this)"><span class="sb-icon">📊</span> Dashboard</button>
-      <button class="sb-btn active" onclick="adminNav('chamados',this)"><span class="sb-icon">📋</span> Chamados</button>
+      <button class="sb-btn" id="sb-dashboard" onclick="adminNav('dashboard',this)"><span class="sb-icon">📊</span> Dashboard</button>
+      <button class="sb-btn active" id="sb-chamados" onclick="adminNav('chamados',this)"><span class="sb-icon">📋</span> Chamados</button>
       <button class="sb-btn" id="sb-usuarios" onclick="adminNav('usuarios',this)"><span class="sb-icon">👥</span> Usuários</button>
       <button class="sb-btn" id="sb-config" onclick="toggleAdminMenu(this)"><span class="sb-icon">⚙️</span> Administração <span id="sb-config-arrow" style="margin-left:auto;font-size:10px;">▶</span></button>
       <div id="sb-admin-menu" style="display:none;padding-left:14px;">
@@ -600,101 +632,151 @@ tr:hover td{background:rgba(255,255,255,.02);}
         <!-- TAB GERAL -->
         <div id="dash-tab-content-geral">
 
-        <!-- KPIs Row 1 -->
-        <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px;">
-          <div class="stat stat-accent">
-            <div class="stat-n" id="dk-total">—</div>
-            <div class="stat-l">Total de chamados</div>
+        <!-- KPIs ROW 1 — Futurístico -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;">
+          <div class="dk-kpi" style="--k-color:#4f8cff;--k-glow:rgba(79,140,255,.25);">
+            <div class="dk-kpi-icon">📋</div>
+            <div class="dk-kpi-n" id="dk-total">—</div>
+            <div class="dk-kpi-l">Total de chamados</div>
+            <div class="dk-kpi-bar"><div class="dk-kpi-bar-fill" style="width:100%;background:var(--k-color);"></div></div>
           </div>
-          <div class="stat stat-red">
-            <div class="stat-n" id="dk-aberto">—</div>
-            <div class="stat-l">Em aberto</div>
+          <div class="dk-kpi" style="--k-color:#ef4444;--k-glow:rgba(239,68,68,.25);">
+            <div class="dk-kpi-icon">🔴</div>
+            <div class="dk-kpi-n" id="dk-aberto">—</div>
+            <div class="dk-kpi-l">Em aberto</div>
+            <div class="dk-kpi-bar"><div class="dk-kpi-bar-fill" id="dk-aberto-bar" style="width:0%;background:var(--k-color);"></div></div>
           </div>
-          <div class="stat stat-green">
-            <div class="stat-n" id="dk-resolvido">—</div>
-            <div class="stat-l">Resolvidos</div>
+          <div class="dk-kpi" style="--k-color:#3ecf8e;--k-glow:rgba(62,207,142,.25);">
+            <div class="dk-kpi-icon">✅</div>
+            <div class="dk-kpi-n" id="dk-resolvido">—</div>
+            <div class="dk-kpi-l">Resolvidos</div>
+            <div class="dk-kpi-bar"><div class="dk-kpi-bar-fill" id="dk-resolvido-bar" style="width:0%;background:var(--k-color);"></div></div>
           </div>
-          <div class="stat">
-            <div class="stat-n" id="dk-nota">—</div>
-            <div class="stat-l">Nota média avaliações</div>
-          </div>
-        </div>
-
-        <!-- KPIs Row 2 -->
-        <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
-          <div class="stat" id="sla-resposta-card">
-            <div class="stat-n" id="dk-sla-resposta">—</div>
-            <div class="stat-l">SLA Inicialização <span style="color:var(--dim);">· meta ≥90%</span></div>
-          </div>
-          <div class="stat" id="sla-resolucao-card">
-            <div class="stat-n" id="dk-sla-resolucao">—</div>
-            <div class="stat-l">SLA Resolução <span style="color:var(--dim);">· meta ≥90%</span></div>
-          </div>
-          <div class="stat">
-            <div class="stat-n" id="dk-hoje">—</div>
-            <div class="stat-l">Abertos hoje</div>
-          </div>
-          <div class="stat">
-            <div class="stat-n" id="dk-tempo-medio">—</div>
-            <div class="stat-l">Tempo médio resolução</div>
+          <div class="dk-kpi" style="--k-color:#fbbf24;--k-glow:rgba(251,191,36,.25);">
+            <div class="dk-kpi-icon">⭐</div>
+            <div class="dk-kpi-n" id="dk-nota">—</div>
+            <div class="dk-kpi-l">Nota média</div>
+            <div class="dk-kpi-bar"><div class="dk-kpi-bar-fill" id="dk-nota-bar" style="width:0%;background:var(--k-color);"></div></div>
           </div>
         </div>
 
-        <!-- ROW 1: Linha + Rosca Status -->
+        <!-- KPIs ROW 2 -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+          <div class="dk-kpi" id="sla-resposta-card" style="--k-color:#a78bfa;--k-glow:rgba(167,139,250,.25);">
+            <div class="dk-kpi-icon">⚡</div>
+            <div class="dk-kpi-n" id="dk-sla-resposta">—</div>
+            <div class="dk-kpi-l">SLA Inicialização <span style="opacity:.6;">≥90%</span></div>
+            <div class="dk-kpi-bar"><div class="dk-kpi-bar-fill" id="dk-sla-resposta-bar" style="width:0%;background:var(--k-color);"></div></div>
+          </div>
+          <div class="dk-kpi" id="sla-resolucao-card" style="--k-color:#06b6d4;--k-glow:rgba(6,182,212,.25);">
+            <div class="dk-kpi-icon">🎯</div>
+            <div class="dk-kpi-n" id="dk-sla-resolucao">—</div>
+            <div class="dk-kpi-l">SLA Resolução <span style="opacity:.6;">≥90%</span></div>
+            <div class="dk-kpi-bar"><div class="dk-kpi-bar-fill" id="dk-sla-resolucao-bar" style="width:0%;background:var(--k-color);"></div></div>
+          </div>
+          <div class="dk-kpi" style="--k-color:#f97316;--k-glow:rgba(249,115,22,.25);">
+            <div class="dk-kpi-icon">📅</div>
+            <div class="dk-kpi-n" id="dk-hoje">—</div>
+            <div class="dk-kpi-l">Abertos hoje</div>
+            <div class="dk-kpi-bar"><div class="dk-kpi-bar-fill" style="width:60%;background:var(--k-color);"></div></div>
+          </div>
+          <div class="dk-kpi" style="--k-color:#ec4899;--k-glow:rgba(236,72,153,.25);">
+            <div class="dk-kpi-icon">⏱️</div>
+            <div class="dk-kpi-n" id="dk-tempo-medio">—</div>
+            <div class="dk-kpi-l">Tempo médio resolução</div>
+            <div class="dk-kpi-bar"><div class="dk-kpi-bar-fill" style="width:40%;background:var(--k-color);"></div></div>
+          </div>
+        </div>
+
+        <!-- ROW 1: Linha + Rosca -->
         <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;">
-          <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📈 Tendência — Chamados abertos e fechados por dia</div>
-            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Linha temporal do período selecionado</div>
+          <div class="dk-chart-wrap">
+            <div class="dk-chart-hdr">
+              <div>
+                <div class="dk-chart-title">📈 Tendência de Chamados</div>
+                <div class="dk-chart-sub">Abertos vs Resolvidos por dia no período</div>
+              </div>
+            </div>
             <canvas id="chart-linha" height="100"></canvas>
           </div>
-          <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🍩 Proporção por Status</div>
-            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Distribuição percentual</div>
+          <div class="dk-chart-wrap">
+            <div class="dk-chart-hdr">
+              <div>
+                <div class="dk-chart-title">🍩 Status</div>
+                <div class="dk-chart-sub">Distribuição percentual</div>
+              </div>
+            </div>
             <canvas id="chart-rosca-status" height="180"></canvas>
           </div>
         </div>
 
-        <!-- ROW 2: Colunas Departamento + Pizza Prioridade -->
+        <!-- ROW 2: Colunas Depto + Pizza Prio -->
         <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;">
-          <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📊 Chamados por Departamento</div>
-            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Comparativo entre departamentos</div>
+          <div class="dk-chart-wrap">
+            <div class="dk-chart-hdr">
+              <div>
+                <div class="dk-chart-title">📊 Por Departamento</div>
+                <div class="dk-chart-sub">Comparativo entre departamentos</div>
+              </div>
+            </div>
             <canvas id="chart-colunas-depto" height="100"></canvas>
           </div>
-          <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🍕 Distribuição por Prioridade</div>
-            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Percentual por nível de impacto</div>
+          <div class="dk-chart-wrap">
+            <div class="dk-chart-hdr">
+              <div>
+                <div class="dk-chart-title">🍕 Prioridade</div>
+                <div class="dk-chart-sub">Distribuição por impacto</div>
+              </div>
+            </div>
             <canvas id="chart-pizza-prio" height="180"></canvas>
           </div>
         </div>
 
-        <!-- ROW 3: Barras Categoria + Barras Empresa -->
+        <!-- ROW 3: Barras H -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-          <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🗂️ Chamados por Categoria</div>
-            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Categorias mais solicitadas</div>
-            <canvas id="chart-barras-cat" height="120"></canvas>
+          <div class="dk-chart-wrap">
+            <div class="dk-chart-hdr">
+              <div>
+                <div class="dk-chart-title">🗂️ Por Categoria</div>
+                <div class="dk-chart-sub">Top categorias mais solicitadas</div>
+              </div>
+            </div>
+            <canvas id="chart-barras-cat" height="130"></canvas>
           </div>
-          <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🏢 Chamados por Organização</div>
-            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Volume por empresa</div>
-            <canvas id="chart-barras-empresa" height="120"></canvas>
+          <div class="dk-chart-wrap">
+            <div class="dk-chart-hdr">
+              <div>
+                <div class="dk-chart-title">🏢 Por Organização</div>
+                <div class="dk-chart-sub">Volume por empresa</div>
+              </div>
+            </div>
+            <canvas id="chart-barras-empresa" height="130"></canvas>
           </div>
         </div>
 
-        <!-- ROW 4: Heatmap horários + Top solicitantes -->
+        <!-- ROW 4: Dia semana + Top users -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-          <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🗓️ Volume por Dia da Semana</div>
-            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Quais dias concentram mais chamados</div>
+          <div class="dk-chart-wrap">
+            <div class="dk-chart-hdr">
+              <div>
+                <div class="dk-chart-title">🗓️ Dia da Semana</div>
+                <div class="dk-chart-sub">Concentração de chamados</div>
+              </div>
+            </div>
             <canvas id="chart-diasemana" height="100"></canvas>
           </div>
-          <div class="tbl-wrap" style="padding:20px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">👤 Top Solicitantes</div>
-            <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">Usuários com mais chamados no período</div>
-            <div id="chart-users"></div>
+          <div class="dk-chart-wrap">
+            <div class="dk-chart-hdr">
+              <div>
+                <div class="dk-chart-title">👤 Top Solicitantes</div>
+                <div class="dk-chart-sub">Usuários com mais chamados</div>
+              </div>
+            </div>
+            <div id="chart-users" style="margin-top:4px;"></div>
           </div>
         </div>
+
+        </div><!-- /dash-tab-content-geral -->
 
       </div>
 
@@ -762,7 +844,6 @@ tr:hover td{background:rgba(255,255,255,.02);}
             <tbody id="tbl-usuarios"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px;">Carregando...</td></tr></tbody>
           </table>
         </div>
-        </div><!-- /dash-tab-content-geral -->
       </div>
 
       <!-- CONFIGURAÇÕES -->
@@ -1770,15 +1851,22 @@ function novoChamado() {
 
 // ── ADMIN ────────────────────────────────────
 function adminNav(sec, btn) {
-  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  // Remove active only from main sidebar buttons (not sub-menu)
+  ['sb-dashboard','sb-chamados','sb-usuarios','sb-config'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove('active');
+  });
+  if (btn) btn.classList.add('active');
+
+  // Show correct section
   document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
-  document.getElementById('sec-'+sec).classList.add('active');
+  const secEl = document.getElementById('sec-'+sec);
+  if (secEl) secEl.classList.add('active');
+
   if (sec==='chamados') loadChamados();
   if (sec==='usuarios') loadUsuarios();
   if (sec==='dashboard') loadDashboard();
   if (sec==='config') {
-    // Show home screen only - sub-pages are loaded on demand by adminSubNav
     document.getElementById('admin-sub-home').style.display='block';
     document.querySelectorAll('.admin-sub-page').forEach(el=>el.style.display='none');
     document.getElementById('admin-sub-title').textContent='Administração';
@@ -1854,24 +1942,23 @@ function switchConfigTab(tab, chip) {
 function setSlaKpi(numId, cardId, pct, base) {
   const numEl = document.getElementById(numId);
   const cardEl = document.getElementById(cardId);
+  if (!numEl || !cardEl) return;
   cardEl.classList.remove('stat-green','stat-red','stat-accent');
-  if (pct === null) {
-    numEl.innerHTML = '—';
-    numEl.style.color = '';
-    return;
-  }
+  if (pct === null) { numEl.innerHTML = '—'; numEl.style.color = ''; return; }
   numEl.textContent = pct + '%';
-  if (pct >= 90) {
-    cardEl.classList.add('stat-green');
-  } else {
-    cardEl.classList.add('stat-red');
+  const color = pct >= 90 ? '#3ecf8e' : pct >= 70 ? '#f59e0b' : '#ef4444';
+  numEl.style.color = color;
+  cardEl.style.setProperty('--k-color', color);
+  cardEl.style.borderColor = color + '44';
+  const barEl = document.getElementById(numId+'-bar');
+  if (barEl) setTimeout(()=>{ barEl.style.width = pct+'%'; barEl.style.background=color; barEl.style.boxShadow='0 0 8px '+color; }, 200);
+  const labelEl = cardEl.querySelector('.dk-kpi-l');
+  if (labelEl) {
+    const existing = labelEl.querySelector('.sla-base');
+    const txt = ' · '+base+' cham.';
+    if (existing) existing.textContent = txt;
+    else labelEl.insertAdjacentHTML('beforeend','<span class="sla-base" style="opacity:.5;">'+txt+'</span>');
   }
-  // small base count label
-  const labelEl = cardEl.querySelector('.stat-l');
-  const baseSpan = labelEl.querySelector('.sla-base');
-  const txt = ` · ${base} chamado${base!==1?'s':''}`;
-  if (baseSpan) { baseSpan.textContent = txt; }
-  else { labelEl.insertAdjacentHTML('beforeend', `<span class="sla-base" style="color:var(--dim);">${txt}</span>`); }
 }
 
 // ── CHART INSTANCES (para destruir antes de recriar) ──
@@ -1897,10 +1984,21 @@ async function loadDashboard() {
   const hoje = new Date().toISOString().slice(0,10);
 
   // ── KPIs ──
-  document.getElementById('dk-total').textContent = list.length;
-  document.getElementById('dk-aberto').textContent = list.filter(c=>c.status!=='resolvido').length;
-  document.getElementById('dk-resolvido').textContent = list.filter(c=>c.status==='resolvido').length;
-  document.getElementById('dk-hoje').textContent = list.filter(c=>c.criado_em.slice(0,10)===hoje).length;
+  const totalN = list.length;
+  const abertoN = list.filter(c=>c.status!=='resolvido').length;
+  const resolvidoN = list.filter(c=>c.status==='resolvido').length;
+  const hojeN = list.filter(c=>c.criado_em.slice(0,10)===hoje).length;
+  document.getElementById('dk-total').textContent = totalN;
+  document.getElementById('dk-aberto').textContent = abertoN;
+  document.getElementById('dk-resolvido').textContent = resolvidoN;
+  document.getElementById('dk-hoje').textContent = hojeN;
+  // Animar barras KPI
+  setTimeout(()=>{
+    const ab = document.getElementById('dk-aberto-bar');
+    const re = document.getElementById('dk-resolvido-bar');
+    if(ab && totalN) ab.style.width = Math.round(abertoN/totalN*100)+'%';
+    if(re && totalN) re.style.width = Math.round(resolvidoN/totalN*100)+'%';
+  }, 100);
 
   // Tempo médio resolução
   const resolvidos = list.filter(c=>c.status==='resolvido'&&c.atualizado_em);
@@ -1916,6 +2014,8 @@ async function loadDashboard() {
   if(avaliados.length) {
     const m = avaliados.reduce((a,c)=>{try{return a+JSON.parse(c.avaliacao).nota;}catch{return a;}},0)/avaliados.length;
     document.getElementById('dk-nota').textContent = m.toFixed(1)+' ⭐';
+    const notaBar = document.getElementById('dk-nota-bar');
+    if(notaBar) setTimeout(()=>{ notaBar.style.width = Math.round(m/5*100)+'%'; },150);
   } else document.getElementById('dk-nota').textContent='—';
 
   // SLA
@@ -1955,8 +2055,41 @@ async function loadDashboard() {
   renderTopUsers('chart-users', list);
 }
 
-const PALETA = ['#4f8cff','#3ecf8e','#f59e0b','#ef4444','#a78bfa','#06b6d4','#f97316','#ec4899','#14b8a6','#84cc16'];
-const CHART_OPTS = { responsive:true, plugins:{ legend:{ labels:{ color:'#a1a1aa', font:{size:11} } } }, scales:{ x:{ ticks:{color:'#a1a1aa',font:{size:11}}, grid:{color:'rgba(255,255,255,.05)'} }, y:{ ticks:{color:'#a1a1aa',font:{size:11}}, grid:{color:'rgba(255,255,255,.05)'} } } };
+const PALETA = ['#5b8def','#2fd89a','#f5a623','#f05a5a','#a78bfa','#06b6d4','#f97316','#ec4899','#14b8a6','#84cc16'];
+
+// Global Chart.js defaults — glassmorphism clean style
+Chart.defaults.color = 'rgba(160,160,200,0.65)';
+Chart.defaults.font.family = "'DM Sans',sans-serif";
+Chart.defaults.font.size = 11;
+
+const GRID_NONE = { display:false };
+const GRID_SUBTLE = { color:'rgba(255,255,255,0.04)', drawBorder:false };
+const TICK_STYLE = { color:'rgba(160,160,200,0.6)', font:{size:11}, padding:6 };
+const LEGEND_STYLE = { labels:{ color:'rgba(160,160,200,0.8)', font:{size:11}, padding:14, usePointStyle:true, pointStyleWidth:8 } };
+
+const CHART_OPTS = {
+  responsive:true,
+  animation:{ duration:800, easing:'easeOutQuart' },
+  plugins:{
+    legend:LEGEND_STYLE,
+    tooltip:{
+      backgroundColor:'rgba(12,12,28,0.92)',
+      backdropFilter:'blur(12px)',
+      borderColor:'rgba(255,255,255,0.12)',
+      borderWidth:1,
+      titleColor:'#e0e0f0',
+      bodyColor:'rgba(160,160,200,0.85)',
+      padding:12,
+      cornerRadius:10,
+      titleFont:{size:12,weight:'600'},
+      bodyFont:{size:11}
+    }
+  },
+  scales:{
+    x:{ ticks:TICK_STYLE, grid:GRID_SUBTLE, border:{display:false} },
+    y:{ ticks:TICK_STYLE, grid:GRID_SUBTLE, border:{display:false} }
+  }
+};
 
 function renderLinha(list, dias) {
   destroyChart('linha');
@@ -1994,7 +2127,7 @@ function renderRosca(list) {
   CHARTS['rosca-status'] = new Chart(ctx, {
     type:'doughnut',
     data:{ labels:dados.map(d=>d.nome), datasets:[{ data:dados.map(d=>d.count), backgroundColor:dados.map(d=>d.cor), borderWidth:2, borderColor:'#1a1a2e' }] },
-    options:{ responsive:true, cutout:'65%', plugins:{ legend:{ position:'bottom', labels:{ color:'#a1a1aa', font:{size:11}, padding:8 } } } }
+    options:{ responsive:true, cutout:'68%', plugins:{ legend:{ position:'bottom', labels:{ color:'#a1a1aa', font:{size:11}, padding:8 } } } }
   });
 }
 
@@ -2008,8 +2141,8 @@ function renderColunas(list, field, canvasId) {
   if (!entries.length) return;
   CHARTS[canvasId] = new Chart(ctx, {
     type:'bar',
-    data:{ labels:entries.map(e=>e[0].length>18?e[0].substring(0,18)+'…':e[0]), datasets:[{ label:'Chamados', data:entries.map(e=>e[1]), backgroundColor:PALETA, borderRadius:4 }] },
-    options:{ ...CHART_OPTS, plugins:{ legend:{ display:false } } }
+    data:{ labels:entries.map(e=>e[0].length>18?e[0].substring(0,18)+'…':e[0]), datasets:[{ label:'Chamados', data:entries.map(e=>e[1]), backgroundColor:PALETA, borderRadius:8 }] },
+    options:{ ...CHART_OPTS, plugins:{ legend:{display:false}, tooltip:CHART_OPTS.plugins.tooltip }, scales:{ x:{ ticks:TICK_STYLE, grid:GRID_NONE, border:{display:false} }, y:{ ticks:TICK_STYLE, grid:GRID_SUBTLE, border:{display:false} } } }
   });
 }
 
@@ -2038,8 +2171,8 @@ function renderBarrasH(list, field, canvasId) {
   if (!entries.length) return;
   CHARTS[canvasId] = new Chart(ctx, {
     type:'bar',
-    data:{ labels:entries.map(e=>e[0].length>22?e[0].substring(0,22)+'…':e[0]), datasets:[{ label:'Chamados', data:entries.map(e=>e[1]), backgroundColor:PALETA, borderRadius:4 }] },
-    options:{ ...CHART_OPTS, indexAxis:'y', plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{color:'#a1a1aa',font:{size:11}}, grid:{color:'rgba(255,255,255,.05)'} }, y:{ ticks:{color:'#a1a1aa',font:{size:11}}, grid:{display:false} } } }
+    data:{ labels:entries.map(e=>e[0].length>22?e[0].substring(0,22)+'…':e[0]), datasets:[{ label:'Chamados', data:entries.map(e=>e[1]), backgroundColor:PALETA, borderRadius:8 }] },
+    options:{ ...CHART_OPTS, indexAxis:'y', plugins:{ legend:{display:false}, tooltip:CHART_OPTS.plugins.tooltip }, scales:{ x:{ ticks:TICK_STYLE, grid:GRID_SUBTLE, border:{display:false} }, y:{ ticks:TICK_STYLE, grid:GRID_NONE, border:{display:false} } } }
   });
 }
 
@@ -2052,8 +2185,8 @@ function renderDiaSemana(list) {
   list.forEach(c=>{ counts[new Date(c.criado_em).getDay()]++; });
   CHARTS['diasemana'] = new Chart(ctx, {
     type:'bar',
-    data:{ labels:dias, datasets:[{ label:'Chamados', data:counts, backgroundColor:counts.map((_,i)=>i===0||i===6?'rgba(79,140,255,.4)':'#4f8cff'), borderRadius:4 }] },
-    options:{ ...CHART_OPTS, plugins:{ legend:{ display:false } } }
+    data:{ labels:dias, datasets:[{ label:'Chamados', data:counts, backgroundColor:counts.map((_,i)=>i===0||i===6?'rgba(79,140,255,.4)':'#4f8cff'), borderRadius:8 }] },
+    options:{ ...CHART_OPTS, plugins:{ legend:{display:false}, tooltip:CHART_OPTS.plugins.tooltip }, scales:{ x:{ ticks:TICK_STYLE, grid:GRID_NONE, border:{display:false} }, y:{ ticks:TICK_STYLE, grid:GRID_SUBTLE, border:{display:false} } } }
   });
 }
 
