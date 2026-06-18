@@ -323,12 +323,17 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
 /* RESPONSIVE */
 /* ══════════════════════════════════
+   GRID CLASSES — Dashboard
+   ══════════════════════════════════ */
+.dk-row-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.dk-row-2-1 { display:grid; grid-template-columns:2fr 1fr; gap:16px; }
+.dk-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+/* ══════════════════════════════════
    RESPONSIVE — Mobile-first
    ══════════════════════════════════ */
-
-/* Prevent horizontal overflow globally */
-html, body { overflow-x: hidden; max-width: 100%; }
-* { box-sizing: border-box; }
+html, body { overflow-x: hidden; }
+* { box-sizing: border-box; min-width: 0; }
 img { max-width: 100%; height: auto; }
 
 /* ── HAMBURGER BUTTON ── */
@@ -366,167 +371,123 @@ img { max-width: 100%; height: auto; }
 .sb-overlay.open { display: block; }
 
 /* ══════════════════════
-   TABLET — 769px a 1024px
+   TABLET — até 1024px
    ══════════════════════ */
-@media (max-width: 1024px) {
-  /* Dashboard grids */
-  [style*="grid-template-columns:2fr 1fr"],
-  [style*="grid-template-columns: 2fr 1fr"] {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-  }
-  /* KPIs 2 colunas no tablet */
-  .stats-row { grid-template-columns: repeat(2, 1fr); }
-  [style*="grid-template-columns:repeat(4,1fr)"] {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-  /* Atendentes grid */
-  .atd-grid { grid-template-columns: 1fr 1fr !important; }
-  /* Admin content padding */
-  .admin-content { padding: 20px; }
+@media (max-width:1024px) {
+  .dk-row-4  { grid-template-columns:repeat(2,1fr); }
+  .dk-row-2-1{ grid-template-columns:1fr 1fr; }
+  .atd-grid  { grid-template-columns:1fr 1fr; }
+  .admin-content { padding:20px; }
+  .stats-row { grid-template-columns:repeat(2,1fr); }
 }
 
 /* ══════════════════════
    MOBILE — até 768px
    ══════════════════════ */
-@media (max-width: 768px) {
+@media (max-width:768px) {
+  /* Topbar */
+  .topbar { padding:0 12px; height:52px; }
+  .tb-name { display:none; }
+  .sb-toggle { display:flex; }
 
-  /* ── TOPBAR ── */
-  .topbar { padding: 0 14px; height: 52px; }
-  .tb-name { display: none; }
-  .sb-toggle { display: flex; }
-
-  /* ── SIDEBAR mobile drawer ── */
+  /* Sidebar → drawer */
   .sidebar {
-    position: fixed;
-    top: 0; left: 0;
-    height: 100vh;
-    z-index: 300;
-    transform: translateX(-100%);
-    transition: transform .28s cubic-bezier(.4,0,.2,1);
-    overflow-y: auto;
-    width: 240px !important;
-    min-width: unset !important;
-    padding-top: 60px;
-    box-shadow: 4px 0 32px rgba(0,0,0,0.5);
+    position:fixed; top:0; left:0; height:100vh;
+    z-index:300; transform:translateX(-100%);
+    transition:transform .28s cubic-bezier(.4,0,.2,1);
+    overflow-y:auto; width:240px; min-width:unset;
+    padding-top:56px;
+    box-shadow:4px 0 32px rgba(0,0,0,.6);
   }
-  .sidebar.open { transform: translateX(0); }
+  .sidebar.open { transform:translateX(0); }
 
-  /* ── ADMIN LAYOUT ── */
-  .admin-layout { flex-direction: column; }
-  .admin-content { padding: 14px; min-width: unset; }
+  /* Layout */
+  .admin-layout { flex-direction:column; }
+  .admin-content { padding:12px; }
+  .admin-title { font-size:17px; margin-bottom:12px; }
 
-  /* ── TOPBAR buttons ── */
-  .btn-logout span { display: none; }
-  .btn-logout { padding: 5px 8px; font-size: 11px; }
+  /* Dashboard grids → 1 coluna */
+  .dk-row-4  { grid-template-columns:repeat(2,1fr); gap:8px; }
+  .dk-row-2-1{ grid-template-columns:1fr; }
+  .dk-row-2  { grid-template-columns:1fr; }
+  .atd-grid  { grid-template-columns:1fr; }
+  .atd-kpis  { grid-template-columns:repeat(2,1fr) !important; }
+  .stats-row { grid-template-columns:repeat(2,1fr); gap:8px; }
 
-  /* ── DASHBOARD grids → single column ── */
-  [style*="grid-template-columns:2fr 1fr"],
-  [style*="grid-template-columns: 2fr 1fr"],
-  [style*="grid-template-columns:1fr 1fr"],
-  [style*="grid-template-columns: 1fr 1fr"] {
-    grid-template-columns: 1fr !important;
-  }
+  /* KPI cards */
+  .dk-kpi { padding:12px 10px; }
+  .dk-kpi-n { font-size:20px; }
+  .dk-kpi-icon { font-size:16px; }
+  .stat-n { font-size:20px; }
 
-  /* ── KPI CARDS → 2 col ── */
-  .stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  [style*="grid-template-columns:repeat(4,1fr)"] {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 8px !important;
-  }
+  /* Charts */
+  .dk-chart-wrap { padding:14px; }
+  .dk-chart-title { font-size:13px; }
+  #chart-pizza-prio > div { flex-direction:column; align-items:center; }
 
-  /* ── ATD GRID ── */
-  .atd-grid { grid-template-columns: 1fr !important; }
-  .atd-kpis { grid-template-columns: repeat(2, 1fr) !important; }
+  /* Atendentes cards */
+  .atd-card { padding:14px; }
+  .atd-card-header { flex-wrap:wrap; gap:10px; }
+  .atd-card-avatar { width:40px; height:40px; font-size:13px; }
+  .atd-score-val { font-size:16px; }
 
-  /* ── TABLES ── */
-  .tbl-wrap { border-radius: 12px; }
-  table { font-size: 12px; }
-  th, td { padding: 8px 10px; }
-  th:nth-child(n+5), td:nth-child(n+5) { display: none; }
-  .tbl-header { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px 14px; }
-  .tbl-header .tbl-search { width: 100%; }
+  /* Tables */
+  table { font-size:12px; }
+  th, td { padding:8px 9px; }
+  th:nth-child(n+5), td:nth-child(n+5) { display:none; }
+  .tbl-header { flex-direction:column; align-items:flex-start; gap:8px; padding:12px; }
+  .tbl-search { width:100%; }
 
-  /* ── CHIPS ── */
-  .chips { flex-wrap: wrap; gap: 4px; }
-  .chip { font-size: 11px; padding: 4px 10px; }
+  /* Forms */
+  .grid2 { grid-template-columns:1fr; }
+  .form-page { padding:14px 12px 70px; }
+  .form-title { font-size:18px; }
+  .card { padding:16px; margin-bottom:12px; }
+  .prio-grid { grid-template-columns:repeat(2,1fr); }
+  .perfil-badge { flex-wrap:wrap; }
 
-  /* ── MODALS ── */
-  .modal-overlay { padding: 12px; align-items: flex-end; }
+  /* Modals → bottom sheet */
+  .modal-overlay { align-items:flex-end; padding:0; }
   .modal {
-    max-width: 100% !important;
-    width: 100% !important;
-    border-radius: 20px 20px 0 0;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 20px;
+    max-width:100% !important; width:100% !important;
+    border-radius:20px 20px 0 0;
+    max-height:92vh; overflow-y:auto; padding:20px;
   }
+  .campo-tab-btn { font-size:11px; padding:8px 9px; }
 
-  /* ── CAMPO MODAL tabs ── */
-  .campo-tab-btn { font-size: 11px; padding: 8px 10px; }
+  /* Auth */
+  .auth-card { padding:22px 16px; }
+  .auth-wrap { padding:16px; align-items:flex-end; }
 
-  /* ── FORM PAGE ── */
-  .form-page { padding: 16px 12px 60px; }
-  .form-title { font-size: 18px; }
-  .prio-grid { grid-template-columns: repeat(2, 1fr); }
+  /* Chips */
+  .chips { flex-wrap:wrap; gap:4px; }
+  .chip { font-size:11px; padding:4px 9px; }
+  .aval-opt { flex-wrap:wrap; }
+  .aval-btn { font-size:11px; padding:5px 10px; }
 
-  /* ── PERFIL-BADGE ── */
-  .perfil-badge { flex-wrap: wrap; }
-
-  /* ── DK-KPI ── */
-  .dk-kpi { padding: 14px 10px; }
-  .dk-kpi-n { font-size: 22px; }
-  .dk-kpi-icon { font-size: 18px; }
-
-  /* ── ATD CARD ── */
-  .atd-card { padding: 16px; }
-  .atd-card-avatar { width: 42px; height: 42px; font-size: 14px; }
-  .atd-score-val { font-size: 18px; }
-
-  /* ── GRID2 → single ── */
-  .grid2 { grid-template-columns: 1fr !important; }
-
-  /* ── ADMIN TITLE ── */
-  .admin-title { font-size: 17px; margin-bottom: 14px; }
-
-  /* ── AUTH ── */
-  .auth-card { padding: 24px 18px; }
-
-  /* ── PIZZA CHART ── */
-  #chart-pizza-prio > div {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  /* ── STAT numbers ── */
-  .stat-n { font-size: 22px; }
-
-  /* ── HIDE less-important sidebar sections on mobile ── */
-  .sb-section { font-size: 8px; }
-
-  /* ── AVAL-OPT wrap ── */
-  .aval-opt { flex-wrap: wrap; }
-  .aval-btn { font-size: 11px; padding: 5px 10px; }
+  /* Buttons */
+  .btn-sm { padding:5px 10px; font-size:11px; }
+  .btn-logout { font-size:11px; padding:5px 8px; }
 }
 
 /* ══════════════════════
-   SMALL MOBILE — até 400px
+   SMALL — até 420px
    ══════════════════════ */
-@media (max-width: 400px) {
-  .topbar { padding: 0 10px; }
-  .admin-content { padding: 10px; }
-  .stats-row { grid-template-columns: 1fr 1fr; gap: 6px; }
-  .dk-kpi-n { font-size: 18px; }
-  .stat-n { font-size: 18px; }
-  .atd-kpis { grid-template-columns: repeat(2, 1fr) !important; }
-  th, td { padding: 6px 8px; font-size: 11px; }
-  th:nth-child(n+4), td:nth-child(n+4) { display: none; }
-  .btn { padding: 8px 12px; font-size: 12px; }
-  .campo-tab-btn { font-size: 10px; padding: 7px 8px; }
-  .form-page { padding: 12px 10px 60px; }
-  .card { padding: 16px; }
-  .auth-card { padding: 20px 14px; }
+@media (max-width:420px) {
+  .topbar { padding:0 10px; }
+  .admin-content { padding:10px; }
+  .dk-row-4 { grid-template-columns:repeat(2,1fr); gap:6px; }
+  .stats-row { gap:6px; }
+  .dk-kpi-n { font-size:18px; }
+  .stat-n { font-size:18px; }
+  th, td { padding:6px 7px; font-size:11px; }
+  th:nth-child(n+4), td:nth-child(n+4) { display:none; }
+  .btn { padding:8px 10px; font-size:12px; }
+  .campo-tab-btn { font-size:10px; padding:7px 7px; }
+  .auth-card { padding:18px 14px; border-radius:14px; }
+  .card { padding:14px; }
+  .form-page { padding:12px 10px 70px; }
+  .modal { padding:16px; }
 }
 </style>
 </head>
@@ -838,7 +799,7 @@ img { max-width: 100%; height: auto; }
         <div id="dash-tab-content-geral">
 
         <!-- KPIs ROW 1 — Futurístico -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;">
+        <div class="dk-row-4" style="margin-bottom:12px;">
           <div class="dk-kpi" style="--k-color:#4f8cff;--k-glow:rgba(79,140,255,.25);">
             <div class="dk-kpi-icon">📋</div>
             <div class="dk-kpi-n" id="dk-total">—</div>
@@ -866,7 +827,7 @@ img { max-width: 100%; height: auto; }
         </div>
 
         <!-- KPIs ROW 2 -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+        <div class="dk-row-4" style="margin-bottom:20px;">
           <div class="dk-kpi" id="sla-resposta-card" style="--k-color:#a78bfa;--k-glow:rgba(167,139,250,.25);">
             <div class="dk-kpi-icon">⚡</div>
             <div class="dk-kpi-n" id="dk-sla-resposta">—</div>
@@ -894,7 +855,7 @@ img { max-width: 100%; height: auto; }
         </div>
 
         <!-- ROW 1: Linha + Rosca -->
-        <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;">
+        <div class="dk-row-2-1" style="margin-bottom:16px;">
           <div class="dk-chart-wrap">
             <div class="dk-chart-hdr">
               <div>
@@ -916,7 +877,7 @@ img { max-width: 100%; height: auto; }
         </div>
 
         <!-- ROW 2: Colunas Depto + Pizza Prio -->
-        <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;">
+        <div class="dk-row-2-1" style="margin-bottom:16px;">
           <div class="dk-chart-wrap">
             <div class="dk-chart-hdr">
               <div>
@@ -938,7 +899,7 @@ img { max-width: 100%; height: auto; }
         </div>
 
         <!-- ROW 3: Barras H -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div class="dk-row-2" style="margin-bottom:16px;">
           <div class="dk-chart-wrap">
             <div class="dk-chart-hdr">
               <div>
@@ -960,7 +921,7 @@ img { max-width: 100%; height: auto; }
         </div>
 
         <!-- ROW 4: Dia semana + Top users -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div class="dk-row-2" style="margin-bottom:16px;">
           <div class="dk-chart-wrap">
             <div class="dk-chart-hdr">
               <div>
@@ -2056,6 +2017,7 @@ function novoChamado() {
 
 // ── ADMIN ────────────────────────────────────
 function adminNav(sec, btn) {
+  if (window.innerWidth <= 768) toggleSidebar(false);
   // Remove active only from main sidebar buttons (not sub-menu)
   ['sb-dashboard','sb-chamados','sb-usuarios','sb-config'].forEach(id=>{
     const el=document.getElementById(id);
@@ -2093,6 +2055,7 @@ function toggleAdminMenu(btn) {
 const ADMIN_SUB_TITLES = {'atendentes': 'Atendentes', 'categorias': 'Categorias', 'campos': 'Campos Personalizados', 'areas': 'Departamentos', 'empresas': 'Organizações', 'avisos': 'Avisos', 'status': 'Status de Chamado', 'sla': 'SLA', 'horarios': 'Horários de Atendimento'};
 
 function adminSubNav(sub, btn) {
+  if (window.innerWidth <= 768) toggleSidebar(false);
   // Mark active in sub-sidebar
   document.querySelectorAll('#sb-admin-menu .sb-btn').forEach(b=>b.classList.remove('active'));
   if (btn) btn.classList.add('active');
@@ -4819,37 +4782,24 @@ function irParaPainel() {
 function toggleSidebar(force) {
   const sidebar = document.querySelector('.sidebar');
   const overlay = document.getElementById('sb-overlay');
-  const toggle = document.getElementById('sb-toggle');
+  const toggle  = document.getElementById('sb-toggle');
   if (!sidebar) return;
-  const isOpen = sidebar.classList.contains('open');
-  const shouldOpen = force !== undefined ? force : !isOpen;
+  const shouldOpen = force !== undefined ? force : !sidebar.classList.contains('open');
   sidebar.classList.toggle('open', shouldOpen);
   if (overlay) overlay.classList.toggle('open', shouldOpen);
   if (toggle) {
-    const spans = toggle.querySelectorAll('span');
+    const s = toggle.querySelectorAll('span');
     if (shouldOpen) {
-      spans[0].style.cssText = 'transform:rotate(45deg) translate(5px,5px)';
-      spans[1].style.cssText = 'opacity:0;transform:scaleX(0)';
-      spans[2].style.cssText = 'transform:rotate(-45deg) translate(5px,-5px)';
+      s[0].style.cssText='transform:rotate(45deg) translate(5px,5px)';
+      s[1].style.cssText='opacity:0;width:0';
+      s[2].style.cssText='transform:rotate(-45deg) translate(5px,-5px)';
     } else {
-      spans.forEach(s => s.style.cssText = '');
+      s.forEach(el=>el.style.cssText='');
     }
   }
 }
 
-// Close sidebar when navigating on mobile
-const _origAdminNav = adminNav;
-function adminNav(sec, btn) {
-  if (window.innerWidth <= 768) toggleSidebar(false);
-  _origAdminNav(sec, btn);
-}
-const _origAdminSubNav = adminSubNav;
-function adminSubNav(sub, btn) {
-  if (window.innerWidth <= 768) toggleSidebar(false);
-  _origAdminSubNav(sub, btn);
-}
-
-// Close sidebar on resize if desktop
+// Patch: close sidebar on mobile nav — done inside existing adminNav/adminSubNav
 window.addEventListener('resize', () => {
   if (window.innerWidth > 768) toggleSidebar(false);
 });
