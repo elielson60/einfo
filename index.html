@@ -2318,7 +2318,7 @@ async function loadDashAtendentes() {
   const dias = getDashPeriodo();
   const [{ data: chamadosAll }, { data: atendentes }] = await Promise.all([
     sb.from('chamados').select('*').order('criado_em',{ascending:false}),
-    sb.from('perfis').select('*').eq('role','atendente').order('nome')
+    sb.from('perfis').select('*').eq('role','atendente').eq('ativo',true).order('nome')
   ]);
 
   const todos = filtrarPeriodo(chamadosAll || [], dias);
@@ -3124,7 +3124,7 @@ let allAtendentes = [];
 async function renderAtendentesDeptos() {
   const container = document.getElementById('lista-atendentes-deptos');
   await loadCadastrosLists();
-  const { data } = await sb.from('perfis').select('*').eq('role','atendente').order('nome');
+  const { data } = await sb.from('perfis').select('*').eq('role','atendente').eq('ativo',true).order('nome');
   allAtendentes = data || [];
 
   // Ensure list view is shown
@@ -4087,7 +4087,7 @@ async function delCampoCategoria(fieldId, catId) {
 }
 
 async function loadAtendentesList() {
-  const { data } = await sb.from('perfis').select('*').eq('role','atendente').order('nome');
+  const { data } = await sb.from('perfis').select('*').eq('role','atendente').eq('ativo',true).order('nome');
   ATENDENTES_LIST = data || [];
 }
 
