@@ -32,60 +32,6 @@
 }
 body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;background-image:radial-gradient(ellipse at 20% 0%,rgba(91,141,239,0.06) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(167,139,250,0.05) 0%,transparent 60%);}
 
-/* ══ CHAMADOS — NOVO VISUAL ══════════════════ */
-.ch-layout{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start;}
-.ch-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
-.ch-header-left{display:flex;align-items:center;gap:12px;}
-.ch-title{font-size:16px;font-weight:600;color:var(--text);letter-spacing:.01em;}
-.ch-new-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:linear-gradient(135deg,#5b8def,#7c6cf5);color:#fff;border:none;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);box-shadow:0 4px 14px rgba(91,141,239,0.35);transition:all .2s;}
-.ch-new-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(91,141,239,0.45);}
-.ch-new-btn .ch-plus{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1;}
-.ch-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.ch-search-wrap{position:relative;}
-.ch-search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.5;}
-.ch-search{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:7px 14px 7px 32px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;width:200px;transition:all .2s;}
-.ch-search:focus{border-color:rgba(91,141,239,0.5);background:rgba(255,255,255,0.08);width:240px;}
-.ch-filter-chips{display:flex;gap:6px;flex-wrap:wrap;}
-.ch-chip{padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(160,160,190,0.8);font-size:12px;cursor:pointer;transition:all .18s;font-family:var(--sans);}
-.ch-chip:hover{border-color:rgba(91,141,239,0.3);color:#e0e0f0;}
-.ch-chip.active{background:rgba(91,141,239,0.18);color:#8ab4ff;border-color:rgba(91,141,239,0.45);box-shadow:0 0 14px rgba(91,141,239,0.2);}
-
-/* Chamados table card-style */
-.ch-list{display:flex;flex-direction:column;gap:0;}
-.ch-item{display:grid;grid-template-columns:auto 1fr auto auto auto auto auto;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,0.05);transition:background .15s;cursor:pointer;}
-.ch-item:last-child{border-bottom:none;}
-.ch-item:hover{background:rgba(91,141,239,0.05);}
-.ch-item:hover .ch-ticket{color:#8ab4ff;}
-.ch-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#5b8def,#7c6cf5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;border:2px solid rgba(255,255,255,0.1);}
-.ch-ticket{font-family:var(--mono);font-size:11px;color:var(--accent);background:rgba(91,141,239,0.1);padding:3px 7px;border-radius:6px;white-space:nowrap;}
-.ch-info{min-width:0;}
-.ch-titulo{font-size:13px;font-weight:500;color:#e0e0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
-.ch-meta{font-size:11px;color:rgba(160,160,190,0.6);}
-.ch-cat{font-size:11px;color:rgba(160,160,200,0.7);white-space:nowrap;min-width:80px;}
-.ch-actions{display:flex;gap:6px;flex-shrink:0;}
-.ch-action-btn{width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:rgba(160,160,200,0.7);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;font-size:13px;}
-.ch-action-btn:hover{background:rgba(91,141,239,0.15);border-color:rgba(91,141,239,0.35);color:#8ab4ff;}
-
-/* Sidebar mini-status chart */
-.ch-sidebar-card{background:rgba(255,255,255,0.035);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.09);border-radius:16px;padding:18px;position:sticky;top:80px;}
-.ch-sidebar-title{font-size:11px;color:rgba(160,160,200,0.6);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;font-weight:600;}
-.ch-status-legend{margin-top:14px;display:flex;flex-direction:column;gap:7px;}
-.ch-legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(160,160,200,0.8);}
-.ch-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-.ch-legend-count{margin-left:auto;font-weight:600;color:#e0e0f0;}
-
-/* KPI mini row */
-.ch-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
-.ch-kpi{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;}
-.ch-kpi-icon{font-size:20px;}
-.ch-kpi-n{font-size:20px;font-weight:700;line-height:1;}
-.ch-kpi-l{font-size:10px;color:rgba(160,160,200,0.6);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
-.ch-wrap{background:rgba(255,255,255,0.035);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.09);border-radius:16px;overflow:hidden;}
-.ch-wrap::before{content:"";display:block;height:1px;background:linear-gradient(90deg,transparent,rgba(91,141,239,.5),rgba(124,108,245,.5),transparent);}
-
-@media(max-width:1024px){.ch-layout{grid-template-columns:1fr;}.ch-sidebar-card{display:none;}}
-@media(max-width:768px){.ch-kpis{grid-template-columns:repeat(2,1fr);}.ch-item{grid-template-columns:auto 1fr auto auto;}.ch-cat,.ch-ticket-wrap{display:none;}}
-
 /* ── TOPBAR ── */
 .topbar{position:sticky;top:0;z-index:200;height:56px;background:rgba(7,7,17,0.75);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;padding:0 24px;}
 .tb-brand{display:flex;align-items:center;gap:10px;}
@@ -1008,52 +954,43 @@ img { max-width: 100%; height: auto; }
 
       <!-- CHAMADOS -->
       <div class="admin-section active" id="sec-chamados">
+        <div class="admin-title">Todos os chamados</div>
 
-        <!-- KPIs -->
-        <div class="ch-kpis" id="admin-stats">
-          <div class="ch-kpi"><span class="ch-kpi-icon">📋</span><div><div class="ch-kpi-n" id="st-total">—</div><div class="ch-kpi-l">Total</div></div></div>
-          <div class="ch-kpi"><span class="ch-kpi-icon">🔴</span><div><div class="ch-kpi-n" id="st-critico" style="color:#f05a5a;">—</div><div class="ch-kpi-l">Críticos</div></div></div>
-          <div class="ch-kpi"><span class="ch-kpi-icon">⏳</span><div><div class="ch-kpi-n" id="st-aberto" style="color:#f5a623;">—</div><div class="ch-kpi-l">Em aberto</div></div></div>
-          <div class="ch-kpi"><span class="ch-kpi-icon">✅</span><div><div class="ch-kpi-n" id="st-resolvido" style="color:#2fd89a;">—</div><div class="ch-kpi-l">Resolvidos</div></div></div>
+        <div class="stats-row" id="admin-stats">
+          <div class="stat stat-accent"><div class="stat-n" id="st-total">—</div><div class="stat-l">Total</div></div>
+          <div class="stat stat-red"><div class="stat-n" id="st-critico">—</div><div class="stat-l">Críticos</div></div>
+          <div class="stat"><div class="stat-n" id="st-aberto">—</div><div class="stat-l">Em aberto</div></div>
+          <div class="stat stat-green"><div class="stat-n" id="st-resolvido">—</div><div class="stat-l">Resolvidos</div></div>
         </div>
 
-        <!-- Header + Filtros -->
-        <div class="ch-header">
-          <div class="ch-header-left">
-            <span class="ch-title">CHAMADOS</span>
-            <button class="ch-new-btn" onclick="showPage('chamado');novoChamado();atualizarBotaoVoltar();">
-              <span class="ch-plus">+</span> Novo chamado
-            </button>
-          </div>
-          <div class="ch-filters">
-            <div class="ch-search-wrap">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input class="ch-search" placeholder="Pesquisar..." oninput="buscarChamados(this.value)" id="search-chamados"/>
-            </div>
-            <button class="btn btn-ghost btn-sm" id="btn-exportar-csv" onclick="exportarChamadosCSV()" style="display:none;">📥 CSV</button>
-          </div>
+        <div class="chips" id="filter-chips">
+          <span class="chip active" onclick="filterChamados('todos',this)">Todos</span>
         </div>
 
-        <!-- Filter chips -->
-        <div class="ch-filter-chips" id="filter-chips" style="margin-bottom:14px;">
-          <span class="ch-chip active" onclick="filterChamados('todos',this)">Todos</span>
-        </div>
-
-        <!-- Layout: lista + sidebar -->
-        <div class="ch-layout">
-          <!-- Lista de chamados -->
-          <div class="ch-wrap">
-            <div class="ch-list" id="tbl-chamados">
-              <div style="text-align:center;color:var(--muted);padding:40px;">Carregando...</div>
+        <div class="tbl-wrap">
+          <div class="tbl-header">
+            <span style="font-size:14px;font-weight:500;">Chamados</span>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input class="tbl-search" placeholder="Buscar..." oninput="buscarChamados(this.value)" id="search-chamados"/>
+              <button class="btn btn-ghost btn-sm" id="btn-exportar-csv" onclick="exportarChamadosCSV()" style="display:none;">📥 Exportar CSV</button>
             </div>
           </div>
-
-          <!-- Sidebar: gráfico por status -->
-          <div class="ch-sidebar-card">
-            <div class="ch-sidebar-title">Por Status</div>
-            <canvas id="ch-donut" width="180" height="180"></canvas>
-            <div class="ch-status-legend" id="ch-status-legend"></div>
-          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Ticket</th>
+                <th>Título</th>
+                <th>Solicitante</th>
+                <th>Empresa</th>
+                <th>Prioridade</th>
+                <th>SLA</th>
+                <th>Status</th>
+                <th>Anexos</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-chamados"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:30px;">Carregando...</td></tr></tbody>
+          </table>
         </div>
       </div>
 
@@ -2755,86 +2692,32 @@ function updateStats(list) {
   document.getElementById('st-resolvido').textContent = list.filter(c=>c.status==='resolvido').length;
 }
 
-function getInitials(name) {
-  if (!name) return '?';
-  return name.split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
-}
-const AVATAR_COLORS = ['#5b8def','#2fd89a','#f5a623','#f05a5a','#a78bfa','#06b6d4','#f97316','#ec4899'];
-function avatarColor(name) { let h=0; for(let i=0;i<(name||'').length;i++) h=(h*31+name.charCodeAt(i))&0xffffffff; return AVATAR_COLORS[Math.abs(h)%AVATAR_COLORS.length]; }
-
 function renderChamados(list) {
   const tb = document.getElementById('tbl-chamados');
-  if (!list.length) {
-    tb.innerHTML = '<div style="text-align:center;color:var(--muted);padding:50px 20px;"><div style="font-size:32px;margin-bottom:8px;">📭</div><div>Nenhum chamado encontrado</div></div>';
-    renderChDonut(list);
-    return;
-  }
-  const prioColor = {critico:'#f05a5a',alto:'#f5a623',medio:'#5b8def',baixo:'#2fd89a'};
-  const prioLabel = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
-
-  tb.innerHTML = list.map(c => {
-    const ini = getInitials(c.nome_solicitante);
-    const avatarBg = avatarColor(c.nome_solicitante||'');
-    const pColor = prioColor[c.prioridade] || 'var(--muted)';
-    const pLabel = prioLabel[c.prioridade] || c.prioridade || '—';
-    const sla = slaInfo(c);
-    const dt = c.criado_em ? new Date(c.criado_em).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
-    const hasAnexo = c.anexos && c.anexos.length;
-
-    return `<div class="ch-item" onclick="openModalDetalhe('${c.id}')">
-      <div class="ch-avatar" style="background:linear-gradient(135deg,${avatarBg},${avatarBg}99);">${ini}</div>
-      <div class="ch-info">
-        <div class="ch-titulo">${c.titulo}</div>
-        <div class="ch-meta">${c.nome_solicitante||'—'} · ${c.empresa||''} · ${dt}</div>
-      </div>
-      <span class="ch-ticket">#${c.ticket_num}</span>
-      <span style="font-size:12px;color:rgba(160,160,200,.7);white-space:nowrap;min-width:80px;">${c.categoria||'—'}</span>
-      <div style="text-align:center;">${sla.html}</div>
-      <div style="display:flex;align-items:center;gap:6px;white-space:nowrap;">
-        <span style="width:8px;height:8px;border-radius:50%;background:${pColor};display:inline-block;box-shadow:0 0 6px ${pColor}66;"></span>
-        <span style="font-size:11px;color:${pColor};font-weight:600;">${pLabel}</span>
-      </div>
-      ${statusBadgeHtml(c.status)}
-      <div class="ch-actions" onclick="event.stopPropagation()">
-        <button class="ch-action-btn" onclick="openModalDetalhe('${c.id}')" title="Ver detalhes">👁</button>
-        <button class="ch-action-btn" onclick="openModal('${c.id}','${c.status}')" title="Alterar status">✎</button>
-      </div>
-    </div>`;
-  }).join('');
-
-  renderChDonut(list);
-}
-
-// Mini donut chart ao lado
-let chDonutChart = null;
-function renderChDonut(list) {
-  const ctx = document.getElementById('ch-donut');
-  if (!ctx) return;
-  if (chDonutChart) { chDonutChart.destroy(); chDonutChart = null; }
-
-  const dados = STATUS_LIST.map(s=>({ nome:s.nome, count:list.filter(c=>c.status===s.chave).length, cor:s.cor })).filter(d=>d.count>0);
-  if (!dados.length) { ctx.style.display='none'; document.getElementById('ch-status-legend').innerHTML=''; return; }
-  ctx.style.display='block';
-
-  chDonutChart = new Chart(ctx, {
-    type:'doughnut',
-    data:{ labels:dados.map(d=>d.nome), datasets:[{ data:dados.map(d=>d.count), backgroundColor:dados.map(d=>d.cor), borderWidth:2, borderColor:'rgba(7,7,17,.8)', hoverBorderColor:'#fff' }] },
-    options:{ responsive:false, cutout:'68%', animation:{duration:600}, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ` ${ctx.label}: ${ctx.parsed}` } } } }
-  });
-
-  const total = list.length;
-  document.getElementById('ch-status-legend').innerHTML = dados.map(d=>`
-    <div class="ch-legend-item">
-      <span class="ch-legend-dot" style="background:${d.cor};box-shadow:0 0 6px ${d.cor}66;"></span>
-      <span>${d.nome}</span>
-      <span class="ch-legend-count">${d.count} <span style="font-size:10px;color:var(--muted);font-weight:400;">(${Math.round(d.count/total*100)}%)</span></span>
-    </div>`).join('');
+  if (!list.length) { tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:30px;">Nenhum chamado encontrado</td></tr>'; return; }
+  const prioE = {critico:'🔴',alto:'🟠',medio:'🔵',baixo:'🟢'};
+  const prioL = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
+    tb.innerHTML = list.map(c=>`
+    <tr>
+      <td><span style="font-family:var(--mono);font-size:11px;color:var(--accent);">${c.ticket_num}</span></td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${c.titulo}">${c.titulo}</td>
+      <td style="font-size:12px;">${c.nome_solicitante||'—'}<br><span style="color:var(--muted);font-size:11px;">${c.departamento||''}</span></td>
+      <td style="font-size:12px;">${c.empresa||'—'}</td>
+      <td><span class="badge b-${c.prioridade}">${prioE[c.prioridade]||''} ${prioL[c.prioridade]||c.prioridade}</span></td>
+      <td>${slaInfo(c).html}</td>
+      <td>${statusBadgeHtml(c.status)}</td>
+      <td>${c.anexos && c.anexos.length ? c.anexos.map(url=>`<a href="${url}" target="_blank"><img src="${url}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;margin-right:3px;border:1px solid var(--border);" title="Ver imagem"/></a>`).join('') : '<span style="color:var(--dim);font-size:11px;">—</span>'}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="openModalDetalhe('${c.id}')">👁 Ver</button>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('${c.id}','${c.status}')">✎ Status</button>
+      </td>
+    </tr>`).join('');
 }
 
 function filterChamados(status, chip) {
   filterStatus = status;
-  document.querySelectorAll('#filter-chips .ch-chip').forEach(c=>c.classList.remove('active'));
-  if (chip) chip.classList.add('active');
+  document.querySelectorAll('#filter-chips .chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
   const filtered = status==='todos' ? allChamados : allChamados.filter(c=>c.status===status);
   renderChamados(filtered);
 }
@@ -3173,8 +3056,8 @@ function popularChipsStatus() {
   // Admin chamados
   const adChips = document.getElementById('filter-chips');
   if (adChips) {
-    adChips.innerHTML = '<span class="ch-chip active" onclick="filterChamados(\'todos\',this)">Todos</span>' +
-      STATUS_LIST.map(s=>`<span class="ch-chip" onclick="filterChamados('${s.chave}',this)" style="--dot:${s.cor}">${s.nome}</span>`).join('');
+    adChips.innerHTML = '<span class="chip active" onclick="filterChamados(\'todos\',this)">Todos</span>' +
+      STATUS_LIST.map(s=>`<span class="chip" onclick="filterChamados('${s.chave}',this)">${s.nome}</span>`).join('');
   }
 }
 
