@@ -210,25 +210,41 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .chk-wrap input[type="checkbox"]:disabled + .chk-box{opacity:.4;cursor:not-allowed;}
 
 /* ── DASHBOARD ATENDENTES ── */
-.atd-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px;}
-.atd-card-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
-.atd-card-avatar{width:44px;height:44px;border-radius:50%;background:var(--accent-s);border:1px solid var(--accent-b);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--accent);flex-shrink:0;}
+/* ── DASHBOARD ATENDENTES FUTURÍSTICO ── */
+.atd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:20px;}
+.atd-card{position:relative;background:linear-gradient(135deg,rgba(15,15,30,.95) 0%,rgba(20,20,45,.95) 100%);border:1px solid rgba(79,140,255,.2);border-radius:16px;padding:22px;overflow:hidden;transition:transform .2s,box-shadow .2s;}
+.atd-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(79,140,255,.2);}
+.atd-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#4f8cff,#a78bfa,transparent);}
+.atd-card::after{content:'';position:absolute;top:-60px;right:-60px;width:180px;height:180px;background:radial-gradient(circle,rgba(79,140,255,.08) 0%,transparent 70%);pointer-events:none;}
+.atd-card-header{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+.atd-card-avatar{position:relative;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#4f8cff,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 0 20px rgba(79,140,255,.4);}
+.atd-card-avatar::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1px solid rgba(79,140,255,.4);}
+.atd-status-dot{position:absolute;bottom:2px;right:2px;width:12px;height:12px;border-radius:50%;background:#3ecf8e;border:2px solid #0f0f1e;box-shadow:0 0 8px #3ecf8e;}
 .atd-card-info{flex:1;min-width:0;}
-.atd-card-nome{font-size:15px;font-weight:600;}
-.atd-card-deptos{font-size:11px;color:var(--dim);margin-top:2px;}
-.atd-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
-.atd-kpi{background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center;}
-.atd-kpi-n{font-size:22px;font-weight:700;}
-.atd-kpi-l{font-size:11px;color:var(--muted);margin-top:2px;}
-.atd-kpi-green .atd-kpi-n{color:var(--green);}
-.atd-kpi-blue .atd-kpi-n{color:var(--accent);}
-.atd-kpi-orange .atd-kpi-n{color:#f59e0b;}
-.atd-kpi-star .atd-kpi-n{color:#fbbf24;}
-.atd-bar-wrap{margin-bottom:6px;}
-.atd-bar-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;}
-.atd-bar-track{background:var(--surface3);border-radius:4px;height:8px;overflow:hidden;}
-.atd-bar-fill{height:100%;border-radius:4px;transition:width .5s;}
-.atd-sugestao{background:var(--accent-s);border:1px solid var(--accent-b);border-radius:var(--r-sm);padding:10px 14px;margin-top:10px;font-size:12px;color:var(--accent);}
+.atd-card-nome{font-size:16px;font-weight:700;color:#f0f0ff;letter-spacing:.01em;}
+.atd-card-deptos{font-size:11px;color:rgba(161,161,170,.7);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.atd-score-ring{display:flex;flex-direction:column;align-items:center;}
+.atd-score-val{font-size:22px;font-weight:800;background:linear-gradient(135deg,#4f8cff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+.atd-score-lbl{font-size:9px;color:rgba(161,161,170,.6);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
+.atd-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+.atd-kpi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 6px;text-align:center;position:relative;overflow:hidden;}
+.atd-kpi::before{content:'';position:absolute;inset:0;background:var(--kpi-glow,transparent);opacity:.4;}
+.atd-kpi-n{font-size:20px;font-weight:800;color:var(--kpi-color,#f0f0ff);line-height:1.1;}
+.atd-kpi-l{font-size:9px;color:rgba(161,161,170,.6);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
+.atd-metrics{margin-bottom:14px;}
+.atd-metric{margin-bottom:10px;}
+.atd-metric-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.atd-metric-label{font-size:11px;color:rgba(161,161,170,.8);}
+.atd-metric-val{font-size:12px;font-weight:700;color:var(--mv-color,#f0f0ff);}
+.atd-metric-track{height:6px;background:rgba(255,255,255,.06);border-radius:10px;overflow:hidden;}
+.atd-metric-fill{height:100%;border-radius:10px;transition:width .8s cubic-bezier(.4,0,.2,1);position:relative;}
+.atd-metric-fill::after{content:'';position:absolute;top:0;right:0;width:6px;height:100%;background:rgba(255,255,255,.5);border-radius:50%;filter:blur(2px);}
+.atd-mini-chart{margin-bottom:14px;}
+.atd-mini-chart-title{font-size:10px;color:rgba(161,161,170,.6);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.atd-tip{background:linear-gradient(135deg,rgba(79,140,255,.08),rgba(167,139,250,.08));border:1px solid rgba(79,140,255,.2);border-radius:10px;padding:10px 12px;font-size:11px;color:rgba(200,200,255,.85);line-height:1.6;}
+.atd-tip.success{background:linear-gradient(135deg,rgba(62,207,142,.08),rgba(62,207,142,.04));border-color:rgba(62,207,142,.25);color:rgba(100,255,180,.9);}
+.atd-tip-title{font-weight:700;margin-bottom:4px;font-size:11px;}
+.atd-tip li{margin-bottom:2px;padding-left:4px;}
 
 /* ── ADMIN SUBMENU ── */
 #sb-admin-menu .sb-btn{font-size:12px;padding:6px 10px;color:var(--dim);}
@@ -2083,115 +2099,181 @@ function reloadDashTab() {
   else loadDashAtendentes();
 }
 
-// ── DASHBOARD ATENDENTES ──────────────────────
+// ── DASHBOARD ATENDENTES FUTURÍSTICO ─────────
 async function loadDashAtendentes() {
   const grid = document.getElementById('dash-atendentes-grid');
-  grid.innerHTML = '<p style="color:var(--muted);font-size:13px;">Carregando...</p>';
+  grid.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(161,161,170,.6);">Carregando dados...</div>';
 
   const dias = getDashPeriodo();
-  const { data: chamadosAll } = await sb.from('chamados').select('*').order('criado_em',{ascending:false});
-  const { data: atendentes } = await sb.from('perfis').select('*').in('role',['atendente','admin']).order('nome');
+  const [{ data: chamadosAll }, { data: atendentes }] = await Promise.all([
+    sb.from('chamados').select('*').order('criado_em',{ascending:false}),
+    sb.from('perfis').select('*').in('role',['atendente','admin']).order('nome')
+  ]);
 
   const todos = filtrarPeriodo(chamadosAll || [], dias);
 
   if (!atendentes || !atendentes.length) {
-    grid.innerHTML = '<p style="color:var(--muted);font-size:13px;text-align:center;padding:30px;">Nenhum atendente cadastrado.</p>';
+    grid.innerHTML = '<div style="text-align:center;padding:60px;color:rgba(161,161,170,.5);">Nenhum atendente cadastrado.</div>';
     return;
   }
 
-  grid.innerHTML = atendentes.map(atd => {
-    // Chamados atendidos = chamados que têm ao menos 1 comentário desse atendente
+  grid.innerHTML = '<div class="atd-grid">' + atendentes.map((atd, idx) => {
     const chamadosAtd = todos.filter(c=>(c.comentarios||[]).some(cm=>cm.autor==='admin'&&cm.nome===atd.nome));
     const resolvidos = chamadosAtd.filter(c=>c.status==='resolvido');
     const abertos = chamadosAtd.filter(c=>c.status!=='resolvido');
 
-    // Tempo médio de 1ª resposta (em horas)
     const temposResposta = chamadosAtd.map(c=>{
-      const pr = (c.comentarios||[]).find(cm=>cm.autor==='admin'&&cm.nome===atd.nome);
-      if (!pr) return null;
-      return (new Date(pr.data) - new Date(c.criado_em)) / 3600000;
+      const pr=(c.comentarios||[]).find(cm=>cm.autor==='admin'&&cm.nome===atd.nome);
+      return pr ? (new Date(pr.data)-new Date(c.criado_em))/3600000 : null;
     }).filter(t=>t!==null);
-    const mediaResposta = temposResposta.length ? (temposResposta.reduce((a,b)=>a+b,0)/temposResposta.length) : null;
+    const mediaResposta = temposResposta.length ? temposResposta.reduce((a,b)=>a+b,0)/temposResposta.length : null;
 
-    // Tempo médio de resolução (em horas)
-    const temposResolucao = resolvidos.map(c=>{
-      return (new Date(c.atualizado_em) - new Date(c.criado_em)) / 3600000;
-    });
-    const mediaResolucao = temposResolucao.length ? (temposResolucao.reduce((a,b)=>a+b,0)/temposResolucao.length) : null;
+    const temposRes = resolvidos.map(c=>(new Date(c.atualizado_em)-new Date(c.criado_em))/3600000);
+    const mediaRes = temposRes.length ? temposRes.reduce((a,b)=>a+b,0)/temposRes.length : null;
 
-    // SLA
-    const comSla = chamadosAtd.filter(c=>c.status==='resolvido'&&c.atualizado_em);
+    const comSla = resolvidos.filter(c=>c.atualizado_em);
     const dentroSla = comSla.filter(c=>{
-      const cfg = SLA_CONFIG[c.prioridade]||{resolucao:24};
-      return new Date(c.atualizado_em) <= new Date(new Date(c.criado_em).getTime()+(cfg.resolucao||24)*3600000);
+      const cfg=SLA_CONFIG[c.prioridade]||{resolucao:24};
+      return new Date(c.atualizado_em)<=new Date(new Date(c.criado_em).getTime()+(cfg.resolucao||24)*3600000);
     });
     const pctSla = comSla.length ? Math.round(dentroSla.length/comSla.length*100) : null;
 
-    // Avaliações
     const avaliacoes = chamadosAtd.filter(c=>c.avaliacao);
     const notaMedia = avaliacoes.length
       ? avaliacoes.reduce((acc,c)=>{try{return acc+JSON.parse(c.avaliacao).nota;}catch{return acc;}},0)/avaliacoes.length
       : null;
 
-    // Sugestões automáticas
-    const sugestoes = [];
-    if (pctSla !== null && pctSla < 90) sugestoes.push(`⚠️ SLA de resolução em ${pctSla}% — meta é ≥90%. Priorize os chamados mais antigos.`);
-    if (mediaResposta !== null && mediaResposta > 4) sugestoes.push(`⏱️ Tempo médio de 1ª resposta é ${mediaResposta.toFixed(1)}h — ideal é < 4h.`);
-    if (notaMedia !== null && notaMedia < 4) sugestoes.push(`⭐ Nota média ${notaMedia.toFixed(1)}/5 — abaixo do esperado. Revise a qualidade das respostas.`);
-    if (chamadosAtd.length === 0) sugestoes.push(`💤 Nenhum chamado atendido no período selecionado.`);
-    if (abertos.length > 5) sugestoes.push(`📋 ${abertos.length} chamados em aberto — verifique se há chamados parados.`);
+    // Score geral 0-100
+    const scorePartes = [];
+    if (pctSla!==null) scorePartes.push(pctSla);
+    if (notaMedia!==null) scorePartes.push(notaMedia*20);
+    if (mediaResposta!==null) scorePartes.push(Math.max(0,100-mediaResposta*10));
+    const score = scorePartes.length ? Math.round(scorePartes.reduce((a,b)=>a+b,0)/scorePartes.length) : null;
+    const scoreColor = !score?'#7a7a8c':score>=80?'#3ecf8e':score>=60?'#f59e0b':'#ef4444';
 
     const ini = atd.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
-    const slaColor = pctSla===null?'var(--dim)':pctSla>=90?'var(--green)':'#f87171';
+
+    // Mini sparkline dos últimos 7 dias
+    const spark = [];
+    for(let i=6;i>=0;i--){
+      const d=new Date(Date.now()-i*86400000).toISOString().slice(0,10);
+      spark.push(chamadosAtd.filter(c=>c.criado_em.slice(0,10)===d).length);
+    }
+    const sparkMax = Math.max(...spark,1);
+    const sparkSvg = `<svg viewBox="0 0 140 40" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:40px;">
+      <defs>
+        <linearGradient id="sg${idx}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#4f8cff" stop-opacity=".6"/>
+          <stop offset="100%" stop-color="#4f8cff" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <polyline points="${spark.map((v,i)=>`${i*20+5},${38-Math.round(v/sparkMax*32)}`).join(' ')}" fill="none" stroke="#4f8cff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <polygon points="${spark.map((v,i)=>`${i*20+5},${38-Math.round(v/sparkMax*32)}`).join(' ')} 125,38 5,38" fill="url(#sg${idx})" opacity=".5"/>
+      ${spark.map((v,i)=>`<circle cx="${i*20+5}" cy="${38-Math.round(v/sparkMax*32)}" r="2.5" fill="#4f8cff" opacity="${v>0?1:.3}"/>`).join('')}
+    </svg>`;
+
+    // Gauges SVG para SLA e nota
+    const gaugeSvg = (pct, color, label) => {
+      const r=28, cx=34, cy=34, circ=2*Math.PI*r;
+      const dash = pct!=null ? (pct/100)*circ : 0;
+      return `<svg viewBox="0 0 68 68" style="width:68px;height:68px;">
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="6"/>
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="6"
+          stroke-dasharray="${dash} ${circ}" stroke-dashoffset="${circ*.25}" stroke-linecap="round"
+          style="transition:stroke-dasharray .8s cubic-bezier(.4,0,.2,1)"/>
+        <text x="${cx}" y="${cy+1}" text-anchor="middle" dominant-baseline="middle" fill="${color}" font-size="11" font-weight="800" font-family="monospace">${pct!=null?pct+'%':'—'}</text>
+        <text x="${cx}" y="${cy+14}" text-anchor="middle" dominant-baseline="middle" fill="rgba(161,161,170,.6)" font-size="7" font-family="sans-serif">${label}</text>
+      </svg>`;
+    };
+
+    const slaColor = pctSla===null?'#7a7a8c':pctSla>=90?'#3ecf8e':pctSla>=70?'#f59e0b':'#ef4444';
+    const notaColor = !notaMedia?'#7a7a8c':notaMedia>=4?'#3ecf8e':notaMedia>=3?'#f59e0b':'#ef4444';
+
+    // Tips
+    const tips = [];
+    if (!chamadosAtd.length) tips.push('Nenhum chamado atendido no período.');
+    else {
+      if (pctSla!==null&&pctSla<90) tips.push(`SLA em ${pctSla}% — priorize chamados mais antigos`);
+      if (mediaResposta!==null&&mediaResposta>4) tips.push(`1ª resposta em ${mediaResposta.toFixed(1)}h — ideal é ≤4h`);
+      if (notaMedia!==null&&notaMedia<4) tips.push(`Nota ${notaMedia.toFixed(1)}/5 — melhore a qualidade das respostas`);
+      if (abertos.length>5) tips.push(`${abertos.length} chamados em aberto — verifique pendências`);
+    }
+    const tipHtml = tips.length
+      ? `<div class="atd-tip"><div class="atd-tip-title">💡 Sugestões de melhoria</div><ul style="margin:0;padding-left:14px;">${tips.map(t=>`<li>${t}</li>`).join('')}</ul></div>`
+      : `<div class="atd-tip success"><div class="atd-tip-title">✅ Excelente desempenho!</div>Todos os indicadores dentro da meta no período.</div>`;
+
+    const fmtTempo = (h) => h===null?'—':h<1?Math.round(h*60)+'min':h<24?h.toFixed(1)+'h':Math.round(h/24)+'d';
+    const barPct = (v,max) => v===null?0:Math.min(100,Math.round(v/max*100));
+    const rspColor = mediaResposta===null?'#7a7a8c':mediaResposta<=4?'#3ecf8e':mediaResposta<=8?'#f59e0b':'#ef4444';
+    const resColor = mediaRes===null?'#7a7a8c':mediaRes<=24?'#3ecf8e':mediaRes<=72?'#f59e0b':'#ef4444';
 
     return `<div class="atd-card">
       <div class="atd-card-header">
-        <div class="atd-card-avatar">${ini}</div>
+        <div class="atd-card-avatar">${ini}<span class="atd-status-dot"></span></div>
         <div class="atd-card-info">
           <div class="atd-card-nome">${atd.nome}</div>
-          <div class="atd-card-deptos">${atd.email} · ${(atd.departamentos||[]).join(', ')||'Todos os departamentos'}</div>
+          <div class="atd-card-deptos">${atd.email}</div>
+          <div class="atd-card-deptos" style="margin-top:2px;">📍 ${(atd.departamentos||[]).join(', ')||'Todos os departamentos'}</div>
         </div>
-        <span class="badge ${atd.role==='admin'?'b-admin':'b-atendente'}">${atd.role}</span>
+        <div class="atd-score-ring">
+          <div class="atd-score-val" style="-webkit-text-fill-color:${scoreColor};background:none;">${score!==null?score:'—'}</div>
+          <div class="atd-score-lbl">Score</div>
+        </div>
       </div>
 
       <div class="atd-kpis">
-        <div class="atd-kpi atd-kpi-blue">
+        <div class="atd-kpi" style="--kpi-color:#4f8cff;--kpi-glow:radial-gradient(circle at 50% 0%,rgba(79,140,255,.3),transparent);">
           <div class="atd-kpi-n">${chamadosAtd.length}</div>
-          <div class="atd-kpi-l">Chamados atendidos</div>
+          <div class="atd-kpi-l">Atendidos</div>
         </div>
-        <div class="atd-kpi atd-kpi-green">
+        <div class="atd-kpi" style="--kpi-color:#3ecf8e;--kpi-glow:radial-gradient(circle at 50% 0%,rgba(62,207,142,.3),transparent);">
           <div class="atd-kpi-n">${resolvidos.length}</div>
           <div class="atd-kpi-l">Resolvidos</div>
         </div>
-        <div class="atd-kpi atd-kpi-orange">
+        <div class="atd-kpi" style="--kpi-color:#f59e0b;--kpi-glow:radial-gradient(circle at 50% 0%,rgba(245,158,11,.3),transparent);">
           <div class="atd-kpi-n">${abertos.length}</div>
           <div class="atd-kpi-l">Em aberto</div>
         </div>
-        <div class="atd-kpi atd-kpi-star">
-          <div class="atd-kpi-n">${notaMedia ? notaMedia.toFixed(1)+'⭐' : '—'}</div>
-          <div class="atd-kpi-l">Nota média</div>
+        <div class="atd-kpi" style="--kpi-color:#fbbf24;--kpi-glow:radial-gradient(circle at 50% 0%,rgba(251,191,36,.3),transparent);">
+          <div class="atd-kpi-n">${notaMedia?notaMedia.toFixed(1)+'⭐':'—'}</div>
+          <div class="atd-kpi-l">Avaliação</div>
         </div>
       </div>
 
-      <div class="atd-bar-wrap">
-        <div class="atd-bar-label"><span>⏱️ Tempo médio 1ª resposta</span><span>${mediaResposta ? (mediaResposta<1?Math.round(mediaResposta*60)+'min':mediaResposta.toFixed(1)+'h') : '—'}</span></div>
-        <div class="atd-bar-track"><div class="atd-bar-fill" style="width:${mediaResposta ? Math.min(100,Math.round(mediaResposta/8*100)) : 0}%;background:${mediaResposta&&mediaResposta<=4?'var(--green)':'#f59e0b'};"></div></div>
-      </div>
-      <div class="atd-bar-wrap">
-        <div class="atd-bar-label"><span>🔧 Tempo médio resolução</span><span>${mediaResolucao ? (mediaResolucao<24?mediaResolucao.toFixed(1)+'h':Math.round(mediaResolucao/24)+'d') : '—'}</span></div>
-        <div class="atd-bar-track"><div class="atd-bar-fill" style="width:${mediaResolucao ? Math.min(100,Math.round(mediaResolucao/72*100)) : 0}%;background:var(--accent);"></div></div>
-      </div>
-      <div class="atd-bar-wrap">
-        <div class="atd-bar-label"><span>✅ SLA de resolução</span><span style="color:${slaColor};font-weight:600;">${pctSla!==null?pctSla+'%':'—'}</span></div>
-        <div class="atd-bar-track"><div class="atd-bar-fill" style="width:${pctSla||0}%;background:${slaColor};"></div></div>
+      <div style="display:flex;justify-content:space-around;margin-bottom:14px;">
+        ${gaugeSvg(pctSla, slaColor, 'SLA')}
+        ${gaugeSvg(notaMedia?Math.round(notaMedia*20):null, notaColor, 'Qualidade')}
+        ${gaugeSvg(chamadosAtd.length>0?Math.round(resolvidos.length/chamadosAtd.length*100):null, '#4f8cff', 'Resolução')}
       </div>
 
-      ${sugestoes.length ? `<div class="atd-sugestao"><strong>💡 Sugestões de melhoria:</strong><ul style="margin:6px 0 0 16px;padding:0;">${sugestoes.map(s=>`<li style="margin-bottom:3px;">${s}</li>`).join('')}</ul></div>` : '<div class="atd-sugestao" style="background:var(--green-s);border-color:rgba(62,207,142,.3);color:var(--green);">✅ Excelente desempenho no período!</div>'}
+      <div class="atd-metrics">
+        <div class="atd-metric">
+          <div class="atd-metric-top">
+            <span class="atd-metric-label">⚡ 1ª Resposta</span>
+            <span class="atd-metric-val" style="--mv-color:${rspColor};color:${rspColor}">${fmtTempo(mediaResposta)}</span>
+          </div>
+          <div class="atd-metric-track"><div class="atd-metric-fill" style="width:${barPct(mediaResposta,12)}%;background:linear-gradient(90deg,${rspColor},${rspColor}aa);"></div></div>
+        </div>
+        <div class="atd-metric">
+          <div class="atd-metric-top">
+            <span class="atd-metric-label">🔧 Tempo de Resolução</span>
+            <span class="atd-metric-val" style="color:${resColor}">${fmtTempo(mediaRes)}</span>
+          </div>
+          <div class="atd-metric-track"><div class="atd-metric-fill" style="width:${barPct(mediaRes,96)}%;background:linear-gradient(90deg,${resColor},${resColor}aa);"></div></div>
+        </div>
+      </div>
+
+      <div class="atd-mini-chart">
+        <div class="atd-mini-chart-title">📈 Últimos 7 dias</div>
+        ${sparkSvg}
+      </div>
+
+      ${tipHtml}
     </div>`;
-  }).join('');
+  }).join('') + '</div>';
 }
 
-async function loadAdminData() { await loadChamados(); }
+async function loadAdminData() { await loadChamados(); }async function loadAdminData() { await loadChamados(); }
 
 function filtrarChamadosPorAtendente(list) {
   if (currentPerfil?.role !== 'atendente') return list;
