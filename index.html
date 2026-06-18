@@ -2119,11 +2119,12 @@ function renderUsuarios(list) {
         <span class="badge ${u.role==='admin'?'b-admin':u.role==='atendente'?'b-atendente':'b-user'}">${u.role}</span>
         ${u.ativo===false?'<span class="badge" style="background:var(--red-s);color:#f87171;border-color:rgba(239,68,68,.35);margin-left:4px;">Inativo</span>':''}
       </td>
-      <td style="display:flex;gap:6px;">
+      <td style="display:flex;gap:6px;flex-wrap:wrap;">
         <button class="btn btn-ghost btn-sm" onclick="openModalUsuario('${u.id}')">✎ Editar</button>
         ${u.ativo===false
           ? `<button class="btn btn-ghost btn-sm" style="color:var(--green);border-color:rgba(62,207,142,.3);" onclick="toggleAtivoUsuario('${u.id}',true)">✅ Ativar</button>`
           : `<button class="btn btn-ghost btn-sm" style="color:#f87171;border-color:rgba(239,68,68,.35);" onclick="toggleAtivoUsuario('${u.id}',false)">🚫 Inativar</button>`}
+        <button class="btn btn-ghost btn-sm" style="color:#f87171;border-color:rgba(239,68,68,.35);" onclick="excluirUsuario('${u.id}')">🗑️</button>
       </td>
     </tr>`).join('');
 }
@@ -2192,6 +2193,14 @@ async function salvarUsuario() {
   }).eq('id', id);
   closeModalUsuario();
   showToast('Usuário atualizado!','ok');
+  loadUsuarios();
+}
+
+async function excluirUsuario(id) {
+  const u = allUsuarios.find(x=>x.id===id);
+  if (!confirm(`Excluir permanentemente o usuário "${u?.nome||'este usuário'}"?\n\nEsta ação não pode ser desfeita. O histórico de chamados será mantido.`)) return;
+  await sb.from('perfis').delete().eq('id', id);
+  showToast('Usuário excluído!','ok');
   loadUsuarios();
 }
 
