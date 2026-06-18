@@ -86,6 +86,7 @@ textarea{resize:vertical;min-height:90px;line-height:1.6;}
 
 /* ── ADMIN LAYOUT ── */
 .admin-layout{flex:1;display:flex;width:100%;min-height:calc(100vh - 52px);}
+#main-sidebar{position:relative;z-index:10;flex-shrink:0;}
 .sidebar{width:220px;min-width:220px;flex-shrink:0;background:rgba(255,255,255,0.025);backdrop-filter:blur(10px);border-right:1px solid rgba(255,255,255,0.07);padding:20px 12px;display:flex;flex-direction:column;gap:3px;}
 .sb-section{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:4px 10px;margin-top:12px;margin-bottom:4px;display:block;}
 .sb-btn{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:10px;cursor:pointer;font-size:13px;color:rgba(160,160,190,0.8);background:none;border:1px solid transparent;font-family:var(--sans);width:100%;text-align:left;transition:all .18s;}
@@ -391,15 +392,18 @@ img { max-width: 100%; height: auto; }
   .sb-toggle { display:flex; }
 
   /* Sidebar → drawer */
-  .sidebar {
+  #main-sidebar {
     position:fixed; top:0; left:0; height:100vh;
     z-index:300; transform:translateX(-100%);
     transition:transform .28s cubic-bezier(.4,0,.2,1);
     overflow-y:auto; width:240px; min-width:unset;
-    padding-top:56px;
+    padding-top:60px;
     box-shadow:4px 0 32px rgba(0,0,0,.6);
   }
-  .sidebar.open { transform:translateX(0); }
+  #main-sidebar.open { transform:translateX(0); }
+  /* Remove sidebar from flex flow on mobile */
+  #page-admin.active { flex-direction:column; }
+  #page-admin .admin-content { padding:12px; }
 
   /* Layout */
   .admin-layout { flex-direction:column; }
@@ -744,29 +748,30 @@ img { max-width: 100%; height: auto; }
 </div>
 
 <!-- ═══════════════════════════════════ PAGE: ADMIN ═══ -->
+<!-- SIDEBAR (fora do page-admin para funcionar no mobile) -->
+<div class="sidebar" id="main-sidebar">
+  <span class="sb-section">Visão geral</span>
+  <button class="sb-btn" id="sb-dashboard" onclick="adminNav('dashboard',this)"><span class="sb-icon">📊</span> Dashboard</button>
+  <button class="sb-btn active" id="sb-chamados" onclick="adminNav('chamados',this)"><span class="sb-icon">📋</span> Chamados</button>
+  <button class="sb-btn" id="sb-config" onclick="toggleAdminMenu(this)"><span class="sb-icon">⚙️</span> Administração <span id="sb-config-arrow" style="margin-left:auto;font-size:10px;">▶</span></button>
+  <div id="sb-admin-menu" style="display:none;padding-left:14px;">
+    <button class="sb-btn" id="sb-usuarios" onclick="adminNav('usuarios',this)"><span class="sb-icon">👥</span> Usuários</button>
+    <button class="sb-btn" onclick="adminSubNav('atendentes',this)"><span class="sb-icon">👤</span> Atendentes</button>
+    <button class="sb-btn" onclick="adminSubNav('categorias',this)"><span class="sb-icon">🗂️</span> Categorias</button>
+    <button class="sb-btn" onclick="adminSubNav('campos',this)"><span class="sb-icon">🧩</span> Campos Personalizados</button>
+    <button class="sb-btn" onclick="adminSubNav('areas',this)"><span class="sb-icon">📍</span> Departamentos</button>
+    <button class="sb-btn" onclick="adminSubNav('empresas',this)"><span class="sb-icon">🏢</span> Organizações</button>
+    <button class="sb-btn" onclick="adminSubNav('avisos',this)"><span class="sb-icon">📢</span> Avisos</button>
+    <button class="sb-btn" onclick="adminSubNav('status',this)"><span class="sb-icon">📌</span> Status</button>
+    <button class="sb-btn" onclick="adminSubNav('sla',this)"><span class="sb-icon">⏰</span> SLA</button>
+    <button class="sb-btn" onclick="adminSubNav('horarios',this)"><span class="sb-icon">🕒</span> Horários</button>
+  </div>
+  <span class="sb-section">Ações</span>
+  <button class="sb-btn" onclick="showPage('chamado');novoChamado();atualizarBotaoVoltar();"><span class="sb-icon">➕</span> Novo chamado</button>
+</div>
+
 <div class="page" id="page-admin">
   <div class="admin-layout">
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-      <span class="sb-section">Visão geral</span>
-      <button class="sb-btn" id="sb-dashboard" onclick="adminNav('dashboard',this)"><span class="sb-icon">📊</span> Dashboard</button>
-      <button class="sb-btn active" id="sb-chamados" onclick="adminNav('chamados',this)"><span class="sb-icon">📋</span> Chamados</button>
-      <button class="sb-btn" id="sb-usuarios" onclick="adminNav('usuarios',this)"><span class="sb-icon">👥</span> Usuários</button>
-      <button class="sb-btn" id="sb-config" onclick="toggleAdminMenu(this)"><span class="sb-icon">⚙️</span> Administração <span id="sb-config-arrow" style="margin-left:auto;font-size:10px;">▶</span></button>
-      <div id="sb-admin-menu" style="display:none;padding-left:14px;">
-        <button class="sb-btn" onclick="adminSubNav('atendentes',this)"><span class="sb-icon">👤</span> Atendentes</button>
-        <button class="sb-btn" onclick="adminSubNav('categorias',this)"><span class="sb-icon">🗂️</span> Categorias</button>
-        <button class="sb-btn" onclick="adminSubNav('campos',this)"><span class="sb-icon">🧩</span> Campos Personalizados</button>
-        <button class="sb-btn" onclick="adminSubNav('areas',this)"><span class="sb-icon">📍</span> Departamentos</button>
-        <button class="sb-btn" onclick="adminSubNav('empresas',this)"><span class="sb-icon">🏢</span> Organizações</button>
-        <button class="sb-btn" onclick="adminSubNav('avisos',this)"><span class="sb-icon">📢</span> Avisos</button>
-        <button class="sb-btn" onclick="adminSubNav('status',this)"><span class="sb-icon">📌</span> Status</button>
-        <button class="sb-btn" onclick="adminSubNav('sla',this)"><span class="sb-icon">⏰</span> SLA</button>
-        <button class="sb-btn" onclick="adminSubNav('horarios',this)"><span class="sb-icon">🕒</span> Horários</button>
-      </div>
-      <span class="sb-section">Ações</span>
-      <button class="sb-btn" onclick="showPage('chamado');novoChamado();atualizarBotaoVoltar();"><span class="sb-icon">➕</span> Novo chamado</button>
-    </div>
 
     <!-- CONTENT -->
     <div class="admin-content">
@@ -3021,6 +3026,9 @@ function configurarSidebarPorRole(perfil) {
 
   if (sbUsuarios) sbUsuarios.style.display = isAdmin ? 'flex' : 'none';
   if (sbConfig) sbConfig.style.display = isAdmin ? 'flex' : 'none';
+  // Show sidebar on admin pages
+  const mainSb = document.getElementById('main-sidebar');
+  if (mainSb) mainSb.style.display = 'flex';
   if (sbAdminMenu) sbAdminMenu.style.display = 'none';
   if (sbConfigArrow) sbConfigArrow.textContent = '▶';
 
@@ -4780,7 +4788,7 @@ function irParaPainel() {
 }
 // ── RESPONSIVIDADE ──────────────────────────
 function toggleSidebar(force) {
-  const sidebar = document.querySelector('.sidebar');
+  const sidebar = document.getElementById('main-sidebar');
   const overlay = document.getElementById('sb-overlay');
   const toggle  = document.getElementById('sb-toggle');
   if (!sidebar) return;
