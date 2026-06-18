@@ -2318,7 +2318,7 @@ async function loadDashAtendentes() {
   const dias = getDashPeriodo();
   const [{ data: chamadosAll }, { data: atendentes }] = await Promise.all([
     sb.from('chamados').select('*').order('criado_em',{ascending:false}),
-    sb.from('perfis').select('*').in('role',['atendente','admin']).order('nome')
+    sb.from('perfis').select('*').eq('role','atendente').order('nome')
   ]);
 
   const todos = filtrarPeriodo(chamadosAll || [], dias);
