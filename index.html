@@ -78,7 +78,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 .ch-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
 .ch-kpi{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;}
 .ch-kpi-icon{font-size:20px;}
-.ch-kpi-n{font-size:20px;font-weight:700;line-height:1;}
+.ch-kpi-n{font-size:18px;font-weight:700;line-height:1;}
 .ch-kpi-l{font-size:10px;color:rgba(160,160,200,0.6);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
 .ch-wrap{background:rgba(255,255,255,0.035);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.09);border-radius:16px;overflow:hidden;}
 .ch-wrap::before{content:"";display:block;height:1px;background:linear-gradient(90deg,transparent,rgba(91,141,239,.5),rgba(124,108,245,.5),transparent);}
@@ -89,6 +89,24 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 /* ── TOPBAR ── */
 .topbar{position:sticky;top:0;z-index:200;height:56px;background:rgba(7,7,17,0.75);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;padding:0 24px;}
 .tb-brand{display:flex;align-items:center;gap:10px;}
+/* ── USER DROPDOWN ── */
+.tb-user-menu-wrap{position:relative;}
+.tb-user-btn{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:5px 10px 5px 5px;cursor:pointer;transition:all .18s;font-family:var(--sans);}
+.tb-user-btn:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.15);}
+.tb-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:230px;background:rgba(14,14,32,.97);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);border-radius:14px;box-shadow:0 16px 48px rgba(0,0,0,.6);z-index:1000;overflow:hidden;animation:ddFade .15s ease;}
+@keyframes ddFade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.tb-dropdown-header{display:flex;align-items:center;gap:10px;padding:14px 14px 12px;}
+.tb-dd-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#5b8def,#7c6cf5);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.tb-dd-nome{font-size:13px;font-weight:600;color:#e0e0f0;}
+.tb-dd-email{font-size:11px;color:rgba(160,160,200,.6);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;}
+.tb-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:2px 0;}
+.tb-dd-item{display:flex;align-items:center;gap:9px;width:100%;padding:9px 14px;background:none;border:none;color:rgba(200,200,220,.85);font-family:var(--sans);font-size:13px;cursor:pointer;text-align:left;transition:background .15s;}
+.tb-dd-item:hover{background:rgba(91,141,239,.12);color:#e0e0f0;}
+.tb-dd-logout{color:rgba(240,100,100,.85);}
+.tb-dd-logout:hover{background:rgba(240,90,90,.1);color:#ff8888;}
+/* Fix topbar font size */
+.tb-uname{font-size:12px;font-weight:600;color:#e0e0f0;}
+.tb-role{font-size:10px;color:rgba(160,160,200,.6);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;}
 .tb-logo{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0;}
 .tb-name{font-size:14px;font-weight:500;}
 .tb-user{display:flex;align-items:center;gap:10px;}
@@ -259,7 +277,7 @@ textarea{resize:vertical;min-height:90px;line-height:1.6;}
 .stat{position:relative;background:rgba(255,255,255,0.04);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.09);border-radius:16px;padding:16px;overflow:hidden;transition:transform .2s,box-shadow .2s;}
 .stat:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(79,140,255,.12);}
 .stat::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(79,140,255,.4),transparent);}
-.stat-n{font-size:28px;font-weight:700;color:#e0e0f0;}
+.stat-n{font-size:24px;font-weight:700;color:#e0e0f0;}
 .stat-l{font-size:11px;color:rgba(161,161,170,.7);margin-top:2px;text-transform:uppercase;letter-spacing:.05em;}
 .stat-accent{border-color:rgba(79,140,255,.3)!important;}
 .stat-accent .stat-n{color:#4f8cff;}
@@ -339,6 +357,18 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .aval-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500;}
 .aval-ok{background:var(--green-s);color:var(--green);border:1px solid rgba(62,207,142,.3);}
 .aval-pending{background:var(--orange-s);color:#fbbf24;border:1px solid rgba(245,158,11,.4);}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid;white-space:nowrap;letter-spacing:.02em;}
+.b-critico{background:rgba(240,90,90,.2);color:#ff6b6b;border-color:rgba(240,90,90,.5);}
+.b-alto{background:rgba(245,166,35,.2);color:#f5a623;border-color:rgba(245,166,35,.5);}
+.b-medio{background:rgba(91,141,239,.2);color:#7db4ff;border-color:rgba(91,141,239,.5);}
+.b-baixo{background:rgba(47,216,154,.2);color:#2fd89a;border-color:rgba(47,216,154,.5);}
+.b-admin{background:rgba(167,139,250,.2);color:#c4b5fd;border-color:rgba(167,139,250,.5);}
+.b-atendente{background:rgba(91,141,239,.2);color:#93c5fd;border-color:rgba(91,141,239,.5);}
+.b-user{background:rgba(107,114,128,.2);color:#9ca3af;border-color:rgba(107,114,128,.4);}
+.b-resolvido{background:rgba(47,216,154,.2);color:#2fd89a;border-color:rgba(47,216,154,.5);}
+.b-aguardando{background:rgba(107,114,128,.2);color:#9ca3af;border-color:rgba(107,114,128,.4);}
 
 /* ── SLA ── */
 .sla-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500;border:1px solid;white-space:nowrap;}
@@ -467,6 +497,13 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .cad-del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:14px;line-height:1;transition:color .15s;}
 .cad-del:hover{color:#f87171;}
 
+/* ── MODAL MEUS DADOS ── */
+.mdd-modal{max-width:440px;}
+.mdd-avatar-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 0;margin-bottom:4px;}
+.mdd-avatar-big{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#5b8def,#7c6cf5);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;border:3px solid rgba(91,141,239,.4);box-shadow:0 0 20px rgba(91,141,239,.3);cursor:pointer;position:relative;overflow:hidden;transition:all .2s;}
+.mdd-avatar-big:hover::after{content:"✎ Foto";position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;}
+.mdd-avatar-big img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.mdd-avatar-lbl{font-size:11px;color:rgba(160,160,200,.6);}
 /* ── MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal-overlay.open{display:flex;}
@@ -674,12 +711,45 @@ img { max-width: 100%; height: auto; }
   </div>
   <div class="tb-user" id="tb-user" style="display:none;">
     <button class="btn-logout" id="btn-meus-link" onclick="showPage('meus-chamados');loadMeusChamados();" style="display:none;">📋 Meus chamados</button>
-    <div class="tb-avatar" id="tb-avatar">?</div>
-    <div class="tb-info">
-      <span class="tb-uname" id="tb-uname">—</span>
-      <span class="tb-role" id="tb-role">—</span>
+    <!-- User dropdown -->
+    <div class="tb-user-menu-wrap" id="tb-user-menu-wrap">
+      <button class="tb-user-btn" id="tb-user-btn" onclick="toggleUserMenu()" aria-label="Menu do usuário">
+        <div class="tb-avatar" id="tb-avatar">?</div>
+        <div class="tb-info">
+          <span class="tb-uname" id="tb-uname">—</span>
+          <span class="tb-role" id="tb-role">—</span>
+        </div>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" id="tb-chevron" style="color:rgba(160,160,200,.6);transition:transform .2s;"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <!-- Dropdown -->
+      <div class="tb-dropdown" id="tb-dropdown" style="display:none;">
+        <div class="tb-dropdown-header" id="tb-dropdown-header">
+          <div class="tb-dd-avatar" id="tb-dd-avatar">?</div>
+          <div>
+            <div class="tb-dd-nome" id="tb-dd-nome">—</div>
+            <div class="tb-dd-email" id="tb-dd-email">—</div>
+          </div>
+        </div>
+        <div class="tb-dropdown-divider"></div>
+        <button class="tb-dd-item" onclick="abrirMeusDados()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
+          Meus dados
+        </button>
+        <button class="tb-dd-item" onclick="abrirAlterarSenha()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Alterar senha
+        </button>
+        <button class="tb-dd-item" onclick="abrirAlterarAvatar()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/></svg>
+          Alterar meu avatar
+        </button>
+        <div class="tb-dropdown-divider"></div>
+        <button class="tb-dd-item tb-dd-logout" onclick="logout()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Sair
+        </button>
+      </div>
     </div>
-    <button class="btn-logout" onclick="logout()">Sair</button>
   </div>
 </div>
 
@@ -1664,6 +1734,66 @@ img { max-width: 100%; height: auto; }
     </div><!-- /admin-layout -->
 </div><!-- /page-admin -->
 
+<!-- MODAL MEUS DADOS -->
+<div class="modal-overlay" id="modal-meus-dados">
+  <div class="modal mdd-modal">
+    <button class="modal-close" onclick="document.getElementById('modal-meus-dados').classList.remove('open')">✕</button>
+    <div class="modal-title">👤 Meus dados</div>
+    <div class="mdd-avatar-wrap">
+      <div class="mdd-avatar-big" id="mdd-avatar-big" onclick="abrirAlterarAvatar()">?</div>
+      <span class="mdd-avatar-lbl">Clique para alterar foto</span>
+    </div>
+    <div class="field"><label>Nome completo</label><input type="text" id="mdd-nome" placeholder="Seu nome"/></div>
+    <div class="field"><label>E-mail</label><input type="email" id="mdd-email" disabled style="opacity:.6;"/></div>
+    <div class="field"><label>Telefone / WhatsApp</label><input type="tel" id="mdd-ramal" placeholder="(92) 99999-0000"/></div>
+    <div class="field"><label>Organização</label><input type="text" id="mdd-empresa" disabled style="opacity:.6;"/></div>
+    <p id="mdd-msg" style="font-size:12px;color:#2fd89a;margin-bottom:8px;display:none;">✅ Dados atualizados!</p>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn btn-primary" onclick="salvarMeusDados()">💾 Salvar</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-meus-dados').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ALTERAR SENHA -->
+<div class="modal-overlay" id="modal-alterar-senha">
+  <div class="modal" style="max-width:400px;">
+    <button class="modal-close" onclick="document.getElementById('modal-alterar-senha').classList.remove('open')">✕</button>
+    <div class="modal-title">🔑 Alterar senha</div>
+    <p style="font-size:13px;color:rgba(160,160,200,.7);margin-bottom:16px;">Enviaremos um link de redefinição para o seu e-mail cadastrado.</p>
+    <div class="field"><label>E-mail</label><input type="email" id="als-email" disabled style="opacity:.6;"/></div>
+    <p id="als-ok" style="font-size:12px;color:#2fd89a;margin-bottom:8px;display:none;">✅ Link enviado! Verifique sua caixa de entrada.</p>
+    <p id="als-err" style="font-size:12px;color:#ff8888;margin-bottom:8px;display:none;"></p>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn btn-primary" onclick="enviarLinkSenha()">📧 Enviar link</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-alterar-senha').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ALTERAR AVATAR -->
+<div class="modal-overlay" id="modal-alterar-avatar">
+  <div class="modal" style="max-width:420px;">
+    <button class="modal-close" onclick="document.getElementById('modal-alterar-avatar').classList.remove('open')">✕</button>
+    <div class="modal-title">🖼️ Alterar avatar</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:16px 0;">
+      <div class="mdd-avatar-big" id="avatar-preview" style="width:90px;height:90px;font-size:32px;">?</div>
+      <p style="font-size:13px;color:rgba(160,160,200,.7);text-align:center;">Escolha uma imagem para seu perfil.<br><span style="font-size:11px;opacity:.6;">JPG ou PNG · máx. 2MB</span></p>
+      <label style="cursor:pointer;text-transform:none;font-size:14px;">
+        <input type="file" id="avatar-file-input" accept="image/jpeg,image/png" onchange="previewAvatar(this)" style="display:none;"/>
+        <span class="btn btn-ghost" style="display:inline-flex;cursor:pointer;">📂 Selecionar imagem</span>
+      </label>
+      <p id="avatar-nome-file" style="font-size:11px;color:rgba(160,160,200,.5);"></p>
+    </div>
+    <p id="avatar-ok" style="font-size:12px;color:#2fd89a;margin-bottom:8px;display:none;">✅ Avatar atualizado!</p>
+    <p id="avatar-err" style="font-size:12px;color:#ff8888;margin-bottom:8px;display:none;"></p>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary" onclick="salvarAvatar()">💾 Salvar avatar</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-alterar-avatar').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL CAMPO PERSONALIZADO -->
 <div class="modal-overlay" id="modal-campo" style="align-items:flex-start;padding:40px 20px;overflow-y:auto;">
   <div class="modal" style="max-width:680px;width:100%;">
@@ -2034,9 +2164,23 @@ function irParaNovoChamado() {
 function updateTopbar(p) {
   document.getElementById('tb-user').style.display = 'flex';
   const ini = p.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
-  document.getElementById('tb-avatar').textContent = ini;
+  // Avatar
+  const avEl = document.getElementById('tb-avatar');
+  const ddAvEl = document.getElementById('tb-dd-avatar');
+  if (p.avatar_url) {
+    if (avEl) avEl.innerHTML = `<img src="${p.avatar_url}" style="width:30px;height:30px;object-fit:cover;border-radius:50%;"/>`;
+    if (ddAvEl) ddAvEl.innerHTML = `<img src="${p.avatar_url}" style="width:36px;height:36px;object-fit:cover;border-radius:50%;"/>`;
+  } else {
+    if (avEl) avEl.textContent = ini;
+    if (ddAvEl) ddAvEl.textContent = ini;
+  }
   document.getElementById('tb-uname').textContent = p.nome.split(' ')[0];
   document.getElementById('tb-role').textContent = p.role === 'admin' ? 'admin' : p.role === 'atendente' ? 'atendente' : 'usuário';
+  // Dropdown header
+  const ddNome = document.getElementById('tb-dd-nome');
+  const ddEmail = document.getElementById('tb-dd-email');
+  if (ddNome) ddNome.textContent = p.nome;
+  if (ddEmail) ddEmail.textContent = p.email || '';
   const linkMeus = document.getElementById('btn-meus-link');
   if (linkMeus) linkMeus.style.display = (p.role !== 'admin' && p.role !== 'atendente') ? 'inline-flex' : 'none';
 }
@@ -3434,7 +3578,8 @@ function statusBadgeHtml(chave) {
   const s = STATUS_MAP[chave];
   const cor = s?.cor || '#7a7a8c';
   const nome = s?.nome || chave;
-  return `<span class="badge" style="background:${cor}22;color:${cor};border-color:${cor}55;">${nome}</span>`;
+  return `<span style="display:inline-flex;align-items:center;gap:5px;background:${cor}25;color:${cor};border:1px solid ${cor}70;border-radius:20px;font-size:11px;font-weight:600;padding:3px 10px;white-space:nowrap;letter-spacing:.02em;text-shadow:0 0 8px ${cor}44;">
+    <span style="width:6px;height:6px;border-radius:50%;background:${cor};box-shadow:0 0 5px ${cor};flex-shrink:0;"></span>${nome}</span>`;
 }
 
 // ── ADMINISTRAÇÃO: GENERIC LIST/DETAIL PATTERN ──
@@ -5163,58 +5308,246 @@ function irParaPainel() {
     irParaNovoChamado();
   }
 }
+// ── USER DROPDOWN MENU ──────────────────────
+let _avatarFile = null;
+
+function toggleUserMenu() {
+  const dd = document.getElementById('tb-dropdown');
+  const chev = document.getElementById('tb-chevron');
+  const open = dd.style.display === 'none';
+  dd.style.display = open ? 'block' : 'none';
+  if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
+}
+
+// Fechar dropdown ao clicar fora
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('tb-user-menu-wrap');
+  const dd = document.getElementById('tb-dropdown');
+  if (wrap && dd && !wrap.contains(e.target)) {
+    dd.style.display = 'none';
+    const chev = document.getElementById('tb-chevron');
+    if (chev) chev.style.transform = '';
+  }
+});
+
+function abrirMeusDados() {
+  document.getElementById('tb-dropdown').style.display = 'none';
+  if (!currentPerfil) return;
+  document.getElementById('mdd-nome').value = currentPerfil.nome || '';
+  document.getElementById('mdd-email').value = currentPerfil.email || '';
+  document.getElementById('mdd-ramal').value = currentPerfil.ramal || '';
+  document.getElementById('mdd-empresa').value = currentPerfil.empresa || '';
+  // Avatar
+  const bigAvatar = document.getElementById('mdd-avatar-big');
+  if (currentPerfil.avatar_url) {
+    bigAvatar.innerHTML = `<img src="${currentPerfil.avatar_url}" alt="avatar"/>`;
+  } else {
+    const ini = (currentPerfil.nome||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    bigAvatar.textContent = ini;
+    bigAvatar.style.fontSize = '26px';
+  }
+  document.getElementById('mdd-msg').style.display = 'none';
+  document.getElementById('modal-meus-dados').classList.add('open');
+}
+
+async function salvarMeusDados() {
+  const nome = document.getElementById('mdd-nome').value.trim();
+  const ramal = document.getElementById('mdd-ramal').value.trim();
+  if (!nome) { showToast('Informe seu nome.','err'); return; }
+  await sb.from('perfis').update({ nome, ramal }).eq('id', currentUser.id);
+  currentPerfil.nome = nome;
+  currentPerfil.ramal = ramal;
+  updateTopbar(currentPerfil);
+  const msg = document.getElementById('mdd-msg');
+  msg.style.display = 'block';
+  setTimeout(()=>msg.style.display='none', 3000);
+  showToast('Dados atualizados!','ok');
+}
+
+function abrirAlterarSenha() {
+  document.getElementById('tb-dropdown').style.display = 'none';
+  document.getElementById('als-email').value = currentPerfil?.email || '';
+  document.getElementById('als-ok').style.display = 'none';
+  document.getElementById('als-err').style.display = 'none';
+  document.getElementById('modal-alterar-senha').classList.add('open');
+}
+
+async function enviarLinkSenha() {
+  const email = currentPerfil?.email;
+  if (!email) return;
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+  if (error) {
+    document.getElementById('als-err').textContent = 'Erro ao enviar. Tente novamente.';
+    document.getElementById('als-err').style.display = 'block';
+  } else {
+    document.getElementById('als-ok').style.display = 'block';
+    document.getElementById('als-err').style.display = 'none';
+  }
+}
+
+function abrirAlterarAvatar() {
+  document.getElementById('tb-dropdown').style.display = 'none';
+  document.getElementById('modal-alterar-avatar').classList.add('open');
+  document.getElementById('modal-meus-dados').classList.remove('open');
+  document.getElementById('avatar-ok').style.display = 'none';
+  document.getElementById('avatar-err').style.display = 'none';
+  document.getElementById('avatar-nome-file').textContent = '';
+  _avatarFile = null;
+  // Preview
+  const prev = document.getElementById('avatar-preview');
+  if (currentPerfil?.avatar_url) {
+    prev.innerHTML = `<img src="${currentPerfil.avatar_url}" style="width:90px;height:90px;object-fit:cover;border-radius:50%;"/>`;
+  } else {
+    const ini = (currentPerfil?.nome||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    prev.textContent = ini;
+  }
+}
+
+function previewAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2*1024*1024) {
+    document.getElementById('avatar-err').textContent = 'Imagem muito grande. Máximo 2MB.';
+    document.getElementById('avatar-err').style.display = 'block';
+    return;
+  }
+  _avatarFile = file;
+  document.getElementById('avatar-nome-file').textContent = file.name;
+  document.getElementById('avatar-err').style.display = 'none';
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const prev = document.getElementById('avatar-preview');
+    prev.innerHTML = `<img src="${e.target.result}" style="width:90px;height:90px;object-fit:cover;border-radius:50%;"/>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function salvarAvatar() {
+  if (!_avatarFile) { showToast('Selecione uma imagem primeiro.','err'); return; }
+  const ext = _avatarFile.name.split('.').pop();
+  const path = `avatares/${currentUser.id}.${ext}`;
+  const { error: upErr } = await sb.storage.from('chamados-anexos').upload(path, _avatarFile, { upsert:true, contentType:_avatarFile.type });
+  if (upErr) {
+    document.getElementById('avatar-err').textContent = 'Erro ao salvar: ' + upErr.message;
+    document.getElementById('avatar-err').style.display = 'block';
+    return;
+  }
+  const { data: urlData } = sb.storage.from('chamados-anexos').getPublicUrl(path);
+  const avatar_url = urlData.publicUrl + '?t=' + Date.now();
+  await sb.from('perfis').update({ avatar_url }).eq('id', currentUser.id);
+  currentPerfil.avatar_url = avatar_url;
+  // Atualiza avatares na UI
+  const av = document.getElementById('tb-avatar');
+  if (av) av.innerHTML = `<img src="${avatar_url}" style="width:30px;height:30px;object-fit:cover;border-radius:50%;"/>`;
+  const ddav = document.getElementById('tb-dd-avatar');
+  if (ddav) ddav.innerHTML = `<img src="${avatar_url}" style="width:36px;height:36px;object-fit:cover;border-radius:50%;"/>`;
+  document.getElementById('avatar-ok').style.display = 'block';
+  setTimeout(()=>document.getElementById('modal-alterar-avatar').classList.remove('open'), 1500);
+  showToast('Avatar atualizado!','ok');
+  _avatarFile = null;
+}
+
 // ── RESPONSIVIDADE ──────────────────────────
-// ── BUSCA RÁPIDA NA SIDEBAR ──────────────────
+// ── BUSCA RÁPIDA NA SIDEBAR (chamados + menus admin) ─────
+const MENU_ITEMS = [
+  { label:'Dashboard',         icon:'📊', action:()=>adminNav('dashboard', document.getElementById('sb-dashboard')) },
+  { label:'Chamados',          icon:'📋', action:()=>adminNav('chamados', document.getElementById('sb-chamados')) },
+  { label:'Usuários',          icon:'👥', action:()=>adminNav('usuarios', document.getElementById('sb-usuarios')) },
+  { label:'Atendentes',        icon:'👤', action:()=>adminSubNav('atendentes', null) },
+  { label:'Categorias',        icon:'🗂️', action:()=>adminSubNav('categorias', null) },
+  { label:'Campos Personalizados', icon:'🧩', action:()=>adminSubNav('campos', null) },
+  { label:'Departamentos',     icon:'📍', action:()=>adminSubNav('areas', null) },
+  { label:'Organizações',      icon:'🏢', action:()=>adminSubNav('empresas', null) },
+  { label:'Avisos',            icon:'📢', action:()=>adminSubNav('avisos', null) },
+  { label:'Status',            icon:'📌', action:()=>adminSubNav('status', null) },
+  { label:'SLA',               icon:'⏰', action:()=>adminSubNav('sla', null) },
+  { label:'Horários',          icon:'🕒', action:()=>adminSubNav('horarios', null) },
+];
+
 function buscarSidebarChamados(q) {
   const results = document.getElementById('sb-search-results');
   if (!results) return;
   const term = q.trim().toLowerCase();
   if (!term || term.length < 2) { results.style.display='none'; return; }
-  const lista = (allChamados.length ? allChamados : allMeusChamados);
-  const found = lista.filter(c=>
+
+  // Buscar nos menus
+  const menuFound = MENU_ITEMS.filter(m => m.label.toLowerCase().includes(term));
+
+  // Buscar nos chamados
+  const lista = allChamados.length ? allChamados : allMeusChamados;
+  const chamadosFound = lista.filter(c=>
     (c.titulo||'').toLowerCase().includes(term) ||
     (c.ticket_num||'').toLowerCase().includes(term) ||
     (c.nome_solicitante||'').toLowerCase().includes(term) ||
     (c.categoria||'').toLowerCase().includes(term) ||
     (c.empresa||'').toLowerCase().includes(term)
-  ).slice(0,8);
+  ).slice(0,6);
 
-  if (!found.length) {
-    results.innerHTML = '<div style="padding:12px 14px;font-size:12px;color:rgba(160,160,200,.5);text-align:center;">Nenhum chamado encontrado</div>';
-    results.style.display='block';
-    return;
+  let html = '';
+
+  if (menuFound.length) {
+    html += `<div style="padding:6px 10px 3px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(160,160,200,.4);">Menus</div>`;
+    html += menuFound.map((m,i) => `
+      <div class="sb-result-item" onclick="executarBuscaMenu(${i},'${term}')" style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:14px;width:18px;text-align:center;">${m.icon}</span>
+        <span style="font-size:12px;color:#e0e0f0;font-weight:500;">${m.label}</span>
+        <svg style="margin-left:auto;opacity:.4;" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      </div>`).join('');
   }
 
-  results.innerHTML = found.map(c => {
-    const s = STATUS_MAP[c.status];
-    const cor = s?.cor || '#7a7a8c';
-    return `<div class="sb-result-item" onclick="abrirChamadoDaBusca('${c.id}')">
-      <div class="sb-result-ticket">#${c.ticket_num}</div>
-      <div class="sb-result-title">${c.titulo}</div>
-      <div class="sb-result-meta" style="display:flex;align-items:center;gap:6px;">
-        <span style="width:6px;height:6px;border-radius:50%;background:${cor};flex-shrink:0;"></span>
-        <span>${s?.nome||c.status}</span>
-        <span>·</span>
-        <span>${c.nome_solicitante||'—'}</span>
-      </div>
-    </div>`;
-  }).join('');
-  results.style.display='block';
+  if (chamadosFound.length) {
+    html += `<div style="padding:6px 10px 3px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(160,160,200,.4);${menuFound.length?'border-top:1px solid rgba(255,255,255,.05);margin-top:4px;':''}">Chamados</div>`;
+    html += chamadosFound.map(c => {
+      const s = STATUS_MAP[c.status];
+      const cor = s?.cor || '#7a7a8c';
+      return `<div class="sb-result-item" onclick="abrirChamadoDaBusca('${c.id}')">
+        <div class="sb-result-ticket">#${c.ticket_num}</div>
+        <div class="sb-result-title">${c.titulo}</div>
+        <div class="sb-result-meta" style="display:flex;align-items:center;gap:5px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:${cor};flex-shrink:0;"></span>
+          <span>${s?.nome||c.status} · ${c.nome_solicitante||'—'}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  if (!html) {
+    html = '<div style="padding:14px;font-size:12px;color:rgba(160,160,200,.5);text-align:center;">Nenhum resultado encontrado</div>';
+  }
+
+  results.innerHTML = html;
+  results.style.display = 'block';
 }
 
-function abrirChamadoDaBusca(id) {
-  // Fecha busca
+// Guarda referência às ações do menu para executar via índice
+function executarBuscaMenu(idx, term) {
+  const filtered = MENU_ITEMS.filter(m => m.label.toLowerCase().includes(term));
+  if (filtered[idx]) {
+    fecharBusca();
+    // Expande submenu se necessário
+    const adminMenu = document.getElementById('sb-admin-menu');
+    if (adminMenu && adminMenu.style.display === 'none') {
+      const arrow = document.getElementById('sb-config-arrow');
+      adminMenu.style.display = 'block';
+      if (arrow) arrow.textContent = '▼';
+    }
+    filtered[idx].action();
+  }
+}
+
+function fecharBusca() {
   const input = document.getElementById('sb-search-input');
   const results = document.getElementById('sb-search-results');
   if (input) input.value = '';
   if (results) results.style.display = 'none';
-  // Fecha sidebar no mobile
   if (window.innerWidth <= 768) toggleSidebar(false);
-  // Abre modal do chamado
+}
+
+function abrirChamadoDaBusca(id) {
+  fecharBusca();
   openModalDetalhe(id);
 }
 
-// Fechar busca ao clicar fora
 document.addEventListener('click', (e) => {
   const wrap = document.querySelector('.sb-search-wrap');
   const results = document.getElementById('sb-search-results');
