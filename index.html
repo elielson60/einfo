@@ -1908,17 +1908,6 @@ img { max-width: 100%; height: auto; }
 </div>
 
 <!-- MURAL DE AVISOS -->
-<div class="modal-overlay" id="modal-mural">
-  <div class="modal">
-    <button class="modal-close" onclick="closeMural()">✕</button>
-    <div class="modal-title">📢 Mural de Avisos</div>
-    <div id="mural-lista"></div>
-    <div style="display:flex;justify-content:flex-end;margin-top:14px;">
-      <button class="btn btn-primary" onclick="closeMural()">Entendi</button>
-    </div>
-  </div>
-</div>
-
 <!-- MODAL DETALHES -->
 <div class="modal-overlay" id="modal-detalhe">
   <div class="modal" style="max-width:640px;">
@@ -5300,14 +5289,16 @@ async function verificarMuralAvisos() {
     if (a.data_fim && hoje > a.data_fim) return false;
     return true;
   });
-  if (!ativos.length) return;
+  const banner = document.getElementById('mu-banner');
+  if (!ativos.length) { if (banner) banner.style.display = 'none'; return; }
 
-  document.getElementById('mural-lista').innerHTML = ativos.map(a => `
-    <div class="mural-card">
-      <h4>${a.titulo}</h4>
-      <p>${a.mensagem}</p>
-    </div>`).join('');
-  document.getElementById('modal-mural').classList.add('open');
+  if (banner) {
+    const primeiro = ativos[0];
+    banner.innerHTML = `
+      <span>📢 <strong>${primeiro.titulo}</strong> — ${primeiro.mensagem}</span>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mu-banner').style.display='none'">Ok, entendi</button>`;
+    banner.style.display = 'flex';
+  }
 }
 
 function closeMural() {
