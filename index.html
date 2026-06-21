@@ -457,6 +457,21 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .chk-wrap input[type="checkbox"]:checked + .chk-box::after{content:"✓";color:#fff;font-size:13px;font-weight:700;line-height:1;}
 .chk-wrap input[type="checkbox"]:disabled + .chk-box{opacity:.4;cursor:not-allowed;}
 
+/* ── TOGGLE SWITCH (estilo iOS/TomTicket) ── */
+.tgl-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.tgl-row:last-child{border-bottom:none;}
+.tgl-label{font-size:13px;color:rgba(210,212,230,.9);line-height:1.5;flex:1;}
+.tgl-label .tgl-info{display:inline-block;width:14px;height:14px;border-radius:50%;background:rgba(160,160,200,.15);color:rgba(160,160,200,.6);font-size:9px;text-align:center;line-height:14px;margin-left:5px;cursor:help;}
+.tgl-switch{position:relative;width:42px;height:24px;flex-shrink:0;}
+.tgl-switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:1;}
+.tgl-slider{position:absolute;inset:0;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.1);border-radius:24px;transition:all .25s;}
+.tgl-slider::before{content:"";position:absolute;width:18px;height:18px;left:2px;top:2px;background:#fff;border-radius:50%;transition:all .25s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.tgl-switch input:checked + .tgl-slider{background:linear-gradient(135deg,#5b8def,#7c6cf5);border-color:transparent;}
+.tgl-switch input:checked + .tgl-slider::before{transform:translateX(18px);}
+.tgl-switch input:disabled + .tgl-slider{opacity:.35;cursor:not-allowed;}
+.tgl-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#8ab4ff;margin:22px 0 6px;padding-bottom:6px;border-bottom:1px solid rgba(91,141,239,.2);}
+.tgl-section-title:first-child{margin-top:0;}
+
 /* ── DASHBOARD ATENDENTES ── */
 /* ── DASHBOARD GERAL FUTURÍSTICO ── */
 .dk-kpi{position:relative;background:rgba(255,255,255,0.04);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.09);border-radius:16px;padding:18px;overflow:hidden;transition:transform .2s,box-shadow .2s;}
@@ -1642,28 +1657,45 @@ img { max-width: 100%; height: auto; }
           <!-- ABA: Política de Chamados -->
           <div class="conta-tab" id="conta-tab-politica" style="display:none;">
             <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
-              <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📋 Política de Abertura de Chamados</div>
-              <div style="font-size:12px;color:var(--muted);margin-bottom:18px;">Regras aplicadas ao fluxo de chamados de toda a equipe.</div>
+              <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📋 Política de Acesso e Chamados</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Defina as políticas de acesso interno/externo para os chamados.</div>
 
-              <div class="field">
-                <label class="chk-wrap"><input type="checkbox" id="pol-permitir-cadastro" checked/><span class="chk-box"></span><span>Permitir que novos usuários se cadastrem livremente</span></label>
-              </div>
-              <div class="field">
-                <label class="chk-wrap"><input type="checkbox" id="pol-anexo-obrigatorio"/><span class="chk-box"></span><span>Exigir ao menos 1 anexo na abertura de chamados críticos</span></label>
-              </div>
-              <div class="field">
-                <label class="chk-wrap"><input type="checkbox" id="pol-avaliacao-obrigatoria"/><span class="chk-box"></span><span>Solicitar avaliação automaticamente ao encerrar um chamado</span></label>
-              </div>
-              <div class="field">
-                <label class="chk-wrap"><input type="checkbox" id="pol-notificar-atraso" checked/><span class="chk-box"></span><span>Notificar atendentes quando um chamado estiver próximo do vencimento do SLA</span></label>
-              </div>
+              <div class="tgl-section-title">Clientes</div>
+              <div class="tgl-row"><span class="tgl-label">Bloquear novos cadastros pelo painel do cliente</span><label class="tgl-switch"><input type="checkbox" id="pol-bloquear-cadastro"/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Apenas exibir nome do departamento no login do helpdesk</span><label class="tgl-switch"><input type="checkbox" id="pol-exibir-depto-login"/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Enviar avaliação ao solicitante após finalizar um chamado</span><label class="tgl-switch"><input type="checkbox" id="pol-avaliacao-email" checked/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Enviar avaliação ao solicitante após finalizar um chamado via WhatsApp</span><label class="tgl-switch"><input type="checkbox" id="pol-avaliacao-whatsapp" checked/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Apenas permitir abertura de chamados se não houver avaliações pendentes</span><label class="tgl-switch"><input type="checkbox" id="pol-bloquear-aval-pendente" checked/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Não exibir departamentos públicos caso o solicitante esteja vinculado num departamento privado</span><label class="tgl-switch"><input type="checkbox" id="pol-ocultar-deptos-publicos"/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Membros de uma organização podem visualizar chamados de outros membros</span><label class="tgl-switch"><input type="checkbox" id="pol-visualizar-chamados-org"/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Cliente poderá informar e-mail de cópia ao criar um chamado</span><label class="tgl-switch"><input type="checkbox" id="pol-email-copia"/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Cliente poderá visualizar detalhes do status no histórico do chamado no painel do cliente</span><label class="tgl-switch"><input type="checkbox" id="pol-detalhes-status-cliente" checked/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Apenas clientes aprovados podem acessar o painel de help desk</span><label class="tgl-switch"><input type="checkbox" id="pol-clientes-aprovados"/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Silenciar notificações de gerentes quando houver nova aprovação de clientes</span><label class="tgl-switch"><input type="checkbox" id="pol-silenciar-aprovacao"/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Cliente pode finalizar o chamado</span><label class="tgl-switch"><input type="checkbox" id="pol-cliente-finaliza" checked/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Cliente deve aprovar a finalização de chamados <span class="tgl-info" title="Requer confirmação do cliente antes de encerrar definitivamente">i</span></span><label class="tgl-switch"><input type="checkbox" id="pol-cliente-aprova-finalizacao" disabled/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Apenas permitir criação de novos chamados se não houver chamados pendentes de aprovação <span class="tgl-info" title="Disponível em planos avançados">i</span></span><label class="tgl-switch"><input type="checkbox" id="pol-bloquear-pendente-aprovacao" disabled/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Visualizar deadline em detalhes do chamado</span><label class="tgl-switch"><input type="checkbox" id="pol-visualizar-deadline" checked/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Exigir categoria na criação de chamado</span><label class="tgl-switch"><input type="checkbox" id="pol-exigir-categoria" checked/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Exibir link para base de conhecimento</span><label class="tgl-switch"><input type="checkbox" id="pol-exibir-base-conhecimento"/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Exibir notificações de resposta via Push no Painel do Cliente</span><label class="tgl-switch"><input type="checkbox" id="pol-push-resposta"/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Cliente pode definir a prioridade do chamado na abertura via Painel do Cliente</span><label class="tgl-switch"><input type="checkbox" id="pol-cliente-define-prioridade" checked/><span class="tgl-slider"></span></label></div>
 
+              <div class="tgl-section-title">Equipe Interna</div>
+              <div class="tgl-row"><span class="tgl-label">Notificar atendentes quando um chamado estiver próximo do vencimento do SLA</span><label class="tgl-switch"><input type="checkbox" id="pol-notificar-atraso" checked/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Exigir ao menos 1 anexo na abertura de chamados críticos</span><label class="tgl-switch"><input type="checkbox" id="pol-anexo-obrigatorio"/><span class="tgl-slider"></span></label></div>
+              <div class="tgl-row"><span class="tgl-label">Permitir que novos usuários se cadastrem livremente</span><label class="tgl-switch"><input type="checkbox" id="pol-permitir-cadastro" checked/><span class="tgl-slider"></span></label></div>
+
+              <div class="field" style="margin-top:18px;">
+                <label>Prazo em dias que chamados encerrados devem ser ignorados para avaliação obrigatória:</label>
+                <input type="number" id="pol-prazo-avaliacao" min="0" placeholder="10" style="max-width:160px;"/>
+              </div>
               <div class="field">
                 <label>Limite de chamados abertos simultâneos por usuário <span style="color:var(--dim);font-weight:400;">(0 = ilimitado)</span></label>
                 <input type="number" id="pol-limite-chamados" min="0" placeholder="0" style="max-width:160px;"/>
               </div>
 
-              <div style="margin-top:8px;">
+              <div style="margin-top:18px;">
                 <button class="btn btn-primary" onclick="salvarPolitica()">💾 Salvar política</button>
                 <p id="conta-politica-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Política salva com sucesso!</p>
               </div>
@@ -4547,11 +4579,12 @@ function preencherFormConta() {
   document.getElementById('conta-num-colaboradores').value = e.colaboradores || '';
 
   const p = CONTA_CONFIG.politica || {};
-  document.getElementById('pol-permitir-cadastro').checked = p.permitirCadastro !== false;
-  document.getElementById('pol-anexo-obrigatorio').checked = !!p.anexoObrigatorio;
-  document.getElementById('pol-avaliacao-obrigatoria').checked = !!p.avaliacaoObrigatoria;
-  document.getElementById('pol-notificar-atraso').checked = p.notificarAtraso !== false;
-  document.getElementById('pol-limite-chamados').value = p.limiteChamados || 0;
+  POLITICA_FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.checked = p[id] !== undefined ? p[id] : (el.defaultChecked);
+  });
+  document.getElementById('pol-prazo-avaliacao').value = p['pol-prazo-avaliacao'] ?? 10;
+  document.getElementById('pol-limite-chamados').value = p['pol-limite-chamados'] ?? 0;
 
   const n = CONTA_CONFIG.notificacoes || {};
   document.getElementById('notif-novo-chamado').checked = n.novoChamado !== false;
@@ -4564,6 +4597,15 @@ function preencherFormConta() {
   document.getElementById('conta-nome-sistema').value = a.nomeSistema || 'EliTicket';
   document.getElementById('conta-cor-destaque').value = a.corDestaque || '#5b8def';
 }
+
+// Lista de todos os toggles da política (lidos/salvos automaticamente pelo ID)
+const POLITICA_FIELD_IDS = [
+  'pol-bloquear-cadastro','pol-exibir-depto-login','pol-avaliacao-email','pol-avaliacao-whatsapp',
+  'pol-bloquear-aval-pendente','pol-ocultar-deptos-publicos','pol-visualizar-chamados-org','pol-email-copia',
+  'pol-detalhes-status-cliente','pol-clientes-aprovados','pol-silenciar-aprovacao','pol-cliente-finaliza',
+  'pol-visualizar-deadline','pol-exigir-categoria','pol-exibir-base-conhecimento','pol-push-resposta',
+  'pol-cliente-define-prioridade','pol-notificar-atraso','pol-anexo-obrigatorio','pol-permitir-cadastro'
+];
 
 async function persistirContaConfig() {
   await sb.from('configuracoes').upsert({ id:1, conta: CONTA_CONFIG, updated_at: new Date().toISOString() });
@@ -4587,13 +4629,14 @@ async function salvarDadosEmpresa() {
 }
 
 async function salvarPolitica() {
-  CONTA_CONFIG.politica = {
-    permitirCadastro: document.getElementById('pol-permitir-cadastro').checked,
-    anexoObrigatorio: document.getElementById('pol-anexo-obrigatorio').checked,
-    avaliacaoObrigatoria: document.getElementById('pol-avaliacao-obrigatoria').checked,
-    notificarAtraso: document.getElementById('pol-notificar-atraso').checked,
-    limiteChamados: parseInt(document.getElementById('pol-limite-chamados').value) || 0
-  };
+  const novaPolitica = {};
+  POLITICA_FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) novaPolitica[id] = el.checked;
+  });
+  novaPolitica['pol-prazo-avaliacao'] = parseInt(document.getElementById('pol-prazo-avaliacao').value) || 10;
+  novaPolitica['pol-limite-chamados'] = parseInt(document.getElementById('pol-limite-chamados').value) || 0;
+  CONTA_CONFIG.politica = novaPolitica;
   await persistirContaConfig();
   const msg = document.getElementById('conta-politica-msg');
   msg.style.display = 'block';
