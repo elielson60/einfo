@@ -2175,13 +2175,6 @@ function getAvaliacaoPendente() {
 }
 
 function irParaNovoChamado() {
-  const pendente = getAvaliacaoPendente();
-  if (pendente) {
-    showPage('meus-chamados');
-    showToast('Avalie seu chamado anterior antes de abrir um novo.','err');
-    setTimeout(()=>openModalAval(pendente.id), 300);
-    return;
-  }
   novoChamado();
   showPage('chamado');
   atualizarBotaoVoltar();
