@@ -88,6 +88,12 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 @media(max-width:1024px){.ch-layout{grid-template-columns:1fr;}.ch-sidebar-card{display:none;}}
 @media(max-width:900px){.ch-item{grid-template-columns:36px minmax(0,1fr) 90px 110px 72px !important;}.ch-cat-col,.ch-prio-col{display:none;}}@media(max-width:768px){.ch-kpis{grid-template-columns:repeat(2,1fr);}.ch-item{grid-template-columns:36px minmax(0,1fr) 90px 72px !important;}.ch-sla-col{display:none;}}
 
+/* ── FAB (Floating Action Button) mobile ── */
+.fab-novo-chamado{display:none;position:fixed;bottom:24px;right:20px;z-index:250;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#5b8def,#7c6cf5);color:#fff;border:none;align-items:center;justify-content:center;font-size:26px;cursor:pointer;box-shadow:0 8px 28px rgba(91,141,239,.5);transition:all .2s;}
+.fab-novo-chamado:active{transform:scale(.92);}
+@keyframes fabPulse{0%,100%{box-shadow:0 8px 28px rgba(91,141,239,.5);}50%{box-shadow:0 8px 28px rgba(91,141,239,.5),0 0 0 8px rgba(91,141,239,.12);}}
+.fab-novo-chamado{animation:fabPulse 2.4s ease-in-out infinite;}
+
 /* ── MEUS CHAMADOS (usuário) ── */
 .mu-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:#f5a623;}
 .mu-tabs{display:flex;gap:4px;margin-bottom:16px;background:rgba(255,255,255,.04);padding:4px;border-radius:10px;width:fit-content;}
@@ -257,7 +263,8 @@ textarea{resize:vertical;min-height:90px;line-height:1.6;}
 
 /* ── ADMIN LAYOUT ── */
 #page-admin.active{display:flex!important;flex-direction:row;min-height:calc(100vh - 56px);}
-.admin-layout{flex:1;min-width:0;display:flex;flex-direction:column;}
+.admin-layout{flex:1;min-width:0;display:flex;flex-direction:row;}
+#page-admin.active,#page-meus-chamados.active{display:flex!important;flex-direction:row;min-height:calc(100vh - 56px);}
 .admin-content{flex:1;padding:28px;min-width:0;overflow-y:auto;}
 #main-sidebar{flex-shrink:0;}
 .sidebar{width:220px;min-width:220px;flex-shrink:0;background:rgba(10,10,28,0.98);border-right:1px solid rgba(91,141,239,0.15);padding:16px 10px;display:flex;flex-direction:column;gap:2px;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;z-index:10;}
@@ -596,13 +603,17 @@ img { max-width: 100%; height: auto; }
    MOBILE — até 768px
    ══════════════════════ */
 @media (max-width:768px) {
+  /* FAB visível só no mobile, header button vira oculto */
+  .fab-novo-chamado { display:flex; }
+  #page-meus-chamados .ch-header .ch-new-btn { display:none; }
+
   /* Topbar */
   .topbar { padding:0 12px; height:52px; }
   .tb-name { display:none; }
   .sb-toggle { display:flex; }
 
-  /* Sidebar → drawer */
-  #page-admin .sidebar {
+  /* Sidebar → drawer (funciona em qualquer página: admin ou meus-chamados) */
+  .app-sidebar {
     position:fixed!important; top:0!important; left:0!important;
     height:100vh; transform:translateX(-100%);
     transition:transform .28s cubic-bezier(.4,0,.2,1);
@@ -611,7 +622,7 @@ img { max-width: 100%; height: auto; }
     box-shadow:4px 0 32px rgba(0,0,0,.6);
     z-index:300;
   }
-  #page-admin .sidebar.open { transform:translateX(0); }
+  .app-sidebar.open { transform:translateX(0); }
   #page-admin.active { flex-direction:row; }
   .admin-layout { flex:1; }
   .admin-content { padding:12px !important; }
@@ -683,6 +694,25 @@ img { max-width: 100%; height: auto; }
   /* Buttons */
   .btn-sm { padding:5px 10px; font-size:11px; }
   .btn-logout { font-size:11px; padding:5px 8px; }
+
+  /* ── MEUS CHAMADOS — mobile refinado ── */
+  #page-meus-chamados .admin-content { padding-bottom:90px; } /* espaço pro FAB não cobrir o último card */
+  #page-meus-chamados .ch-header { flex-direction:column; align-items:flex-start; gap:10px; margin-bottom:14px; }
+  #page-meus-chamados .ch-title { font-size:18px; letter-spacing:.04em; }
+  .mu-tabs { width:100%; }
+  .mu-tab { flex:1; text-align:center; }
+  #page-meus-chamados .ch-search-wrap { max-width:100% !important; width:100%; }
+  #page-meus-chamados .ch-search { width:100%; }
+  #tbl-meus .ch-item {
+    border-radius:14px;
+    margin-bottom:8px;
+    border:1px solid rgba(255,255,255,.06);
+    background:rgba(255,255,255,.02);
+    animation:itemSlideIn .35s ease both;
+  }
+  #tbl-meus .ch-item:last-child { border-bottom:1px solid rgba(255,255,255,.06); }
+  @keyframes itemSlideIn { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
+  .mu-banner { flex-direction:column; align-items:flex-start; gap:8px; }
 }
 
 /* ══════════════════════
@@ -1086,9 +1116,9 @@ img { max-width: 100%; height: auto; }
 <!-- ═══════════════════════════════════ PAGE: MEUS CHAMADOS ═══ -->
 <div class="page" id="page-meus-chamados">
   <div class="admin-layout">
-    <div class="sidebar">
+    <div class="sidebar app-sidebar" id="meus-sidebar">
       <span class="sb-section">Meu painel</span>
-      <button class="sb-btn active" id="sb-meus-chamados" onclick="showPage('meus-chamados');loadMeusChamados();"><span class="sb-icon">📋</span> Meus chamados</button>
+      <button class="sb-btn active" id="sb-meus-chamados" onclick="showPage('meus-chamados');loadMeusChamados();toggleSidebar(false);"><span class="sb-icon">📋</span> Meus chamados</button>
       <span class="sb-section">Ações</span>
       <button class="sb-btn" onclick="irParaNovoChamado()"><span class="sb-icon">➕</span> Novo chamado</button>
     </div>
@@ -1144,12 +1174,15 @@ img { max-width: 100%; height: auto; }
 
     </div>
   </div>
+
+  <!-- FAB mobile: Novo chamado -->
+  <button class="fab-novo-chamado" id="fab-meus-chamados" onclick="irParaNovoChamado()" aria-label="Novo chamado" title="Novo chamado">+</button>
 </div>
 
 <!-- ═══════════════════════════════════ PAGE: ADMIN ═══ -->
 <div class="page" id="page-admin">
     <!-- SIDEBAR -->
-    <div class="sidebar" id="main-sidebar" style="display:none;">
+    <div class="sidebar app-sidebar" id="main-sidebar" style="display:none;">
       <!-- Busca rápida -->
       <div class="sb-search-wrap">
         <svg class="sb-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -3475,19 +3508,20 @@ function renderMeusChamados(list) {
   const prioColor = {critico:'#f05a5a',alto:'#f5a623',medio:'#5b8def',baixo:'#2fd89a'};
   const prioLabel = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
 
-  tb.innerHTML = list.map(c => {
+  tb.innerHTML = list.map((c, idx) => {
     const ini = getInitials(c.titulo);
     const avatarBg = avatarColor(c.titulo||'');
     const pColor = prioColor[c.prioridade] || 'var(--muted)';
     const pLabel = prioLabel[c.prioridade] || c.prioridade || '—';
     const dt = c.criado_em ? new Date(c.criado_em).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
     const sla = slaInfo(c);
+    const delay = Math.min(idx * 40, 320);
 
     const avalBadge = c.status==='resolvido' && !c.avaliacao
       ? `<button class="ch-action-btn" onclick="event.stopPropagation();openModalAval('${c.id}')" title="Avaliar atendimento" style="color:#fbbf24;border-color:rgba(245,158,11,.4);">⭐</button>`
       : c.avaliacao ? `<span style="font-size:11px;color:#fbbf24;white-space:nowrap;">⭐ ${JSON.parse(c.avaliacao).nota}/5</span>` : '';
 
-    return `<div class="ch-item" onclick="openModalDetalhe('${c.id}')">
+    return `<div class="ch-item" style="animation-delay:${delay}ms" onclick="openModalDetalhe('${c.id}')">
       <div class="ch-avatar" style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,${avatarBg},${avatarBg}99);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;">${ini}</div>
       <div class="ch-info" style="min-width:0;">
         <div class="ch-titulo">${c.titulo}</div>
@@ -5601,7 +5635,9 @@ document.addEventListener('click', (e) => {
 });
 
 function toggleSidebar(force) {
-  const sidebar = document.querySelector('#page-admin .sidebar, .sidebar');
+  // Busca a sidebar dentro da página atualmente ativa (admin OU meus-chamados)
+  const activePage = document.querySelector('.page.active');
+  const sidebar = activePage ? activePage.querySelector('.app-sidebar') : document.querySelector('.app-sidebar');
   const overlay = document.getElementById('sb-overlay');
   const toggle  = document.getElementById('sb-toggle');
   if (!sidebar) return;
