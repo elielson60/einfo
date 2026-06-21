@@ -88,6 +88,34 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 @media(max-width:1024px){.ch-layout{grid-template-columns:1fr;}.ch-sidebar-card{display:none;}}
 @media(max-width:900px){.ch-item{grid-template-columns:36px minmax(0,1fr) 90px 110px 72px !important;}.ch-cat-col,.ch-prio-col{display:none;}}@media(max-width:768px){.ch-kpis{grid-template-columns:repeat(2,1fr);}.ch-item{grid-template-columns:36px minmax(0,1fr) 90px 72px !important;}.ch-sla-col{display:none;}}
 
+/* ── MODAL DETALHE — estilo TomTicket ── */
+.det-modal{padding-top:24px;}
+.det-header-row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.08);}
+.det-titulo-wrap{flex:1;min-width:0;}
+.det-titulo-wrap .modal-title{font-size:18px;}
+.det-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.det-btn-finalizar{background:linear-gradient(135deg,#2fd89a,#22b87f);color:#fff;border:none;font-weight:700;padding:8px 16px;box-shadow:0 4px 14px rgba(47,216,154,.3);}
+.det-btn-finalizar:hover{filter:brightness(1.08);}
+.det-mais-wrap{position:relative;}
+.det-mais-btn{font-weight:600;}
+.det-mais-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;width:200px;background:rgba(10,10,28,.98);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);border-radius:12px;box-shadow:0 16px 44px rgba(0,0,0,.6);z-index:50;overflow:hidden;padding:6px;}
+.det-mais-menu.open{display:block;}
+.det-mais-menu button{display:block;width:100%;text-align:left;padding:9px 12px;background:none;border:none;color:rgba(200,200,220,.85);font-family:var(--sans);font-size:13px;cursor:pointer;border-radius:8px;transition:background .15s;}
+.det-mais-menu button:hover{background:rgba(91,141,239,.12);color:#e0e0f0;}
+.det-mais-divider{height:1px;background:rgba(255,255,255,.08);margin:5px 4px;}
+
+/* Comentários estilo conversa */
+.det-comment{display:flex;gap:10px;margin-bottom:14px;}
+.det-comment-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.det-comment-body{flex:1;min-width:0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:10px 14px;}
+.det-comment-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px;flex-wrap:wrap;}
+.det-comment-author{font-size:12.5px;font-weight:700;color:#e0e0f0;}
+.det-comment-date{font-size:10.5px;color:rgba(160,160,200,.5);white-space:nowrap;}
+.det-comment-text{font-size:13px;color:rgba(220,220,235,.9);line-height:1.6;white-space:pre-wrap;}
+.det-comment.staff .det-comment-body{background:rgba(91,141,239,.08);border-color:rgba(91,141,239,.2);}
+.det-reply-box{display:flex;gap:8px;align-items:flex-end;}
+.det-reply-box textarea{resize:none;font-family:var(--sans);}
+
 /* ── FAB (Floating Action Button) mobile ── */
 .fab-novo-chamado{display:none;position:fixed;bottom:24px;right:20px;z-index:250;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#5b8def,#7c6cf5);color:#fff;border:none;align-items:center;justify-content:center;font-size:26px;cursor:pointer;box-shadow:0 8px 28px rgba(91,141,239,.5);transition:all .2s;}
 .fab-novo-chamado:active{transform:scale(.92);}
@@ -680,6 +708,14 @@ img { max-width: 100%; height: auto; }
     max-height:92vh; overflow-y:auto; padding:20px;
   }
   .campo-tab-btn { font-size:11px; padding:8px 9px; }
+
+  /* Modal Detalhe — mobile */
+  .det-header-row { flex-direction:column; align-items:stretch; gap:10px; }
+  .det-titulo-wrap .modal-title { font-size:16px; }
+  .det-actions { justify-content:flex-end; }
+  .det-mais-menu { right:0; left:auto; }
+  .det-reply-box { flex-direction:column; align-items:stretch; }
+  .det-reply-box .btn { width:100%; }
 
   /* Auth */
   .auth-card { padding:22px 16px; }
@@ -1943,25 +1979,57 @@ img { max-width: 100%; height: auto; }
 <!-- MURAL DE AVISOS -->
 <!-- MODAL DETALHES -->
 <div class="modal-overlay" id="modal-detalhe">
-  <div class="modal" style="max-width:640px;">
+  <div class="modal det-modal" style="max-width:720px;">
     <button class="modal-close" onclick="closeModalDetalhe()">✕</button>
-    <div class="modal-title" id="det-titulo">—</div>
-    <div id="det-info" style="font-size:13px;color:var(--muted);margin-bottom:6px;line-height:1.8;"></div>
-    <div id="det-sla" style="margin-bottom:14px;"></div>
-    <div id="det-desc" style="font-size:13px;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-bottom:14px;white-space:pre-wrap;line-height:1.6;"></div>
-    <div id="det-anexos" style="margin-bottom:14px;"></div>
 
-    <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:10px;">
-      <div style="font-size:13px;font-weight:500;margin-bottom:10px;">💬 Comentários / Tratativas</div>
-      <div id="det-comentarios" style="max-height:220px;overflow-y:auto;margin-bottom:10px;"></div>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="det-novo-comentario" placeholder="Escreva uma resposta..." onkeydown="if(event.key==='Enter')addComentario()"/>
-        <button class="btn btn-primary btn-sm" onclick="addComentario()">Enviar</button>
+    <!-- Barra de prazo (SLA) -->
+    <div id="det-prazo-bar" style="display:none;margin-bottom:14px;">
+      <div id="det-prazo-label" style="font-size:12px;color:rgba(180,185,220,.75);margin-bottom:6px;"></div>
+      <div style="height:6px;background:rgba(255,255,255,.07);border-radius:10px;overflow:hidden;">
+        <div id="det-prazo-fill" style="height:100%;border-radius:10px;transition:width .5s;"></div>
       </div>
     </div>
 
-    <div style="display:flex;gap:10px;margin-top:18px;">
-      <button class="btn btn-ghost" onclick="imprimirChamado()">🖨️ Imprimir</button>
+    <!-- Header: título + ações (estilo TomTicket) -->
+    <div class="det-header-row">
+      <div class="det-titulo-wrap">
+        <div class="modal-title" id="det-titulo" style="margin-bottom:4px;">—</div>
+        <div id="det-status-inline"></div>
+      </div>
+      <div class="det-actions" id="det-actions-staff" style="display:none;">
+        <div class="det-mais-wrap">
+          <button class="btn btn-ghost btn-sm det-mais-btn" onclick="toggleDetMaisMenu()">☰ Mais <span style="font-size:9px;">▾</span></button>
+          <div class="det-mais-menu" id="det-mais-menu">
+            <button onclick="acaoDetalhe('excluir')">🗑️ Excluir</button>
+            <button onclick="acaoDetalhe('cancelar')">✕ Cancelar chamado</button>
+            <button onclick="imprimirChamado()">🖨️ Imprimir</button>
+            <div class="det-mais-divider"></div>
+            <button onclick="acaoDetalhe('status')">🔁 Alterar status...</button>
+            <button onclick="acaoDetalhe('transferir')">🔀 Transferir...</button>
+          </div>
+        </div>
+        <button class="btn btn-sm det-btn-finalizar" onclick="acaoDetalhe('finalizar')">✓ Finalizar</button>
+      </div>
+    </div>
+
+    <!-- Info grid -->
+    <div id="det-info" style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.8;"></div>
+
+    <!-- Descrição -->
+    <div id="det-desc" style="font-size:13px;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-bottom:14px;white-space:pre-wrap;line-height:1.6;"></div>
+    <div id="det-anexos" style="margin-bottom:14px;"></div>
+
+    <!-- Comentários estilo conversa -->
+    <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:#e0e0f0;">💬 Comentários / Tratativas</div>
+      <div id="det-comentarios" style="max-height:280px;overflow-y:auto;margin-bottom:12px;padding-right:4px;"></div>
+      <div class="det-reply-box">
+        <textarea id="det-novo-comentario" placeholder="Escreva uma resposta..." rows="2" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addComentario();}"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="addComentario()">↩ Responder</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:14px;">
       <button class="btn btn-ghost" onclick="closeModalDetalhe()">Fechar</button>
     </div>
   </div>
@@ -4293,16 +4361,59 @@ function openModalDetalhe(id) {
   currentDetalhe = c;
 
   const prioL = {critico:'🔴 Crítico',alto:'🟠 Alto',medio:'🔵 Médio',baixo:'🟢 Baixo'};
-    const dataAbertura = new Date(c.criado_em).toLocaleString('pt-BR');
+  const dataAbertura = new Date(c.criado_em).toLocaleString('pt-BR');
 
-  document.getElementById('det-titulo').textContent = `[${c.ticket_num}] ${c.titulo}`;
+  document.getElementById('det-titulo').textContent = `#${c.ticket_num} — ${c.titulo}`;
+  document.getElementById('det-status-inline').innerHTML = statusBadgeHtml(c.status);
+
   document.getElementById('det-info').innerHTML = `
     <div><strong style="color:var(--text)">Solicitante:</strong> ${c.nome_solicitante||'—'}</div>
     <div><strong style="color:var(--text)">Empresa:</strong> ${c.empresa||'—'} &nbsp;·&nbsp; <strong style="color:var(--text)">Departamento:</strong> ${c.departamento||'—'}</div>
     <div><strong style="color:var(--text)">Categoria:</strong> ${c.categoria||'—'} &nbsp;·&nbsp; <strong style="color:var(--text)">Prioridade:</strong> ${prioL[c.prioridade]||c.prioridade}</div>
-    <div><strong style="color:var(--text)">Status:</strong> ${statusLabel(c.status)} &nbsp;·&nbsp; <strong style="color:var(--text)">Aberto em:</strong> ${dataAbertura}</div>
+    <div><strong style="color:var(--text)">Aberto em:</strong> ${dataAbertura}</div>
   `;
-  document.getElementById('det-sla').innerHTML = slaInfo(c).html;
+
+  // Barra de prazo (SLA), estilo TomTicket
+  const prazoBar = document.getElementById('det-prazo-bar');
+  const prazoLabel = document.getElementById('det-prazo-label');
+  const prazoFill = document.getElementById('det-prazo-fill');
+  if (c.status !== 'resolvido') {
+    const cfg = SLA_CONFIG[c.prioridade] || {resolucao:24};
+    const horas = cfg.resolucao || 24;
+    const criado = new Date(c.criado_em);
+    const prazo = new Date(criado.getTime() + horas*3600000);
+    const agora = new Date();
+    const totalMs = prazo - criado;
+    const passadoMs = agora - criado;
+    const pct = Math.max(0, Math.min(100, (passadoMs/totalMs)*100));
+    const restanteH = (prazo - agora) / 3600000;
+    let cor = '#2fd89a';
+    let texto = '';
+    if (restanteH < 0) {
+      cor = '#f05a5a';
+      const atrasoH = Math.abs(restanteH);
+      texto = `⚠️ Prazo vencido há ${atrasoH<24?Math.round(atrasoH)+'h':Math.round(atrasoH/24)+'d'}`;
+    } else if (restanteH < horas*0.25) {
+      cor = '#f5a623';
+      texto = `Faltam ${restanteH<1?Math.round(restanteH*60)+'min':Math.round(restanteH)+'h'} para o prazo`;
+    } else {
+      texto = `Faltam ${restanteH<24?Math.round(restanteH)+'h':Math.round(restanteH/24)+' dias'} para encerrar o prazo`;
+    }
+    prazoLabel.textContent = texto;
+    prazoLabel.style.color = cor;
+    prazoFill.style.width = pct + '%';
+    prazoFill.style.background = cor;
+    prazoFill.style.boxShadow = `0 0 8px ${cor}88`;
+    prazoBar.style.display = 'block';
+  } else {
+    prazoBar.style.display = 'none';
+  }
+
+  // Botões de ação só para staff (admin/atendente)
+  const isStaff = currentPerfil && isStaffRole(currentPerfil.role);
+  document.getElementById('det-actions-staff').style.display = isStaff ? 'flex' : 'none';
+  document.getElementById('det-mais-menu').classList.remove('open');
+
   document.getElementById('det-desc').textContent = c.descricao || '';
 
   const anexosDiv = document.getElementById('det-anexos');
@@ -4322,6 +4433,48 @@ function openModalDetalhe(id) {
   document.getElementById('modal-detalhe').classList.add('open');
 }
 
+// ── MENU "MAIS" (estilo TomTicket) ──
+function toggleDetMaisMenu() {
+  document.getElementById('det-mais-menu').classList.toggle('open');
+}
+document.addEventListener('click', (e) => {
+  const wrap = document.querySelector('.det-mais-wrap');
+  const menu = document.getElementById('det-mais-menu');
+  if (wrap && menu && !wrap.contains(e.target)) menu.classList.remove('open');
+});
+
+async function acaoDetalhe(tipo) {
+  document.getElementById('det-mais-menu').classList.remove('open');
+  if (!currentDetalhe) return;
+  const id = currentDetalhe.id;
+
+  if (tipo === 'finalizar') {
+    if (!confirm('Finalizar este chamado? O status será alterado para Resolvido.')) return;
+    await sb.from('chamados').update({status:'resolvido', atualizado_em:new Date().toISOString()}).eq('id', id);
+    showToast('Chamado finalizado!','ok');
+    closeModalDetalhe();
+    loadChamados();
+  } else if (tipo === 'cancelar') {
+    if (!confirm('Cancelar este chamado?')) return;
+    const cancelKey = STATUS_LIST.find(s=>s.chave==='cancelado') ? 'cancelado' : 'resolvido';
+    await sb.from('chamados').update({status:cancelKey, atualizado_em:new Date().toISOString()}).eq('id', id);
+    showToast('Chamado cancelado!','ok');
+    closeModalDetalhe();
+    loadChamados();
+  } else if (tipo === 'excluir') {
+    if (!confirm('Excluir este chamado permanentemente? Esta ação não pode ser desfeita.')) return;
+    await sb.from('chamados').delete().eq('id', id);
+    showToast('Chamado excluído!','ok');
+    closeModalDetalhe();
+    loadChamados();
+  } else if (tipo === 'status') {
+    closeModalDetalhe();
+    openModal(id, currentDetalhe.status);
+  } else if (tipo === 'transferir') {
+    showToast('Função de transferência em breve.','ok');
+  }
+}
+
 function closeModalDetalhe() {
   document.getElementById('modal-detalhe').classList.remove('open');
   currentDetalhe = null;
@@ -4329,15 +4482,23 @@ function closeModalDetalhe() {
 
 function renderComentarios(lista) {
   const div = document.getElementById('det-comentarios');
-  if (!lista.length) { div.innerHTML = '<p style="font-size:12px;color:var(--dim);text-align:center;padding:10px;">Nenhum comentário ainda.</p>'; return; }
-  div.innerHTML = lista.map(c => `
-    <div class="comment-item">
-      <div class="comment-head">
-        <span class="comment-author">${c.autor==='admin'?'🛠️ Suporte TI':(c.nome||'Usuário')}</span>
-        <span class="comment-date">${new Date(c.data).toLocaleString('pt-BR')}</span>
+  if (!lista.length) { div.innerHTML = '<p style="font-size:12px;color:var(--dim);text-align:center;padding:14px;">Nenhum comentário ainda. Seja o primeiro a responder.</p>'; return; }
+  div.innerHTML = lista.map(c => {
+    const isStaff = c.autor === 'admin';
+    const nomeExibido = isStaff ? (c.nome || 'Suporte TI') : (c.nome || 'Usuário');
+    const ini = getInitials(nomeExibido);
+    const avatarBg = isStaff ? 'linear-gradient(135deg,#5b8def,#7c6cf5)' : `linear-gradient(135deg,${avatarColor(nomeExibido)},${avatarColor(nomeExibido)}99)`;
+    return `<div class="det-comment ${isStaff?'staff':''}">
+      <div class="det-comment-avatar" style="background:${avatarBg};">${ini}</div>
+      <div class="det-comment-body">
+        <div class="det-comment-head">
+          <span class="det-comment-author">${isStaff?'🛠️ ':''}${nomeExibido}${isStaff?' <span style="font-size:9px;color:#8ab4ff;font-weight:600;">· Suporte</span>':''}</span>
+          <span class="det-comment-date">${new Date(c.data).toLocaleString('pt-BR')}</span>
+        </div>
+        <div class="det-comment-text">${c.texto}</div>
       </div>
-      <div class="comment-text">${c.texto}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   div.scrollTop = div.scrollHeight;
 }
 
