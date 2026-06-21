@@ -2482,11 +2482,39 @@ let selectedPrio = '';
 async function init() {
   await loadCadastrosLists();
   popularSelectRempresa();
+  await aplicarPoliticaCadastroLogin();
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     await loadPerfil(session.user);
   }
 }
+
+// Verifica se o cadastro está bloqueado pela política da conta e ajusta a tela de login
+async function aplicarPoliticaCadastroLogin() {
+  try {
+    const { data } = await sb.from('configuracoes').select('conta').eq('id',1).single();
+    const bloqueado = data?.conta?.politica?.['pol-bloquear-cadastro'] === true;
+    CADASTRO_BLOQUEADO = bloqueado;
+
+    const tabRegister = document.getElementById('et-tab-register');
+    const linkCriarConta = document.getElementById('et-link-criar-conta');
+    if (bloqueado) {
+      if (tabRegister) tabRegister.style.display = 'none';
+      if (linkCriarConta) linkCriarConta.style.display = 'none';
+      // Garante que a tela de login não fique travada na aba de cadastro
+      if (document.getElementById('tab-register')?.style.display === 'block') {
+        switchAuthTab('login');
+      }
+    } else {
+      if (tabRegister) tabRegister.style.display = '';
+      if (linkCriarConta) linkCriarConta.style.display = '';
+    }
+  } catch (e) {
+    // Se a tabela não estiver acessível publicamente, mantém o cadastro liberado por padrão
+    CADASTRO_BLOQUEADO = false;
+  }
+}
+let CADASTRO_BLOQUEADO = false;
 
 function popularSelectRempresa() {
   const sel = document.getElementById('r-empresa');
@@ -2655,14 +2683,22 @@ async function doLogin() {
 
 // ── REGISTER ─────────────────────────────────
 async function doRegister() {
+  const err = document.getElementById('reg-err');
+  const ok = document.getElementById('reg-ok');
+
+  // Trava de segurança: revalida a política antes de criar a conta (evita bypass via console)
+  if (CADASTRO_BLOQUEADO) {
+    err.textContent = 'O cadastro de novas contas está desabilitado. Entre em contato com o administrador.';
+    err.style.display = 'block';
+    return;
+  }
+
   const nome = document.getElementById('r-nome').value.trim();
   const empresa = document.getElementById('r-empresa').value;
   const telefone = document.getElementById('r-ramal').value.trim();
   const email = document.getElementById('r-email').value.trim();
   const senha = document.getElementById('r-senha').value;
   const senha2 = document.getElementById('r-senha2').value;
-  const err = document.getElementById('reg-err');
-  const ok = document.getElementById('reg-ok');
   const btn = document.getElementById('btn-reg');
 
   err.style.display = 'none'; ok.style.display = 'none';
@@ -4638,6 +4674,7 @@ async function salvarPolitica() {
   novaPolitica['pol-limite-chamados'] = parseInt(document.getElementById('pol-limite-chamados').value) || 0;
   CONTA_CONFIG.politica = novaPolitica;
   await persistirContaConfig();
+  CADASTRO_BLOQUEADO = novaPolitica['pol-bloquear-cadastro'] === true;
   const msg = document.getElementById('conta-politica-msg');
   msg.style.display = 'block';
   setTimeout(()=>msg.style.display='none', 3000);
