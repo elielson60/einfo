@@ -2000,15 +2000,17 @@ img { max-width: 100%; height: auto; }
         <div class="det-mais-wrap">
           <button class="btn btn-ghost btn-sm det-mais-btn" onclick="toggleDetMaisMenu()">☰ Mais <span style="font-size:9px;">▾</span></button>
           <div class="det-mais-menu" id="det-mais-menu">
-            <button onclick="acaoDetalhe('excluir')">🗑️ Excluir</button>
-            <button onclick="acaoDetalhe('cancelar')">✕ Cancelar chamado</button>
-            <button onclick="imprimirChamado()">🖨️ Imprimir</button>
-            <div class="det-mais-divider"></div>
+            <button onclick="acaoDetalhe('editar')">✎ Editar chamado</button>
             <button onclick="acaoDetalhe('status')">🔁 Alterar status...</button>
-            <button onclick="acaoDetalhe('transferir')">🔀 Transferir...</button>
+            <button onclick="acaoDetalhe('escalonar')">🔀 Escalonar para atendente...</button>
+            <button onclick="acaoDetalhe('log')">📜 Log de alterações</button>
+            <div class="det-mais-divider"></div>
+            <button onclick="imprimirChamado()">🖨️ Imprimir</button>
+            <button onclick="acaoDetalhe('cancelar')">✕ Cancelar chamado</button>
+            <button onclick="acaoDetalhe('excluir')" style="color:#ff8888;">🗑️ Excluir</button>
           </div>
         </div>
-        <button class="btn btn-sm det-btn-finalizar" onclick="acaoDetalhe('finalizar')">✓ Finalizar</button>
+        <button class="btn btn-sm det-btn-finalizar" id="det-btn-encerrar" onclick="acaoDetalhe('encerrar')">✓ Encerrar Chamado</button>
       </div>
     </div>
 
@@ -2131,11 +2133,12 @@ img { max-width: 100%; height: auto; }
   </div>
 </div>
 
-<!-- MODAL STATUS -->
+<!-- MODAL STATUS (informativo — não encerra o chamado) -->
 <div class="modal-overlay" id="modal-status">
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">✕</button>
-    <div class="modal-title">Atualizar chamado</div>
+    <div class="modal-title">🔁 Alterar status</div>
+    <p style="font-size:12px;color:rgba(180,185,220,.7);margin-bottom:14px;line-height:1.6;">Atualiza a etapa exibida ao solicitante. Isso <strong>não encerra</strong> o chamado — use "Encerrar Chamado" para finalizar.</p>
     <input type="hidden" id="modal-id"/>
     <div class="field">
       <label>Status</label>
@@ -2144,6 +2147,81 @@ img { max-width: 100%; height: auto; }
     <div style="display:flex;gap:10px;margin-top:20px;">
       <button class="btn btn-primary" onclick="salvarStatus()">Salvar</button>
       <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ESCALONAR -->
+<div class="modal-overlay" id="modal-escalonar">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modal-escalonar').classList.remove('open')">✕</button>
+    <div class="modal-title">🔀 Escalonar chamado</div>
+    <p style="font-size:12px;color:rgba(180,185,220,.7);margin-bottom:14px;line-height:1.6;">Transfere este chamado para outro atendente, mantendo todo o histórico de tratativas.</p>
+    <input type="hidden" id="esc-chamado-id"/>
+    <div class="field">
+      <label>Atendente de destino <span class="req">*</span></label>
+      <select id="esc-atendente-select"><option value="">Selecionar...</option></select>
+    </div>
+    <div class="field">
+      <label>Motivo do escalonamento <span style="color:var(--dim);font-weight:400;">(opcional)</span></label>
+      <textarea id="esc-motivo" placeholder="Ex: Necessita de acesso a infraestrutura de rede..." style="min-height:70px;"></textarea>
+    </div>
+    <p id="esc-err" style="font-size:12px;color:#ff8888;margin-bottom:8px;display:none;"></p>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-primary" onclick="confirmarEscalonar()">🔀 Escalonar</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-escalonar').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR CHAMADO -->
+<div class="modal-overlay" id="modal-editar-chamado">
+  <div class="modal" style="max-width:560px;">
+    <button class="modal-close" onclick="document.getElementById('modal-editar-chamado').classList.remove('open')">✕</button>
+    <div class="modal-title">✎ Editar chamado</div>
+    <input type="hidden" id="edt-chamado-id"/>
+    <div class="field">
+      <label>Assunto <span class="req">*</span></label>
+      <input type="text" id="edt-titulo"/>
+    </div>
+    <div class="field">
+      <label>Descrição</label>
+      <textarea id="edt-descricao" style="min-height:90px;"></textarea>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label>Categoria</label>
+        <select id="edt-categoria"></select>
+      </div>
+      <div class="field">
+        <label>Departamento</label>
+        <select id="edt-departamento"></select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Prioridade</label>
+      <select id="edt-prioridade">
+        <option value="critico">🔴 Crítico</option>
+        <option value="alto">🟠 Alto</option>
+        <option value="medio">🔵 Médio</option>
+        <option value="baixo">🟢 Baixo</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <button class="btn btn-primary" onclick="salvarEdicaoChamado()">💾 Salvar alterações</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-editar-chamado').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LOG DE ALTERAÇÕES -->
+<div class="modal-overlay" id="modal-log">
+  <div class="modal" style="max-width:540px;">
+    <button class="modal-close" onclick="document.getElementById('modal-log').classList.remove('open')">✕</button>
+    <div class="modal-title">📜 Log de alterações</div>
+    <div id="log-lista" style="max-height:400px;overflow-y:auto;"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:14px;">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-log').classList.remove('open')">Fechar</button>
     </div>
   </div>
 </div>
@@ -3305,7 +3383,6 @@ function renderChamados(list) {
       <div style="min-width:0;">${statusBadgeHtml(c.status)}</div>
       <div class="ch-actions" onclick="event.stopPropagation()" style="display:flex;gap:4px;justify-content:flex-end;flex-shrink:0;">
         <button class="ch-action-btn" onclick="openModalDetalhe('${c.id}')" title="Ver detalhes">👁</button>
-        <button class="ch-action-btn" onclick="openModal('${c.id}','${c.status}')" title="Alterar status">✎</button>
       </div>
     </div>`;
   }).join('');
@@ -3483,12 +3560,19 @@ function closeModal() { document.getElementById('modal-status').classList.remove
 async function salvarStatus() {
   const id = document.getElementById('modal-id').value;
   const status = document.getElementById('modal-status-val').value;
-  await sb.from('chamados').update({status, atualizado_em: new Date().toISOString()}).eq('id',id);
+  const ticket = allChamados.find(c=>c.id===id) || currentDetalhe;
+  const statusAnterior = ticket ? statusLabel(ticket.status) : '—';
+
+  // Registra log da mudança de status (apenas informativo, não encerra o chamado)
+  if (ticket) {
+    await registrarLog(ticket, 'status', `Status alterado de "${statusAnterior}" para "${statusLabel(status)}".`);
+  }
+
+  await sb.from('chamados').update({status, atualizado_em: new Date().toISOString(), comentarios: ticket?.comentarios}).eq('id',id);
   closeModal();
-  showToast('Status atualizado!','ok');
+  showToast('Status atualizado para informar o solicitante!','ok');
 
   // notificar usuário por e-mail
-  const ticket = allChamados.find(c=>c.id===id);
   if (ticket) {
     const { data: perfil } = await sb.from('perfis').select('email,nome').eq('id', ticket.usuario_id).single();
     if (perfil?.email) {
@@ -4443,35 +4527,67 @@ document.addEventListener('click', (e) => {
   if (wrap && menu && !wrap.contains(e.target)) menu.classList.remove('open');
 });
 
+// Registra um evento de sistema no histórico do chamado (log de alterações)
+async function registrarLog(chamado, acao, detalhe) {
+  const evento = {
+    autor: 'sistema',
+    nome: currentPerfil?.nome || 'Sistema',
+    tipo: 'log',
+    acao,
+    texto: detalhe,
+    data: new Date().toISOString()
+  };
+  const novosComentarios = [...(chamado.comentarios || []), evento];
+  await sb.from('chamados').update({ comentarios: novosComentarios }).eq('id', chamado.id);
+  chamado.comentarios = novosComentarios;
+  return novosComentarios;
+}
+
 async function acaoDetalhe(tipo) {
   document.getElementById('det-mais-menu').classList.remove('open');
   if (!currentDetalhe) return;
-  const id = currentDetalhe.id;
+  const c = currentDetalhe;
+  const id = c.id;
 
-  if (tipo === 'finalizar') {
-    if (!confirm('Finalizar este chamado? O status será alterado para Resolvido.')) return;
-    await sb.from('chamados').update({status:'resolvido', atualizado_em:new Date().toISOString()}).eq('id', id);
-    showToast('Chamado finalizado!','ok');
+  if (tipo === 'encerrar') {
+    // Ação FINAL e definitiva — diferente de "status", fecha o chamado de vez
+    if (!confirm('Encerrar este chamado?\n\nEsta é a ação final de conclusão do atendimento. O solicitante será notificado.')) return;
+    await registrarLog(c, 'encerramento', `Chamado encerrado por ${currentPerfil?.nome || 'staff'}.`);
+    await sb.from('chamados').update({status:'resolvido', atualizado_em:new Date().toISOString(), comentarios:c.comentarios}).eq('id', id);
+    showToast('Chamado encerrado!','ok');
+    const { data: perfil } = await sb.from('perfis').select('email,nome').eq('id', c.usuario_id).single();
+    if (perfil?.email) enviarEmailNotificacao(perfil.email, perfil.nome, c.ticket_num, c.titulo, 'Seu chamado foi encerrado pelo suporte técnico.');
     closeModalDetalhe();
     loadChamados();
+
   } else if (tipo === 'cancelar') {
     if (!confirm('Cancelar este chamado?')) return;
     const cancelKey = STATUS_LIST.find(s=>s.chave==='cancelado') ? 'cancelado' : 'resolvido';
-    await sb.from('chamados').update({status:cancelKey, atualizado_em:new Date().toISOString()}).eq('id', id);
+    await registrarLog(c, 'cancelamento', `Chamado cancelado por ${currentPerfil?.nome || 'staff'}.`);
+    await sb.from('chamados').update({status:cancelKey, atualizado_em:new Date().toISOString(), comentarios:c.comentarios}).eq('id', id);
     showToast('Chamado cancelado!','ok');
     closeModalDetalhe();
     loadChamados();
+
   } else if (tipo === 'excluir') {
     if (!confirm('Excluir este chamado permanentemente? Esta ação não pode ser desfeita.')) return;
     await sb.from('chamados').delete().eq('id', id);
     showToast('Chamado excluído!','ok');
     closeModalDetalhe();
     loadChamados();
+
   } else if (tipo === 'status') {
-    closeModalDetalhe();
-    openModal(id, currentDetalhe.status);
-  } else if (tipo === 'transferir') {
-    showToast('Função de transferência em breve.','ok');
+    // Apenas informativo — NÃO encerra o chamado, só comunica a etapa atual ao solicitante
+    openModal(id, c.status);
+
+  } else if (tipo === 'escalonar') {
+    abrirModalEscalonar(c);
+
+  } else if (tipo === 'editar') {
+    abrirModalEditarChamado(c);
+
+  } else if (tipo === 'log') {
+    abrirModalLog(c);
   }
 }
 
@@ -4480,8 +4596,140 @@ function closeModalDetalhe() {
   currentDetalhe = null;
 }
 
-function renderComentarios(lista) {
+// ── ESCALONAR PARA OUTRO ATENDENTE ───────────────────
+async function abrirModalEscalonar(chamado) {
+  if (!ATENDENTES_LIST.length) await loadAtendentesList();
+  const sel = document.getElementById('esc-atendente-select');
+  sel.innerHTML = '<option value="">Selecionar...</option>' +
+    ATENDENTES_LIST.filter(a => a.id !== currentPerfil?.id)
+      .map(a => `<option value="${a.id}">${a.nome}${a.departamentos?.length ? ' · '+a.departamentos.join(', ') : ''}</option>`).join('');
+  document.getElementById('esc-chamado-id').value = chamado.id;
+  document.getElementById('esc-motivo').value = '';
+  document.getElementById('esc-err').style.display = 'none';
+  document.getElementById('modal-escalonar').classList.add('open');
+}
+
+async function confirmarEscalonar() {
+  const id = document.getElementById('esc-chamado-id').value;
+  const atendenteId = document.getElementById('esc-atendente-select').value;
+  const motivo = document.getElementById('esc-motivo').value.trim();
+  const err = document.getElementById('esc-err');
+  if (!atendenteId) { err.textContent = 'Selecione um atendente de destino.'; err.style.display = 'block'; return; }
+
+  const atendente = ATENDENTES_LIST.find(a => a.id === atendenteId);
+  const chamado = currentDetalhe || allChamados.find(c => c.id === id);
+  if (!chamado || !atendente) return;
+
+  const detalheLog = `Escalonado de ${currentPerfil?.nome || 'atendente'} para ${atendente.nome}.` + (motivo ? ` Motivo: ${motivo}` : '');
+  await registrarLog(chamado, 'escalonamento', detalheLog);
+
+  // Atualiza o departamento do chamado para o(s) do novo atendente, se aplicável, mantendo histórico
+  await sb.from('chamados').update({
+    comentarios: chamado.comentarios,
+    atualizado_em: new Date().toISOString()
+  }).eq('id', id);
+
+  document.getElementById('modal-escalonar').classList.remove('open');
+  showToast(`Chamado escalonado para ${atendente.nome}!`, 'ok');
+
+  // Notifica o novo atendente por e-mail
+  if (atendente.email) {
+    enviarEmailNotificacao(atendente.email, atendente.nome, chamado.ticket_num, chamado.titulo,
+      `Um chamado foi escalonado para você por ${currentPerfil?.nome || 'um colega'}.` + (motivo ? ` Motivo: ${motivo}` : ''));
+  }
+
+  closeModalDetalhe();
+  loadChamados();
+}
+
+// ── EDITAR CHAMADO (somente staff) ───────────────────
+async function abrirModalEditarChamado(chamado) {
+  if (!CADASTROS.categorias.length) await loadCadastrosLists();
+  document.getElementById('edt-chamado-id').value = chamado.id;
+  document.getElementById('edt-titulo').value = chamado.titulo || '';
+  document.getElementById('edt-descricao').value = chamado.descricao || '';
+  document.getElementById('edt-prioridade').value = chamado.prioridade || 'medio';
+
+  const selCat = document.getElementById('edt-categoria');
+  selCat.innerHTML = CADASTROS.categorias.map(c => `<option value="${c.nome}" ${c.nome===chamado.categoria?'selected':''}>${c.nome}</option>`).join('');
+
+  const selDep = document.getElementById('edt-departamento');
+  selDep.innerHTML = CADASTROS.areas.map(a => `<option value="${a.nome}" ${a.nome===chamado.departamento?'selected':''}>${a.nome}</option>`).join('');
+
+  document.getElementById('modal-editar-chamado').classList.add('open');
+}
+
+async function salvarEdicaoChamado() {
+  const id = document.getElementById('edt-chamado-id').value;
+  const titulo = document.getElementById('edt-titulo').value.trim();
+  const descricao = document.getElementById('edt-descricao').value.trim();
+  const categoria = document.getElementById('edt-categoria').value;
+  const departamento = document.getElementById('edt-departamento').value;
+  const prioridade = document.getElementById('edt-prioridade').value;
+
+  if (!titulo) { showToast('Informe o assunto.', 'err'); return; }
+
+  const chamado = currentDetalhe || allChamados.find(c => c.id === id);
+  if (chamado) {
+    const mudancas = [];
+    if (chamado.titulo !== titulo) mudancas.push('assunto');
+    if (chamado.descricao !== descricao) mudancas.push('descrição');
+    if (chamado.categoria !== categoria) mudancas.push('categoria');
+    if (chamado.departamento !== departamento) mudancas.push('departamento');
+    if (chamado.prioridade !== prioridade) mudancas.push('prioridade');
+    if (mudancas.length) {
+      await registrarLog(chamado, 'edicao', `Campos editados: ${mudancas.join(', ')}.`);
+    }
+  }
+
+  await sb.from('chamados').update({
+    titulo, descricao, categoria, departamento, prioridade,
+    comentarios: chamado?.comentarios,
+    atualizado_em: new Date().toISOString()
+  }).eq('id', id);
+
+  document.getElementById('modal-editar-chamado').classList.remove('open');
+  showToast('Chamado atualizado!', 'ok');
+  closeModalDetalhe();
+  loadChamados();
+}
+
+// ── LOG DE ALTERAÇÕES ────────────────────────────────
+function abrirModalLog(chamado) {
+  const lista = (chamado.comentarios || []).filter(c => c.tipo === 'log');
+  const container = document.getElementById('log-lista');
+
+  const iconePorAcao = {
+    encerramento: '✓', cancelamento: '✕', status: '🔁',
+    escalonamento: '🔀', edicao: '✎'
+  };
+  const corPorAcao = {
+    encerramento: '#2fd89a', cancelamento: '#f05a5a', status: '#5b8def',
+    escalonamento: '#a78bfa', edicao: '#f5a623'
+  };
+
+  if (!lista.length) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--dim);text-align:center;padding:20px;">Nenhuma alteração registrada ainda.</p>';
+  } else {
+    container.innerHTML = lista.slice().reverse().map(l => {
+      const icone = iconePorAcao[l.acao] || '•';
+      const cor = corPorAcao[l.acao] || 'var(--accent)';
+      return `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+        <div style="width:28px;height:28px;border-radius:50%;background:${cor}22;border:1px solid ${cor}55;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">${icone}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12.5px;color:#e0e0f0;line-height:1.5;">${l.texto}</div>
+          <div style="font-size:10.5px;color:rgba(160,160,200,.5);margin-top:3px;">${l.nome} · ${new Date(l.data).toLocaleString('pt-BR')}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('modal-log').classList.add('open');
+}
+
+function renderComentarios(listaCompleta) {
   const div = document.getElementById('det-comentarios');
+  const lista = (listaCompleta || []).filter(c => c.tipo !== 'log'); // logs de sistema não aparecem na conversa
   if (!lista.length) { div.innerHTML = '<p style="font-size:12px;color:var(--dim);text-align:center;padding:14px;">Nenhum comentário ainda. Seja o primeiro a responder.</p>'; return; }
   div.innerHTML = lista.map(c => {
     const isStaff = c.autor === 'admin';
@@ -4559,10 +4807,18 @@ function imprimirChamado() {
   const resolvidoL = {sim:'Sim, totalmente',parcial:'Parcialmente',nao:'Não foi resolvido'};
   const tempoL = {rapido:'Muito rápido',ok:'Dentro do esperado',lento:'Demorou mais que o esperado'};
 
-  const comentariosHtml = comentarios.length ? comentarios.map(cm=>`
+  const comentariosConversa = comentarios.filter(cm => cm.tipo !== 'log');
+  const comentariosLog = comentarios.filter(cm => cm.tipo === 'log');
+
+  const comentariosHtml = comentariosConversa.length ? comentariosConversa.map(cm=>`
     <div class="os-comment"><b>${cm.autor==='admin'?'🛠️ Suporte TI — '+(cm.nome||''):'👤 '+(cm.nome||'Usuário')}</b>
     &nbsp;<span style="color:#999;">(${new Date(cm.data).toLocaleString('pt-BR')})</span><br>${cm.texto}</div>
   `).join('') : '<div class="os-comment">Nenhum comentário registrado.</div>';
+
+  const logHtml = comentariosLog.length ? comentariosLog.map(cm=>`
+    <div class="os-comment"><b>📜 ${cm.texto}</b>
+    &nbsp;<span style="color:#999;">(${cm.nome||''} · ${new Date(cm.data).toLocaleString('pt-BR')})</span></div>
+  `).join('') : '';
 
   const anexosHtml = (c.anexos && c.anexos.length)
     ? `<div class="os-section"><div class="os-title">Anexos</div><div style="font-size:12px;">${c.anexos.length} imagem(ns) anexada(s) — consulte o sistema online.</div></div>`
@@ -4632,6 +4888,11 @@ function imprimirChamado() {
       <div class="os-title">Atendimento / Tratativas</div>
       ${comentariosHtml}
     </div>
+
+    ${logHtml ? `<div class="os-section">
+      <div class="os-title">Log de Alterações</div>
+      ${logHtml}
+    </div>` : ''}
 
     <div class="os-section">
       <div class="os-title">Dados do Atendente Responsável</div>
@@ -5373,7 +5634,7 @@ function exportarChamadosCSV() {
   const rows = allChamados.map(c => {
     const comentariosAdmin = (c.comentarios||[]).filter(cm=>cm.autor==='admin');
     const atendente = comentariosAdmin.length ? comentariosAdmin[comentariosAdmin.length-1].nome : '';
-    const comentariosTxt = (c.comentarios||[]).map(cm=>`${cm.autor==='admin'?'TI':'Usuário'} (${cm.nome||''}) - ${new Date(cm.data).toLocaleString('pt-BR')}: ${cm.texto}`).join(' | ');
+    const comentariosTxt = (c.comentarios||[]).map(cm=>cm.tipo==='log' ? `[LOG] (${cm.nome||''}) - ${new Date(cm.data).toLocaleString('pt-BR')}: ${cm.texto}` : `${cm.autor==='admin'?'TI':'Usuário'} (${cm.nome||''}) - ${new Date(cm.data).toLocaleString('pt-BR')}: ${cm.texto}`).join(' | ');
     const aval = c.avaliacao ? JSON.parse(c.avaliacao) : null;
     const slaTxt = slaInfo(c).html.replace(/<[^>]+>/g,'');
 
