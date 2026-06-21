@@ -725,7 +725,6 @@ img { max-width: 100%; height: auto; }
     </div>
   </div>
   <div class="tb-user" id="tb-user" style="display:none;">
-    <button class="btn-logout" id="btn-meus-link" onclick="showPage('meus-chamados');loadMeusChamados();" style="display:none;">📋 Meus chamados</button>
     <!-- User dropdown -->
     <div class="tb-user-menu-wrap" id="tb-user-menu-wrap">
       <button class="tb-user-btn" id="tb-user-btn" onclick="toggleUserMenu()" aria-label="Menu do usuário">
@@ -2208,8 +2207,6 @@ function updateTopbar(p) {
   const ddEmail = document.getElementById('tb-dd-email');
   if (ddNome) ddNome.textContent = p.nome;
   if (ddEmail) ddEmail.textContent = p.email || '';
-  const linkMeus = document.getElementById('btn-meus-link');
-  if (linkMeus) linkMeus.style.display = (p.role !== 'admin' && p.role !== 'atendente') ? 'inline-flex' : 'none';
 }
 
 function fillPerfil(p) {
