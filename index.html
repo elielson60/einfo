@@ -1242,6 +1242,7 @@ img { max-width: 100%; height: auto; }
         <button class="sb-btn" onclick="adminSubNav('status',this)"><span class="sb-icon">📌</span> Status</button>
         <button class="sb-btn" onclick="adminSubNav('sla',this)"><span class="sb-icon">⏰</span> SLA</button>
         <button class="sb-btn" onclick="adminSubNav('horarios',this)"><span class="sb-icon">🕒</span> Horários</button>
+        <button class="sb-btn" onclick="adminSubNav('conta',this)"><span class="sb-icon">🏛️</span> Configurações da Conta</button>
       </div>
       <span class="sb-section">Ações</span>
       <button class="sb-btn" onclick="showPage('chamado');novoChamado();atualizarBotaoVoltar();"><span class="sb-icon">➕</span> Novo chamado</button>
@@ -1557,6 +1558,174 @@ img { max-width: 100%; height: auto; }
             <p id="config-msg-h" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Configurações salvas com sucesso!</p>
           </div>
         </div><!-- /cfgtab-horarios -->
+
+        <!-- CONFIGURAÇÕES DA CONTA -->
+        <div class="admin-sub-page" id="cfgtab-conta" style="display:none;">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Informações gerais da empresa e preferências do sistema de chamados.</p>
+
+          <!-- Sub-abas internas -->
+          <div class="campo-tabs-wrap">
+            <button class="campo-tab-btn active" onclick="switchContaTab('empresa',this)">🏢 Dados da Empresa</button>
+            <button class="campo-tab-btn" onclick="switchContaTab('politica',this)">📋 Política de Chamados</button>
+            <button class="campo-tab-btn" onclick="switchContaTab('notificacoes',this)">🔔 Notificações</button>
+            <button class="campo-tab-btn" onclick="switchContaTab('aparencia',this)">🎨 Aparência</button>
+          </div>
+
+          <!-- ABA: Dados da Empresa -->
+          <div class="conta-tab" id="conta-tab-empresa">
+            <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
+              <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🏢 Informações da Empresa</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:18px;">Estes dados aparecem em e-mails, impressões de chamados e na identidade visual do sistema.</div>
+
+              <div class="grid2">
+                <div class="field">
+                  <label>Nome da Empresa <span class="req">*</span></label>
+                  <input type="text" id="conta-nome-empresa" placeholder="Ex: E-INFO Consultoria"/>
+                </div>
+                <div class="field">
+                  <label>Nome do Responsável</label>
+                  <input type="text" id="conta-nome-responsavel" placeholder="Ex: Elielson Nascimento"/>
+                </div>
+              </div>
+
+              <div class="grid2">
+                <div class="field">
+                  <label>E-mail principal</label>
+                  <input type="email" id="conta-email" placeholder="ti@empresa.com.br"/>
+                </div>
+                <div class="field">
+                  <label>Telefone / WhatsApp</label>
+                  <input type="tel" id="conta-telefone" placeholder="(92) 99999-0000"/>
+                </div>
+              </div>
+
+              <div class="grid2">
+                <div class="field">
+                  <label>Site</label>
+                  <input type="text" id="conta-site" placeholder="www.empresa.com.br"/>
+                </div>
+                <div class="field">
+                  <label>Segmento da Empresa</label>
+                  <select id="conta-segmento">
+                    <option value="">Selecionar...</option>
+                    <option>Tecnologia da Informação</option>
+                    <option>Comércio e Varejo</option>
+                    <option>Indústria</option>
+                    <option>Serviços</option>
+                    <option>Turismo e Lazer</option>
+                    <option>Saúde</option>
+                    <option>Educação</option>
+                    <option>Outro</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Número de Colaboradores</label>
+                <select id="conta-num-colaboradores">
+                  <option value="">Selecionar...</option>
+                  <option>1 a 9</option>
+                  <option>10 a 49</option>
+                  <option>50 a 99</option>
+                  <option>100 a 499</option>
+                  <option>500+</option>
+                </select>
+              </div>
+
+              <div style="margin-top:8px;">
+                <button class="btn btn-primary" onclick="salvarDadosEmpresa()">💾 Salvar dados da empresa</button>
+                <p id="conta-empresa-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Dados salvos com sucesso!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ABA: Política de Chamados -->
+          <div class="conta-tab" id="conta-tab-politica" style="display:none;">
+            <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
+              <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📋 Política de Abertura de Chamados</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:18px;">Regras aplicadas ao fluxo de chamados de toda a equipe.</div>
+
+              <div class="field">
+                <label class="chk-wrap"><input type="checkbox" id="pol-permitir-cadastro" checked/><span class="chk-box"></span><span>Permitir que novos usuários se cadastrem livremente</span></label>
+              </div>
+              <div class="field">
+                <label class="chk-wrap"><input type="checkbox" id="pol-anexo-obrigatorio"/><span class="chk-box"></span><span>Exigir ao menos 1 anexo na abertura de chamados críticos</span></label>
+              </div>
+              <div class="field">
+                <label class="chk-wrap"><input type="checkbox" id="pol-avaliacao-obrigatoria"/><span class="chk-box"></span><span>Solicitar avaliação automaticamente ao encerrar um chamado</span></label>
+              </div>
+              <div class="field">
+                <label class="chk-wrap"><input type="checkbox" id="pol-notificar-atraso" checked/><span class="chk-box"></span><span>Notificar atendentes quando um chamado estiver próximo do vencimento do SLA</span></label>
+              </div>
+
+              <div class="field">
+                <label>Limite de chamados abertos simultâneos por usuário <span style="color:var(--dim);font-weight:400;">(0 = ilimitado)</span></label>
+                <input type="number" id="pol-limite-chamados" min="0" placeholder="0" style="max-width:160px;"/>
+              </div>
+
+              <div style="margin-top:8px;">
+                <button class="btn btn-primary" onclick="salvarPolitica()">💾 Salvar política</button>
+                <p id="conta-politica-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Política salva com sucesso!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ABA: Notificações -->
+          <div class="conta-tab" id="conta-tab-notificacoes" style="display:none;">
+            <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
+              <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🔔 Notificações por E-mail</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:18px;">Controle quando o sistema envia e-mails automáticos.</div>
+
+              <div class="field">
+                <label class="chk-wrap"><input type="checkbox" id="notif-novo-chamado" checked/><span class="chk-box"></span><span>Notificar administradores ao abrir um novo chamado</span></label>
+              </div>
+              <div class="field">
+                <label class="chk-wrap"><input type="checkbox" id="notif-resposta" checked/><span class="chk-box"></span><span>Notificar solicitante quando houver resposta do suporte</span></label>
+              </div>
+              <div class="field">
+                <label class="chk-wrap"><input type="checkbox" id="notif-status" checked/><span class="chk-box"></span><span>Notificar solicitante quando o status mudar</span></label>
+              </div>
+              <div class="field">
+                <label class="chk-wrap"><input type="checkbox" id="notif-encerramento" checked/><span class="chk-box"></span><span>Notificar solicitante ao encerrar o chamado</span></label>
+              </div>
+              <div class="field">
+                <label class="chk-wrap"><input type="checkbox" id="notif-escalonamento" checked/><span class="chk-box"></span><span>Notificar atendente ao receber um chamado escalonado</span></label>
+              </div>
+
+              <div style="margin-top:8px;">
+                <button class="btn btn-primary" onclick="salvarNotificacoes()">💾 Salvar notificações</button>
+                <p id="conta-notif-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Preferências salvas!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ABA: Aparência -->
+          <div class="conta-tab" id="conta-tab-aparencia" style="display:none;">
+            <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
+              <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🎨 Identidade Visual</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:18px;">Personalize o nome e cor de destaque exibidos no sistema.</div>
+
+              <div class="field">
+                <label>Nome do Sistema</label>
+                <input type="text" id="conta-nome-sistema" placeholder="EliTicket"/>
+              </div>
+
+              <div class="field">
+                <label>Cor de destaque</label>
+                <div style="display:flex;gap:10px;align-items:center;">
+                  <input type="color" id="conta-cor-destaque" value="#5b8def" style="width:50px;height:38px;padding:4px;cursor:pointer;"/>
+                  <span style="font-size:12px;color:var(--muted);">Usada em botões, links e elementos de destaque</span>
+                </div>
+              </div>
+
+              <div style="margin-top:8px;">
+                <button class="btn btn-primary" onclick="salvarAparencia()">💾 Salvar aparência</button>
+                <p id="conta-aparencia-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Aparência salva! Recarregue a página para ver mudanças.</p>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /cfgtab-conta -->
 
 
 
@@ -2712,7 +2881,7 @@ function toggleAdminMenu(btn) {
   }
 }
 
-const ADMIN_SUB_TITLES = {'atendentes': 'Atendentes', 'categorias': 'Categorias', 'campos': 'Campos Personalizados', 'areas': 'Departamentos', 'empresas': 'Organizações', 'avisos': 'Avisos', 'status': 'Status de Chamado', 'sla': 'SLA', 'horarios': 'Horários de Atendimento'};
+const ADMIN_SUB_TITLES = {'atendentes': 'Atendentes', 'categorias': 'Categorias', 'campos': 'Campos Personalizados', 'areas': 'Departamentos', 'empresas': 'Organizações', 'avisos': 'Avisos', 'status': 'Status de Chamado', 'sla': 'SLA', 'horarios': 'Horários de Atendimento', 'conta': 'Configurações da Conta'};
 
 function adminSubNav(sub, btn) {
   if (window.innerWidth <= 768) toggleSidebar(false);
@@ -2748,6 +2917,7 @@ function adminSubNav(sub, btn) {
   if (sub === 'status') { loadStatusList().then(()=>{ renderStatusListaTabela(); document.getElementById('status-list-view').style.display='block'; document.getElementById('status-detail-view').style.display='none'; }); }
   if (sub === 'sla') preencherFormConfig();
   if (sub === 'horarios') preencherFormConfig();
+  if (sub === 'conta') preencherFormConta();
   if (sub === 'campos') { renderListaCamposAdmin(); }
   if (['empresas','areas','categorias'].includes(sub)) {
     loadCadastros().then(()=>{
@@ -4343,12 +4513,122 @@ let HORARIO_CONFIG = {
   0:{ativo:false,inicio:'08:00',fim:'12:00'}
 };
 
+let CONTA_CONFIG = {
+  empresa: { nome:'', responsavel:'', email:'', telefone:'', site:'', segmento:'', colaboradores:'' },
+  politica: { permitirCadastro:true, anexoObrigatorio:false, avaliacaoObrigatoria:false, notificarAtraso:true, limiteChamados:0 },
+  notificacoes: { novoChamado:true, resposta:true, status:true, encerramento:true, escalonamento:true },
+  aparencia: { nomeSistema:'EliTicket', corDestaque:'#5b8def' }
+};
+
 async function loadConfig() {
   const { data } = await sb.from('configuracoes').select('*').eq('id',1).single();
   if (data) {
     if (data.sla) SLA_CONFIG = data.sla;
     if (data.horario) HORARIO_CONFIG = data.horario;
+    if (data.conta) CONTA_CONFIG = { ...CONTA_CONFIG, ...data.conta };
   }
+}
+
+function switchContaTab(tab, btn) {
+  document.querySelectorAll('#cfgtab-conta .campo-tab-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.querySelectorAll('.conta-tab').forEach(el=>el.style.display='none');
+  document.getElementById('conta-tab-'+tab).style.display='block';
+}
+
+function preencherFormConta() {
+  const e = CONTA_CONFIG.empresa || {};
+  document.getElementById('conta-nome-empresa').value = e.nome || '';
+  document.getElementById('conta-nome-responsavel').value = e.responsavel || '';
+  document.getElementById('conta-email').value = e.email || '';
+  document.getElementById('conta-telefone').value = e.telefone || '';
+  document.getElementById('conta-site').value = e.site || '';
+  document.getElementById('conta-segmento').value = e.segmento || '';
+  document.getElementById('conta-num-colaboradores').value = e.colaboradores || '';
+
+  const p = CONTA_CONFIG.politica || {};
+  document.getElementById('pol-permitir-cadastro').checked = p.permitirCadastro !== false;
+  document.getElementById('pol-anexo-obrigatorio').checked = !!p.anexoObrigatorio;
+  document.getElementById('pol-avaliacao-obrigatoria').checked = !!p.avaliacaoObrigatoria;
+  document.getElementById('pol-notificar-atraso').checked = p.notificarAtraso !== false;
+  document.getElementById('pol-limite-chamados').value = p.limiteChamados || 0;
+
+  const n = CONTA_CONFIG.notificacoes || {};
+  document.getElementById('notif-novo-chamado').checked = n.novoChamado !== false;
+  document.getElementById('notif-resposta').checked = n.resposta !== false;
+  document.getElementById('notif-status').checked = n.status !== false;
+  document.getElementById('notif-encerramento').checked = n.encerramento !== false;
+  document.getElementById('notif-escalonamento').checked = n.escalonamento !== false;
+
+  const a = CONTA_CONFIG.aparencia || {};
+  document.getElementById('conta-nome-sistema').value = a.nomeSistema || 'EliTicket';
+  document.getElementById('conta-cor-destaque').value = a.corDestaque || '#5b8def';
+}
+
+async function persistirContaConfig() {
+  await sb.from('configuracoes').upsert({ id:1, conta: CONTA_CONFIG, updated_at: new Date().toISOString() });
+}
+
+async function salvarDadosEmpresa() {
+  CONTA_CONFIG.empresa = {
+    nome: document.getElementById('conta-nome-empresa').value.trim(),
+    responsavel: document.getElementById('conta-nome-responsavel').value.trim(),
+    email: document.getElementById('conta-email').value.trim(),
+    telefone: document.getElementById('conta-telefone').value.trim(),
+    site: document.getElementById('conta-site').value.trim(),
+    segmento: document.getElementById('conta-segmento').value,
+    colaboradores: document.getElementById('conta-num-colaboradores').value
+  };
+  await persistirContaConfig();
+  const msg = document.getElementById('conta-empresa-msg');
+  msg.style.display = 'block';
+  setTimeout(()=>msg.style.display='none', 3000);
+  showToast('Dados da empresa salvos!','ok');
+}
+
+async function salvarPolitica() {
+  CONTA_CONFIG.politica = {
+    permitirCadastro: document.getElementById('pol-permitir-cadastro').checked,
+    anexoObrigatorio: document.getElementById('pol-anexo-obrigatorio').checked,
+    avaliacaoObrigatoria: document.getElementById('pol-avaliacao-obrigatoria').checked,
+    notificarAtraso: document.getElementById('pol-notificar-atraso').checked,
+    limiteChamados: parseInt(document.getElementById('pol-limite-chamados').value) || 0
+  };
+  await persistirContaConfig();
+  const msg = document.getElementById('conta-politica-msg');
+  msg.style.display = 'block';
+  setTimeout(()=>msg.style.display='none', 3000);
+  showToast('Política salva!','ok');
+}
+
+async function salvarNotificacoes() {
+  CONTA_CONFIG.notificacoes = {
+    novoChamado: document.getElementById('notif-novo-chamado').checked,
+    resposta: document.getElementById('notif-resposta').checked,
+    status: document.getElementById('notif-status').checked,
+    encerramento: document.getElementById('notif-encerramento').checked,
+    escalonamento: document.getElementById('notif-escalonamento').checked
+  };
+  await persistirContaConfig();
+  const msg = document.getElementById('conta-notif-msg');
+  msg.style.display = 'block';
+  setTimeout(()=>msg.style.display='none', 3000);
+  showToast('Notificações salvas!','ok');
+}
+
+async function salvarAparencia() {
+  CONTA_CONFIG.aparencia = {
+    nomeSistema: document.getElementById('conta-nome-sistema').value.trim() || 'EliTicket',
+    corDestaque: document.getElementById('conta-cor-destaque').value
+  };
+  await persistirContaConfig();
+  // Aplica nome do sistema na marca do topbar, se existir
+  const brandName = document.querySelector('.tb-name');
+  if (brandName) brandName.textContent = CONTA_CONFIG.aparencia.nomeSistema;
+  const msg = document.getElementById('conta-aparencia-msg');
+  msg.style.display = 'block';
+  setTimeout(()=>msg.style.display='none', 3000);
+  showToast('Aparência salva!','ok');
 }
 
 function preencherFormConfig() {
