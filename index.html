@@ -1662,19 +1662,12 @@ img { max-width: 100%; height: auto; }
 
               <div class="tgl-section-title">Clientes</div>
               <div class="tgl-row"><span class="tgl-label">Bloquear novos cadastros pelo painel do cliente</span><label class="tgl-switch"><input type="checkbox" id="pol-bloquear-cadastro"/><span class="tgl-slider"></span></label></div>
-              <div class="tgl-row"><span class="tgl-label">Apenas exibir nome do departamento no login do helpdesk</span><label class="tgl-switch"><input type="checkbox" id="pol-exibir-depto-login"/><span class="tgl-slider"></span></label></div>
               <div class="tgl-row"><span class="tgl-label">Enviar avaliação ao solicitante após finalizar um chamado</span><label class="tgl-switch"><input type="checkbox" id="pol-avaliacao-email" checked/><span class="tgl-slider"></span></label></div>
-              <div class="tgl-row"><span class="tgl-label">Enviar avaliação ao solicitante após finalizar um chamado via WhatsApp</span><label class="tgl-switch"><input type="checkbox" id="pol-avaliacao-whatsapp" checked/><span class="tgl-slider"></span></label></div>
               <div class="tgl-row"><span class="tgl-label">Apenas permitir abertura de chamados se não houver avaliações pendentes</span><label class="tgl-switch"><input type="checkbox" id="pol-bloquear-aval-pendente" checked/><span class="tgl-slider"></span></label></div>
-              <div class="tgl-row"><span class="tgl-label">Não exibir departamentos públicos caso o solicitante esteja vinculado num departamento privado</span><label class="tgl-switch"><input type="checkbox" id="pol-ocultar-deptos-publicos"/><span class="tgl-slider"></span></label></div>
               <div class="tgl-row"><span class="tgl-label">Membros de uma organização podem visualizar chamados de outros membros</span><label class="tgl-switch"><input type="checkbox" id="pol-visualizar-chamados-org"/><span class="tgl-slider"></span></label></div>
               <div class="tgl-row"><span class="tgl-label">Cliente poderá informar e-mail de cópia ao criar um chamado</span><label class="tgl-switch"><input type="checkbox" id="pol-email-copia"/><span class="tgl-slider"></span></label></div>
               <div class="tgl-row"><span class="tgl-label">Cliente poderá visualizar detalhes do status no histórico do chamado no painel do cliente</span><label class="tgl-switch"><input type="checkbox" id="pol-detalhes-status-cliente" checked/><span class="tgl-slider"></span></label></div>
-              <div class="tgl-row"><span class="tgl-label">Apenas clientes aprovados podem acessar o painel de help desk</span><label class="tgl-switch"><input type="checkbox" id="pol-clientes-aprovados"/><span class="tgl-slider"></span></label></div>
-              <div class="tgl-row"><span class="tgl-label">Silenciar notificações de gerentes quando houver nova aprovação de clientes</span><label class="tgl-switch"><input type="checkbox" id="pol-silenciar-aprovacao"/><span class="tgl-slider"></span></label></div>
               <div class="tgl-row"><span class="tgl-label">Cliente pode finalizar o chamado</span><label class="tgl-switch"><input type="checkbox" id="pol-cliente-finaliza" checked/><span class="tgl-slider"></span></label></div>
-              <div class="tgl-row"><span class="tgl-label">Cliente deve aprovar a finalização de chamados <span class="tgl-info" title="Requer confirmação do cliente antes de encerrar definitivamente">i</span></span><label class="tgl-switch"><input type="checkbox" id="pol-cliente-aprova-finalizacao" disabled/><span class="tgl-slider"></span></label></div>
-              <div class="tgl-row"><span class="tgl-label">Apenas permitir criação de novos chamados se não houver chamados pendentes de aprovação <span class="tgl-info" title="Disponível em planos avançados">i</span></span><label class="tgl-switch"><input type="checkbox" id="pol-bloquear-pendente-aprovacao" disabled/><span class="tgl-slider"></span></label></div>
               <div class="tgl-row"><span class="tgl-label">Visualizar deadline em detalhes do chamado</span><label class="tgl-switch"><input type="checkbox" id="pol-visualizar-deadline" checked/><span class="tgl-slider"></span></label></div>
               <div class="tgl-row"><span class="tgl-label">Exigir categoria na criação de chamado</span><label class="tgl-switch"><input type="checkbox" id="pol-exigir-categoria" checked/><span class="tgl-slider"></span></label></div>
               <div class="tgl-row"><span class="tgl-label">Exibir link para base de conhecimento</span><label class="tgl-switch"><input type="checkbox" id="pol-exibir-base-conhecimento"/><span class="tgl-slider"></span></label></div>
@@ -1684,7 +1677,6 @@ img { max-width: 100%; height: auto; }
               <div class="tgl-section-title">Equipe Interna</div>
               <div class="tgl-row"><span class="tgl-label">Notificar atendentes quando um chamado estiver próximo do vencimento do SLA</span><label class="tgl-switch"><input type="checkbox" id="pol-notificar-atraso" checked/><span class="tgl-slider"></span></label></div>
               <div class="tgl-row"><span class="tgl-label">Exigir ao menos 1 anexo na abertura de chamados críticos</span><label class="tgl-switch"><input type="checkbox" id="pol-anexo-obrigatorio"/><span class="tgl-slider"></span></label></div>
-              <div class="tgl-row"><span class="tgl-label">Permitir que novos usuários se cadastrem livremente</span><label class="tgl-switch"><input type="checkbox" id="pol-permitir-cadastro" checked/><span class="tgl-slider"></span></label></div>
 
               <div class="field" style="margin-top:18px;">
                 <label>Prazo em dias que chamados encerrados devem ser ignorados para avaliação obrigatória:</label>
@@ -4636,11 +4628,11 @@ function preencherFormConta() {
 
 // Lista de todos os toggles da política (lidos/salvos automaticamente pelo ID)
 const POLITICA_FIELD_IDS = [
-  'pol-bloquear-cadastro','pol-exibir-depto-login','pol-avaliacao-email','pol-avaliacao-whatsapp',
-  'pol-bloquear-aval-pendente','pol-ocultar-deptos-publicos','pol-visualizar-chamados-org','pol-email-copia',
-  'pol-detalhes-status-cliente','pol-clientes-aprovados','pol-silenciar-aprovacao','pol-cliente-finaliza',
+  'pol-bloquear-cadastro','pol-avaliacao-email',
+  'pol-bloquear-aval-pendente','pol-visualizar-chamados-org','pol-email-copia',
+  'pol-detalhes-status-cliente','pol-cliente-finaliza',
   'pol-visualizar-deadline','pol-exigir-categoria','pol-exibir-base-conhecimento','pol-push-resposta',
-  'pol-cliente-define-prioridade','pol-notificar-atraso','pol-anexo-obrigatorio','pol-permitir-cadastro'
+  'pol-cliente-define-prioridade','pol-notificar-atraso','pol-anexo-obrigatorio'
 ];
 
 async function persistirContaConfig() {
