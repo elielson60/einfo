@@ -53,6 +53,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 /* Chamados table card-style */
 .ch-list{display:flex;flex-direction:column;gap:0;}
 .ch-item{display:grid;grid-template-columns:36px minmax(0,1fr) 90px 120px 140px 110px 100px 72px;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.05);transition:background .15s;cursor:pointer;}
+#tbl-meus .ch-item{grid-template-columns:36px minmax(0,1fr) 90px 140px 110px 100px 50px;}
+@media(max-width:900px){#tbl-meus .ch-item{grid-template-columns:36px minmax(0,1fr) 90px 50px!important;}#tbl-meus .ch-sla-col,#tbl-meus .ch-prio-col{display:none;}}
 .ch-item:last-child{border-bottom:none;}
 .ch-item:hover{background:rgba(91,141,239,0.05);}
 .ch-item:hover .ch-ticket{color:#8ab4ff;}
@@ -85,6 +87,13 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 
 @media(max-width:1024px){.ch-layout{grid-template-columns:1fr;}.ch-sidebar-card{display:none;}}
 @media(max-width:900px){.ch-item{grid-template-columns:36px minmax(0,1fr) 90px 110px 72px !important;}.ch-cat-col,.ch-prio-col{display:none;}}@media(max-width:768px){.ch-kpis{grid-template-columns:repeat(2,1fr);}.ch-item{grid-template-columns:36px minmax(0,1fr) 90px 72px !important;}.ch-sla-col{display:none;}}
+
+/* ── MEUS CHAMADOS (usuário) ── */
+.mu-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:#f5a623;}
+.mu-tabs{display:flex;gap:4px;margin-bottom:16px;background:rgba(255,255,255,.04);padding:4px;border-radius:10px;width:fit-content;}
+.mu-tab{padding:8px 20px;border:none;background:none;color:rgba(160,160,200,.7);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;border-radius:7px;transition:all .18s;}
+.mu-tab:hover{color:#e0e0f0;}
+.mu-tab.active{background:rgba(91,141,239,.18);color:#8ab4ff;box-shadow:0 0 12px rgba(91,141,239,.15);}
 
 /* ── TOPBAR ── */
 .topbar{position:sticky;top:0;z-index:700;height:56px;background:rgba(7,7,17,0.75);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;padding:0 24px;}
@@ -1080,43 +1089,60 @@ img { max-width: 100%; height: auto; }
   <div class="admin-layout">
     <div class="sidebar">
       <span class="sb-section">Meu painel</span>
-      <button class="sb-btn active" onclick=""><span class="sb-icon">📋</span> Meus chamados</button>
+      <button class="sb-btn active" id="sb-meus-chamados" onclick="showPage('meus-chamados');loadMeusChamados();"><span class="sb-icon">📋</span> Meus chamados</button>
       <span class="sb-section">Ações</span>
       <button class="sb-btn" onclick="irParaNovoChamado()"><span class="sb-icon">➕</span> Novo chamado</button>
     </div>
     <div class="admin-content">
-      <button class="btn btn-ghost btn-sm" onclick="irParaNovoChamado()" style="margin-bottom:14px;">← Voltar</button>
-      <div class="admin-title">Meus chamados</div>
-      <div class="stats-row" style="grid-template-columns:repeat(3,1fr);">
-        <div class="stat stat-accent"><div class="stat-n" id="mu-total">—</div><div class="stat-l">Total</div></div>
-        <div class="stat"><div class="stat-n" id="mu-aberto">—</div><div class="stat-l">Em aberto</div></div>
-        <div class="stat stat-green"><div class="stat-n" id="mu-resolvido">—</div><div class="stat-l">Resolvidos</div></div>
+
+      <!-- Faixa SLA / aviso -->
+      <div class="mu-banner" id="mu-banner" style="display:none;">
+        <span>📊 Consulta dos SLAs de atendimento</span>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mu-banner').style.display='none'">Ok, entendi</button>
       </div>
-      <div class="chips" id="mu-chips">
-        <span class="chip active" onclick="filterMeus('todos',this)">Todos</span>
-      </div>
-      <div class="tbl-wrap">
-        <div class="tbl-header">
-          <span style="font-size:14px;font-weight:500;">Chamados</span>
-          <input class="tbl-search" placeholder="Buscar..." oninput="buscarMeus(this.value)" id="search-meus"/>
+
+      <!-- Header -->
+      <div class="ch-header" style="margin-bottom:18px;">
+        <div class="ch-header-left">
+          <span class="ch-title">MEUS CHAMADOS</span>
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Ticket</th>
-              <th>Assunto</th>
-              <th>Empresa</th>
-              <th>Prioridade</th>
-              <th>SLA</th>
-              <th>Status</th>
-              <th>Data</th>
-              <th>Avaliação</th>
-              <th>Ação</th>
-            </tr>
-          </thead>
-          <tbody id="tbl-meus"><tr><td colspan="9" style="text-align:center;color:var(--muted);padding:30px;">Carregando...</td></tr></tbody>
-        </table>
+        <button class="ch-new-btn" onclick="irParaNovoChamado()">
+          <span class="ch-plus">+</span> Novo chamado
+        </button>
       </div>
+
+      <!-- Abas Abertos/Fechados -->
+      <div class="mu-tabs">
+        <button class="mu-tab active" id="mu-tab-abertos" onclick="switchMuTab('abertos')">Abertos</button>
+        <button class="mu-tab" id="mu-tab-fechados" onclick="switchMuTab('fechados')">Fechados</button>
+      </div>
+
+      <!-- Busca -->
+      <div class="ch-search-wrap" style="margin-bottom:16px;max-width:280px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="ch-search" placeholder="Buscar chamado..." oninput="buscarMeus(this.value)" id="search-meus"/>
+      </div>
+
+      <!-- Lista -->
+      <div class="ch-wrap">
+        <div class="ch-list" id="tbl-meus">
+          <div style="text-align:center;color:var(--muted);padding:40px;">Carregando...</div>
+        </div>
+      </div>
+
+      <!-- Estado vazio (ilustração) -->
+      <div id="mu-empty-state" style="display:none;text-align:center;padding:60px 20px;">
+        <svg width="160" height="120" viewBox="0 0 200 150" fill="none" style="opacity:.5;margin-bottom:8px;">
+          <ellipse cx="100" cy="135" rx="70" ry="6" fill="rgba(91,141,239,0.1)"/>
+          <path d="M70 50 Q100 10 130 50 Q150 70 130 100 L70 100 Q50 70 70 50Z" fill="rgba(91,141,239,0.08)" stroke="rgba(91,141,239,0.25)" stroke-width="1.5"/>
+          <circle cx="60" cy="95" r="14" fill="rgba(124,108,245,0.1)" stroke="rgba(124,108,245,0.3)" stroke-width="1.5"/>
+          <circle cx="140" cy="95" r="14" fill="rgba(124,108,245,0.1)" stroke="rgba(124,108,245,0.3)" stroke-width="1.5"/>
+          <path d="M52 92 q8 -10 16 0" stroke="rgba(160,160,200,.4)" stroke-width="1.5" fill="none"/>
+          <path d="M132 92 q8 -10 16 0" stroke="rgba(160,160,200,.4)" stroke-width="1.5" fill="none"/>
+        </svg>
+        <div style="font-size:14px;color:rgba(160,160,200,.6);font-weight:500;">Nenhum chamado encontrado...</div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -2138,15 +2164,10 @@ async function loadPerfil(user) {
     configurarSidebarPorRole(data);
     loadAdminData();
   } else {
+    // Usuário comum entra direto na lista "Meus chamados" (estilo TomTicket)
+    fillPerfil(data);
     await loadMeusChamados();
-    const pendente = getAvaliacaoPendente();
-    if (pendente) {
-      showPage('meus-chamados');
-    } else {
-      showPage('chamado');
-      fillPerfil(data);
-      atualizarBotaoVoltar();
-    }
+    showPage('meus-chamados');
   }
 }
 
@@ -3413,6 +3434,8 @@ function showToast(msg, type='ok') {
 let allMeusChamados = [];
 let meusFiltro = 'todos';
 
+let muTabAtual = 'abertos';
+
 async function loadMeusChamados() {
   if (!currentUser) return;
   const { data } = await sb.from('chamados')
@@ -3420,23 +3443,35 @@ async function loadMeusChamados() {
     .eq('usuario_id', currentUser.id)
     .order('criado_em', { ascending: false });
   allMeusChamados = data || [];
-  renderMeusChamados(allMeusChamados);
-  document.getElementById('mu-total').textContent = allMeusChamados.length;
-  document.getElementById('mu-aberto').textContent = allMeusChamados.filter(c=>c.status==='aberto'||c.status==='andamento').length;
-  document.getElementById('mu-resolvido').textContent = allMeusChamados.filter(c=>c.status==='resolvido').length;
+  aplicarFiltroMeus();
+}
+
+function switchMuTab(tab) {
+  muTabAtual = tab;
+  document.getElementById('mu-tab-abertos').classList.toggle('active', tab==='abertos');
+  document.getElementById('mu-tab-fechados').classList.toggle('active', tab==='fechados');
+  document.getElementById('search-meus').value = '';
+  aplicarFiltroMeus();
+}
+
+function aplicarFiltroMeus() {
+  const base = muTabAtual === 'abertos'
+    ? allMeusChamados.filter(c => c.status !== 'resolvido')
+    : allMeusChamados.filter(c => c.status === 'resolvido');
+  renderMeusChamados(base);
 }
 
 function filterMeus(status, chip) {
   meusFiltro = status;
-  document.querySelectorAll('#mu-chips .chip').forEach(c=>c.classList.remove('active'));
-  chip.classList.add('active');
   const filtered = status==='todos' ? allMeusChamados : allMeusChamados.filter(c=>c.status===status);
   renderMeusChamados(filtered);
 }
 
 function buscarMeus(q) {
   const low = q.toLowerCase();
-  let base = meusFiltro==='todos' ? allMeusChamados : allMeusChamados.filter(c=>c.status===meusFiltro);
+  const base = muTabAtual === 'abertos'
+    ? allMeusChamados.filter(c => c.status !== 'resolvido')
+    : allMeusChamados.filter(c => c.status === 'resolvido');
   const filtered = base.filter(c=>
     (c.titulo||'').toLowerCase().includes(low)||
     (c.ticket_num||'').toLowerCase().includes(low)||
@@ -3448,25 +3483,46 @@ function buscarMeus(q) {
 
 function renderMeusChamados(list) {
   const tb = document.getElementById('tbl-meus');
-  if (!list.length) { tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:30px;">Nenhum chamado encontrado</td></tr>'; return; }
-  const prioE = {critico:'🔴',alto:'🟠',medio:'🔵',baixo:'🟢'};
-  const prioL = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
-    tb.innerHTML = list.map(c => {
-    const data = new Date(c.criado_em).toLocaleDateString('pt-BR');
-    const avalBtn = c.status==='resolvido' && !c.avaliacao
-      ? `<button class="btn btn-ghost btn-sm" style="font-size:11px;color:#fbbf24;border-color:rgba(245,158,11,.4);" onclick="openModalAval('${c.id}')">⭐ Avaliar</button>`
-      : c.avaliacao ? `<span class="aval-tag aval-ok">⭐ ${JSON.parse(c.avaliacao).nota}/5</span>` : '—';
-    return `<tr>
-      <td><span style="font-family:var(--mono);font-size:11px;color:var(--accent);">${c.ticket_num}</span></td>
-      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.titulo}</td>
-      <td style="font-size:12px;">${c.empresa||'—'}</td>
-      <td><span class="badge b-${c.prioridade}">${prioE[c.prioridade]||''} ${prioL[c.prioridade]||c.prioridade}</span></td>
-      <td>${slaInfo(c).html}</td>
-      <td>${statusBadgeHtml(c.status)}</td>
-      <td style="font-size:12px;color:var(--muted);">${data}</td>
-      <td>${avalBtn}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="openModalDetalhe('${c.id}')">👁 Ver</button></td>
-    </tr>`;
+  const empty = document.getElementById('mu-empty-state');
+  if (!list.length) {
+    tb.innerHTML = '';
+    tb.parentElement.style.display = 'none';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  tb.parentElement.style.display = 'block';
+  if (empty) empty.style.display = 'none';
+
+  const prioColor = {critico:'#f05a5a',alto:'#f5a623',medio:'#5b8def',baixo:'#2fd89a'};
+  const prioLabel = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
+
+  tb.innerHTML = list.map(c => {
+    const ini = getInitials(c.titulo);
+    const avatarBg = avatarColor(c.titulo||'');
+    const pColor = prioColor[c.prioridade] || 'var(--muted)';
+    const pLabel = prioLabel[c.prioridade] || c.prioridade || '—';
+    const dt = c.criado_em ? new Date(c.criado_em).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
+    const sla = slaInfo(c);
+
+    const avalBadge = c.status==='resolvido' && !c.avaliacao
+      ? `<button class="ch-action-btn" onclick="event.stopPropagation();openModalAval('${c.id}')" title="Avaliar atendimento" style="color:#fbbf24;border-color:rgba(245,158,11,.4);">⭐</button>`
+      : c.avaliacao ? `<span style="font-size:11px;color:#fbbf24;white-space:nowrap;">⭐ ${JSON.parse(c.avaliacao).nota}/5</span>` : '';
+
+    return `<div class="ch-item" onclick="openModalDetalhe('${c.id}')">
+      <div class="ch-avatar" style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,${avatarBg},${avatarBg}99);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;">${ini}</div>
+      <div class="ch-info" style="min-width:0;">
+        <div class="ch-titulo">${c.titulo}</div>
+        <div class="ch-meta">${c.empresa||''} · ${c.categoria||''} · ${dt}</div>
+      </div>
+      <span class="ch-ticket" style="font-size:10px;font-family:var(--mono);color:var(--accent);background:rgba(91,141,239,.1);padding:3px 7px;border-radius:6px;white-space:nowrap;justify-self:start;">${c.ticket_num}</span>
+      <div class="ch-sla-col" style="min-width:0;">${sla.html}</div>
+      <div class="ch-prio-col" style="display:flex;align-items:center;gap:5px;min-width:0;">
+        <span style="width:7px;height:7px;border-radius:50%;background:${pColor};flex-shrink:0;box-shadow:0 0 5px ${pColor}88;"></span>
+        <span style="font-size:11px;color:${pColor};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${pLabel}</span>
+      </div>
+      <div style="min-width:0;">${statusBadgeHtml(c.status)}</div>
+      <div onclick="event.stopPropagation()" style="display:flex;align-items:center;justify-content:flex-end;">${avalBadge}</div>
+    </div>`;
   }).join('');
 }
 
@@ -5287,11 +5343,8 @@ function voltarDoChamado() {
 function atualizarBotaoVoltar() {
   const btn = document.getElementById('btn-voltar-chamado');
   if (!btn) return;
-  if (currentPerfil && (isStaffRole(currentPerfil.role) || allMeusChamados.length > 0)) {
-    btn.style.display = 'inline-flex';
-  } else {
-    btn.style.display = 'none';
-  }
+  // Agora todo usuário (staff ou comum) navega a partir de uma lista — sempre mostra voltar
+  btn.style.display = currentPerfil ? 'inline-flex' : 'none';
 }
 
 // ── START ────────────────────────────────────
