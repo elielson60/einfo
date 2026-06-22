@@ -1248,9 +1248,9 @@ img { max-width: 100%; height: auto; }
 
         <!-- Info extra -->
         <div class="suc-info-row">
-          <div class="suc-info-item">
-            <div class="suc-info-icon">📧</div>
-            <div class="suc-info-text">Notificação enviada para o e-mail cadastrado</div>
+          <div class="suc-info-item" id="suc-email-info">
+            <div class="suc-info-icon" id="suc-email-icon">📧</div>
+            <div class="suc-info-text" id="suc-email-texto">Verificando notificação...</div>
           </div>
           <div class="suc-info-item">
             <div class="suc-info-icon">⏰</div>
@@ -1696,6 +1696,7 @@ img { max-width: 100%; height: auto; }
             <button class="campo-tab-btn active" onclick="switchContaTab('empresa',this)">🏢 Dados da Empresa</button>
             <button class="campo-tab-btn" onclick="switchContaTab('politica',this)">📋 Política de Chamados</button>
             <button class="campo-tab-btn" onclick="switchContaTab('notificacoes',this)">🔔 Notificações</button>
+            <button class="campo-tab-btn" onclick="switchContaTab('email',this)">📧 E-mail</button>
             <button class="campo-tab-btn" onclick="switchContaTab('aparencia',this)">🎨 Aparência</button>
           </div>
 
@@ -1833,6 +1834,60 @@ img { max-width: 100%; height: auto; }
                 <button class="btn btn-primary" onclick="salvarNotificacoes()">💾 Salvar notificações</button>
                 <p id="conta-notif-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Preferências salvas!</p>
               </div>
+            </div>
+          </div>
+
+          <!-- ABA: E-mail -->
+          <div class="conta-tab" id="conta-tab-email" style="display:none;">
+            <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
+              <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📧 Configuração de E-mail (EmailJS)</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.7;">
+                O sistema usa o <strong>EmailJS</strong> para enviar notificações. É gratuito para até 200 e-mails/mês.<br>
+                <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent);">Crie sua conta em emailjs.com</a> → crie um serviço de e-mail → crie um template → copie as credenciais abaixo.
+              </div>
+
+              <div class="field">
+                <label>Service ID <span class="req">*</span></label>
+                <input type="text" id="cfg-emailjs-service" placeholder="service_xxxxxxx"/>
+                <div style="font-size:11px;color:var(--muted);margin-top:4px;">Ex: service_abc123 — encontrado em Email Services no painel do EmailJS</div>
+              </div>
+              <div class="field">
+                <label>Template ID <span class="req">*</span></label>
+                <input type="text" id="cfg-emailjs-template" placeholder="template_xxxxxxx"/>
+                <div style="font-size:11px;color:var(--muted);margin-top:4px;">Ex: template_xyz456 — encontrado em Email Templates</div>
+              </div>
+              <div class="field">
+                <label>Public Key <span class="req">*</span></label>
+                <input type="text" id="cfg-emailjs-pubkey" placeholder="AbCdEfGhIjKlMnOp"/>
+                <div style="font-size:11px;color:var(--muted);margin-top:4px;">Encontrado em Account → General → Public Key</div>
+              </div>
+
+              <!-- Template sugerido -->
+              <div style="background:rgba(91,141,239,.06);border:1px solid rgba(91,141,239,.2);border-radius:12px;padding:16px;margin-top:8px;margin-bottom:16px;">
+                <div style="font-size:12px;font-weight:600;color:#8ab4ff;margin-bottom:10px;">📄 Template sugerido para o EmailJS</div>
+                <div style="font-size:11px;color:rgba(180,185,220,.8);line-height:1.8;font-family:var(--mono);">
+                  <div><strong>To Email:</strong> {{to_email}}</div>
+                  <div><strong>To Name:</strong> {{to_name}}</div>
+                  <div><strong>Subject:</strong> [EliTicket] {{ticket_num}} — {{assunto}}</div>
+                  <div style="margin-top:8px;"><strong>Body:</strong></div>
+                  <div style="padding:8px;background:rgba(0,0,0,.2);border-radius:6px;margin-top:4px;">
+                    Olá, {{to_name}}!<br><br>
+                    {{mensagem}}<br><br>
+                    Protocolo: {{ticket_num}}<br>
+                    Acesse o sistema para mais detalhes.<br><br>
+                    Equipe E-INFO Consultoria
+                  </div>
+                </div>
+              </div>
+
+              <!-- Status -->
+              <div id="cfg-email-status" style="display:none;font-size:12px;border-radius:8px;padding:10px 14px;margin-bottom:14px;"></div>
+
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="salvarConfigEmail()">💾 Salvar credenciais</button>
+                <button class="btn btn-ghost" onclick="testarEmail()">📤 Enviar e-mail de teste</button>
+              </div>
+              <p id="conta-email-cfg-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;"></p>
             </div>
           </div>
 
@@ -2545,31 +2600,93 @@ img { max-width: 100%; height: auto; }
 const SUPABASE_URL = 'https://vubwgibczdzoyqwxnhma.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_iZtv8vEC4fr9Lw5VufVZaA_0drcPhCT';
 
-// ── EMAILJS CONFIG (opcional — preencha para ativar notificações por e-mail) ──
-// 1. Crie conta gratuita em https://www.emailjs.com
-// 2. Crie um Email Service e um Template
-// 3. Cole aqui o Service ID, Template ID e Public Key
-const EMAILJS_SERVICE_ID = '';   // ex: 'service_xxxxx'
-const EMAILJS_TEMPLATE_ID = '';  // ex: 'template_xxxxx'
-const EMAILJS_PUBLIC_KEY = '';   // ex: 'AbCdEfGhIjKlMnOp'
+// ── EMAILJS CONFIG ──────────────────────────────────────
+// Credenciais carregadas do Supabase (configuracoes.email)
+// Configure pela aba "E-mail" em Administração → Configurações da Conta
+let EMAILJS_SERVICE_ID  = '';
+let EMAILJS_TEMPLATE_ID = '';
+let EMAILJS_PUBLIC_KEY  = '';
+let EMAILJS_INITIALIZED = false;
 
-if (EMAILJS_PUBLIC_KEY && window.emailjs) {
-  emailjs.init(EMAILJS_PUBLIC_KEY);
+function inicializarEmailJS(serviceId, templateId, pubKey) {
+  EMAILJS_SERVICE_ID  = serviceId  || '';
+  EMAILJS_TEMPLATE_ID = templateId || '';
+  EMAILJS_PUBLIC_KEY  = pubKey     || '';
+  if (EMAILJS_PUBLIC_KEY && window.emailjs && !EMAILJS_INITIALIZED) {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+    EMAILJS_INITIALIZED = true;
+  }
+}
+
+async function carregarConfigEmail() {
+  try {
+    const { data } = await sb.from('configuracoes').select('email').eq('id',1).single();
+    if (data?.email) {
+      inicializarEmailJS(data.email.serviceId, data.email.templateId, data.email.publicKey);
+    }
+  } catch(e) {}
+}
+
+async function salvarConfigEmail() {
+  const serviceId  = document.getElementById('cfg-emailjs-service').value.trim();
+  const templateId = document.getElementById('cfg-emailjs-template').value.trim();
+  const publicKey  = document.getElementById('cfg-emailjs-pubkey').value.trim();
+  const statusEl   = document.getElementById('cfg-email-status');
+
+  if (!serviceId || !templateId || !publicKey) {
+    statusEl.textContent = '⚠️ Preencha todos os três campos antes de salvar.';
+    statusEl.style.cssText = 'display:block;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);color:#f5a623;font-size:12px;border-radius:8px;padding:10px 14px;margin-bottom:14px;';
+    return;
+  }
+
+  await sb.from('configuracoes').upsert({ id:1, email: { serviceId, templateId, publicKey }, updated_at: new Date().toISOString() });
+  inicializarEmailJS(serviceId, templateId, publicKey);
+
+  statusEl.textContent = '✅ Credenciais salvas! E-mails serão enviados a partir de agora.';
+  statusEl.style.cssText = 'display:block;background:rgba(47,216,154,.1);border:1px solid rgba(47,216,154,.3);color:#2fd89a;font-size:12px;border-radius:8px;padding:10px 14px;margin-bottom:14px;';
+
+  const msg = document.getElementById('conta-email-cfg-msg');
+  if (msg) { msg.textContent = '✅ Configurações salvas com sucesso!'; msg.style.display = 'block'; setTimeout(()=>msg.style.display='none',3000); }
+  showToast('Configurações de e-mail salvas!','ok');
+}
+
+async function testarEmail() {
+  if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
+    showToast('Salve as credenciais antes de testar.','err'); return;
+  }
+  const email = currentPerfil?.email;
+  if (!email) { showToast('Perfil sem e-mail cadastrado.','err'); return; }
+  showToast('Enviando e-mail de teste...','ok');
+  await enviarEmailNotificacao(email, currentPerfil.nome || 'Admin', 'ET-TESTE', 'Teste de Configuração',
+    'Este é um e-mail de teste do EliTicket. Se você recebeu esta mensagem, as notificações estão funcionando corretamente!');
+  showToast('E-mail de teste enviado para ' + email,'ok');
+}
+
+function preencherConfigEmail() {
+  document.getElementById('cfg-emailjs-service').value  = EMAILJS_SERVICE_ID  || '';
+  document.getElementById('cfg-emailjs-template').value = EMAILJS_TEMPLATE_ID || '';
+  document.getElementById('cfg-emailjs-pubkey').value   = EMAILJS_PUBLIC_KEY  || '';
+  const statusEl = document.getElementById('cfg-email-status');
+  if (EMAILJS_PUBLIC_KEY) {
+    statusEl.textContent = '✅ E-mail configurado e ativo.';
+    statusEl.style.cssText = 'display:block;background:rgba(47,216,154,.1);border:1px solid rgba(47,216,154,.3);color:#2fd89a;font-size:12px;border-radius:8px;padding:10px 14px;margin-bottom:14px;';
+  } else {
+    statusEl.textContent = '⚠️ E-mail não configurado — notificações desativadas.';
+    statusEl.style.cssText = 'display:block;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);color:#f5a623;font-size:12px;border-radius:8px;padding:10px 14px;margin-bottom:14px;';
+  }
 }
 
 async function enviarEmailNotificacao(toEmail, toName, ticketNum, assunto, mensagem) {
   if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
-    console.log('EmailJS não configurado — notificação ignorada.');
+    console.log('EmailJS não configurado — notificação ignorada para:', toEmail);
     return;
   }
   try {
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email: toEmail,
-      to_name: toName,
-      ticket_num: ticketNum,
-      assunto: assunto,
-      mensagem: mensagem
+      to_email: toEmail, to_name: toName,
+      ticket_num: ticketNum, assunto: assunto, mensagem: mensagem
     });
+    console.log('E-mail enviado para:', toEmail);
   } catch (e) {
     console.error('Erro ao enviar e-mail:', e);
   }
@@ -3043,6 +3160,17 @@ async function enviarChamado() {
   document.getElementById('suc-meta').textContent = `${area || 'Geral'} · ${cat || 'Sem categoria'} · Aberto em ${agora}`;
   document.getElementById('suc-prioridade').innerHTML = `<span style="color:${prio.cor};font-weight:700;">${prio.label}</span>`;
   document.getElementById('suc-sla-texto').textContent = `Prazo de resolução: até ${cfg.resolucao}h conforme SLA`;
+
+  // Atualiza ícone de e-mail conforme configuração real
+  const emailTexto = document.getElementById('suc-email-texto');
+  const emailIcone = document.getElementById('suc-email-icon');
+  if (EMAILJS_PUBLIC_KEY && emailTexto) {
+    emailTexto.textContent = 'Notificação enviada para o e-mail cadastrado';
+    if (emailIcone) emailIcone.textContent = '📧';
+  } else if (emailTexto) {
+    emailTexto.textContent = 'E-mail não configurado — configure em Administração → Configurações da Conta → E-mail';
+    if (emailIcone) emailIcone.textContent = '⚠️';
+  }
 
   const ss = document.getElementById('chamado-success');
   ss.style.display = 'flex';
@@ -4796,6 +4924,7 @@ async function loadConfig() {
     if (data.sla) SLA_CONFIG = data.sla;
     if (data.horario) HORARIO_CONFIG = data.horario;
     if (data.conta) CONTA_CONFIG = { ...CONTA_CONFIG, ...data.conta };
+    if (data.email) inicializarEmailJS(data.email.serviceId, data.email.templateId, data.email.publicKey);
   }
 }
 
@@ -4804,6 +4933,7 @@ function switchContaTab(tab, btn) {
   if (btn) btn.classList.add('active');
   document.querySelectorAll('.conta-tab').forEach(el=>el.style.display='none');
   document.getElementById('conta-tab-'+tab).style.display='block';
+  if (tab === 'email') preencherConfigEmail();
 }
 
 function preencherFormConta() {
