@@ -2897,10 +2897,14 @@ async function enviarChamado() {
     ai_sla: aiResult?.sla_horas ? String(aiResult.sla_horas) : '',
     anexos: anexoUrls.length ? anexoUrls : null,
     campos_personalizados: Object.keys(camposExtra).length ? camposExtra : null,
-    email_copia: emailCopia || null
+    ...(emailCopia ? { email_copia: emailCopia } : {})
   });
 
-  if (error) { showToast('Erro ao salvar chamado. Tente novamente.','err'); btn.innerHTML='Abrir chamado →'; btn.disabled=false; return; }
+  if (error) {
+    console.error('Erro ao salvar chamado:', error);
+    showToast('Erro ao salvar: ' + (error.message || 'Tente novamente.'), 'err');
+    btn.innerHTML='Abrir chamado →'; btn.disabled=false; return;
+  }
 
   // Chamado salvo no Supabase
 
