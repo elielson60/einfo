@@ -1093,8 +1093,8 @@ img { max-width: 100%; height: auto; }
             </select>
             <div class="field-err" id="err-area">Selecione o departamento de atendimento</div>
           </div>
-          <div class="field">
-            <label>Tipo de Categoria <span class="req">*</span></label>
+          <div class="field" id="campo-categoria">
+            <label>Tipo de Categoria <span class="req" id="cat-req">*</span></label>
             <select id="c-cat" onchange="renderCamposExtra()">
               <option value="">Selecionar...</option>
             </select>
@@ -1115,6 +1115,10 @@ img { max-width: 100%; height: auto; }
             <textarea id="c-desc" placeholder="O que aconteceu? Quando começou? Afeta mais alguém? O que já foi tentado?"></textarea>
             <div class="field-err" id="err-desc">Descreva com mais detalhes</div>
           </div>
+          <div class="field" id="campo-email-copia" style="display:none;">
+            <label>E-mail para cópia <span style="color:var(--dim);font-weight:400;">(opcional)</span></label>
+            <input type="email" id="c-email-copia" placeholder="alguem@empresa.com"/>
+          </div>
           <div class="field">
             <label>Anexar imagens <span style="color:var(--dim);font-weight:400;">(opcional)</span></label>
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -1129,7 +1133,7 @@ img { max-width: 100%; height: auto; }
             <div class="preview-grid" id="preview-grid" style="margin-top:8px;"></div>
           </div>
 
-          <div class="field">
+          <div class="field" id="campo-prioridade">
             <label>Impacto <span class="req">*</span></label>
             <div class="prio-grid">
               <div class="prio-pill" onclick="selPrio(this,'critico')"><span class="pi">🔴</span><span class="pn">Crítico</span><span class="pd">Sistema parado</span></div>
@@ -2205,6 +2209,9 @@ img { max-width: 100%; height: auto; }
         </div>
         <button class="btn btn-sm det-btn-finalizar" id="det-btn-encerrar" onclick="acaoDetalhe('encerrar')">✓ Encerrar Chamado</button>
       </div>
+      <div class="det-actions" id="det-actions-cliente" style="display:none;">
+        <button class="btn btn-sm det-btn-finalizar" onclick="acaoDetalhe('encerrar')">✓ Encerrar Chamado</button>
+      </div>
     </div>
 
     <!-- Info grid -->
@@ -2564,6 +2571,19 @@ function getAvaliacaoPendente() {
 }
 
 function irParaNovoChamado() {
+  const pol = CONTA_CONFIG.politica || {};
+
+  // Política: "Apenas permitir abertura de chamados se não houver avaliações pendentes"
+  if (pol['pol-bloquear-aval-pendente'] && !isStaffRole(currentPerfil?.role)) {
+    const pendente = getAvaliacaoPendente();
+    if (pendente) {
+      showToast('Avalie seu chamado anterior antes de abrir um novo.', 'err');
+      // Abre o modal de avaliação diretamente
+      setTimeout(() => openModalAval(pendente.id), 400);
+      return;
+    }
+  }
+
   novoChamado();
   showPage('chamado');
   atualizarBotaoVoltar();
@@ -2823,11 +2843,23 @@ async function enviarChamado() {
   const area = document.getElementById('c-area').value;
   let ok = true;
   const cat = document.getElementById('c-cat').value;
+  const pol = CONTA_CONFIG.politica || {};
+
   if (!area) { document.getElementById('err-area').style.display='block'; ok=false; } else document.getElementById('err-area').style.display='none';
   if (!titulo) { document.getElementById('err-titulo').style.display='block'; ok=false; } else document.getElementById('err-titulo').style.display='none';
   if (!desc) { document.getElementById('err-desc').style.display='block'; ok=false; } else document.getElementById('err-desc').style.display='none';
-  if (!cat) { document.getElementById('err-cat').style.display='block'; ok=false; } else document.getElementById('err-cat').style.display='none';
+
+  // Política: "Exigir categoria na criação de chamado"
+  const categoriaObrigatoria = pol['pol-exigir-categoria'] !== false; // padrão: obrigatório
+  if (categoriaObrigatoria && !cat) { document.getElementById('err-cat').style.display='block'; ok=false; } else document.getElementById('err-cat').style.display='none';
+
   if (!selectedPrio) { document.getElementById('err-prio').style.display='block'; ok=false; } else document.getElementById('err-prio').style.display='none';
+
+  // Política: "Exigir ao menos 1 anexo na abertura de chamados críticos"
+  if (pol['pol-anexo-obrigatorio'] && selectedPrio === 'critico' && (!selectedFiles || !selectedFiles.length)) {
+    showToast('Chamados críticos exigem ao menos 1 anexo, conforme a política da empresa.','err');
+    ok = false;
+  }
 
   const { valores: camposExtra, ok: okExtra } = lerCamposExtra();
   if (!okExtra) ok = false;
@@ -2845,6 +2877,10 @@ async function enviarChamado() {
   const ticketNum = 'ET-' + String(novoProtocolo).padStart(5, '0');
 
 
+  // Política: "Cliente poderá informar e-mail de cópia ao criar um chamado"
+  const emailCopia = ((CONTA_CONFIG.politica||{})['pol-email-copia'] && document.getElementById('c-email-copia'))
+    ? document.getElementById('c-email-copia').value.trim() : '';
+
   // Upload imagens primeiro
   const anexoUrls = await uploadAnexos(ticketNum);
 
@@ -2860,7 +2896,8 @@ async function enviarChamado() {
     ai_acao: '',
     ai_sla: aiResult?.sla_horas ? String(aiResult.sla_horas) : '',
     anexos: anexoUrls.length ? anexoUrls : null,
-    campos_personalizados: Object.keys(camposExtra).length ? camposExtra : null
+    campos_personalizados: Object.keys(camposExtra).length ? camposExtra : null,
+    email_copia: emailCopia || null
   });
 
   if (error) { showToast('Erro ao salvar chamado. Tente novamente.','err'); btn.innerHTML='Abrir chamado →'; btn.disabled=false; return; }
@@ -2874,6 +2911,12 @@ async function enviarChamado() {
       `Novo chamado aberto por ${currentPerfil.nome} (${currentPerfil.empresa}/${area}). Prioridade: ${selectedPrio}.`);
   });
 
+  // Notifica o e-mail de cópia informado, se houver
+  if (emailCopia) {
+    enviarEmailNotificacao(emailCopia, 'Cópia', ticketNum, titulo,
+      `Você foi adicionado em cópia no chamado aberto por ${currentPerfil.nome}.`);
+  }
+
   document.getElementById('chamado-form').style.display = 'none';
   const ss = document.getElementById('chamado-success');
   ss.style.display = 'flex';
@@ -2886,6 +2929,7 @@ async function enviarChamado() {
 }
 
 function novoChamado() {
+  const pol = CONTA_CONFIG.politica || {};
   document.getElementById('chamado-form').style.display = 'block';
   document.getElementById('chamado-success').style.display = 'none';
   document.getElementById('c-cat').value = '';
@@ -2902,6 +2946,29 @@ function novoChamado() {
   document.getElementById('upload-area').style.opacity='1'; document.getElementById('file-input').disabled=false;
   document.getElementById('file-input').value='';
 
+  // Política: "Exigir categoria na criação de chamado"
+  const campoCat = document.getElementById('campo-categoria');
+  const catReq = document.getElementById('cat-req');
+  if (campoCat) {
+    const exigirCat = pol['pol-exigir-categoria'] !== false;
+    if (catReq) catReq.style.display = exigirCat ? 'inline' : 'none';
+  }
+
+  // Política: "Cliente poderá informar e-mail de cópia ao criar um chamado"
+  const campoCC = document.getElementById('campo-email-copia');
+  if (campoCC) {
+    campoCC.style.display = pol['pol-email-copia'] ? 'block' : 'none';
+    document.getElementById('c-email-copia').value = '';
+  }
+
+  // Política: "Cliente pode definir a prioridade do chamado"
+  const campoPrio = document.getElementById('campo-prioridade');
+  const errPrio = document.getElementById('err-prio');
+  if (campoPrio) {
+    const clienteDefinePrio = (pol['pol-cliente-define-prioridade'] !== false) || isStaffRole(currentPerfil?.role);
+    campoPrio.style.display = clienteDefinePrio ? 'block' : 'none';
+    if (!clienteDefinePrio) { selectedPrio = 'medio'; if (errPrio) errPrio.style.display = 'none'; }
+  }
 }
 
 // ── ADMIN ────────────────────────────────────
@@ -3832,10 +3899,19 @@ let muTabAtual = 'abertos';
 
 async function loadMeusChamados() {
   if (!currentUser) return;
-  const { data } = await sb.from('chamados')
-    .select('*')
-    .eq('usuario_id', currentUser.id)
-    .order('criado_em', { ascending: false });
+  const pol = CONTA_CONFIG.politica || {};
+
+  let query = sb.from('chamados').select('*');
+
+  // Política: "Membros de uma organização podem visualizar chamados de outros membros"
+  if (pol['pol-visualizar-chamados-org'] && currentPerfil?.empresa) {
+    // Busca chamados do próprio usuário OU da mesma empresa
+    query = query.or(`usuario_id.eq.${currentUser.id},empresa.eq.${currentPerfil.empresa}`);
+  } else {
+    query = query.eq('usuario_id', currentUser.id);
+  }
+
+  const { data } = await query.order('criado_em', { ascending: false });
   allMeusChamados = data || [];
   aplicarFiltroMeus();
 }
@@ -4845,10 +4921,20 @@ function openModalDetalhe(id) {
     prazoBar.style.display = 'none';
   }
 
-  // Botões de ação só para staff (admin/atendente)
+  // Botões de ação: staff vê menu completo, cliente vê só "Encerrar" se política permitir
   const isStaff = currentPerfil && isStaffRole(currentPerfil.role);
+  const pol = CONTA_CONFIG.politica || {};
+  const chamadoAtivo = c.status !== 'resolvido';
+
   document.getElementById('det-actions-staff').style.display = isStaff ? 'flex' : 'none';
   document.getElementById('det-mais-menu').classList.remove('open');
+
+  // Cliente pode encerrar somente se: política ativa + chamado não encerrado + é o dono
+  const clientePodeEncerrar = !isStaff && pol['pol-cliente-finaliza'] && chamadoAtivo && c.usuario_id === currentUser?.id;
+  document.getElementById('det-actions-cliente').style.display = clientePodeEncerrar ? 'flex' : 'none';
+
+  // Política: "Visualizar deadline em detalhes do chamado"
+  if (!pol['pol-visualizar-deadline'] && prazoBar) prazoBar.style.display = 'none';
 
   document.getElementById('det-desc').textContent = c.descricao || '';
 
@@ -4907,10 +4993,26 @@ async function acaoDetalhe(tipo) {
     await registrarLog(c, 'encerramento', `Chamado encerrado por ${currentPerfil?.nome || 'staff'}.`);
     await sb.from('chamados').update({status:'resolvido', atualizado_em:new Date().toISOString(), comentarios:c.comentarios}).eq('id', id);
     showToast('Chamado encerrado!','ok');
+
     const { data: perfil } = await sb.from('perfis').select('email,nome').eq('id', c.usuario_id).single();
-    if (perfil?.email) enviarEmailNotificacao(perfil.email, perfil.nome, c.ticket_num, c.titulo, 'Seu chamado foi encerrado pelo suporte técnico.');
+
+    // Política: "Enviar avaliação ao solicitante após finalizar um chamado"
+    if (pol['pol-avaliacao-email'] !== false && perfil?.email) {
+      enviarEmailNotificacao(perfil.email, perfil.nome, c.ticket_num, c.titulo,
+        'Seu chamado foi encerrado. Por favor, avalie o atendimento acessando o sistema e clicando em ⭐ Avaliar.');
+    } else if (perfil?.email) {
+      enviarEmailNotificacao(perfil.email, perfil.nome, c.ticket_num, c.titulo,
+        'Seu chamado foi encerrado pelo suporte técnico.');
+    }
+
+    // Notifica e-mail de cópia se houver
+    if (c.email_copia) {
+      enviarEmailNotificacao(c.email_copia, 'Cópia', c.ticket_num, c.titulo,
+        'O chamado em que você estava em cópia foi encerrado.');
+    }
+
     closeModalDetalhe();
-    loadChamados();
+    if (isStaffRole(currentPerfil?.role)) loadChamados(); else loadMeusChamados();
 
   } else if (tipo === 'cancelar') {
     if (!confirm('Cancelar este chamado?')) return;
