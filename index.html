@@ -523,6 +523,47 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .atd-mini-chart-title{font-size:10px;color:rgba(161,161,170,.6);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
 .atd-tip{background:linear-gradient(135deg,rgba(79,140,255,.08),rgba(167,139,250,.08));border:1px solid rgba(79,140,255,.2);border-radius:10px;padding:10px 12px;font-size:11px;color:rgba(200,200,255,.85);line-height:1.6;}
 .atd-tip.success{background:linear-gradient(135deg,rgba(62,207,142,.08),rgba(62,207,142,.04));border-color:rgba(62,207,142,.25);color:rgba(100,255,180,.9);}
+
+/* ══ TELA DE SUCESSO — CHAMADO ABERTO ══════════════════ */
+.success-screen{display:flex;flex-direction:column;align-items:center;padding:48px 24px 60px;animation:sucFade .5s ease both;}
+@keyframes sucFade{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+/* Anel animado */
+.suc-ring-wrap{position:relative;width:110px;height:110px;margin-bottom:24px;}
+.suc-ring{width:110px;height:110px;transform:rotate(-90deg);}
+.suc-ring-bg{fill:none;stroke:rgba(47,216,154,.12);stroke-width:6;}
+.suc-ring-fill{fill:none;stroke:url(#sucGrad);stroke-width:6;stroke-linecap:round;
+  stroke-dasharray:339;stroke-dashoffset:339;animation:sucRing .9s cubic-bezier(.4,0,.2,1) .15s forwards;}
+@keyframes sucRing{to{stroke-dashoffset:0;}}
+.suc-check{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.suc-check svg{width:48px;height:48px;}
+.suc-checkmark{stroke-dasharray:60;stroke-dashoffset:60;animation:sucCheck .4s ease .9s forwards;}
+@keyframes sucCheck{to{stroke-dashoffset:0;}}
+
+/* Texts */
+.suc-title{font-size:26px;font-weight:800;color:#e0e0f0;letter-spacing:-.02em;margin-bottom:8px;text-align:center;}
+.suc-sub{font-size:14px;color:rgba(180,185,220,.7);text-align:center;max-width:420px;line-height:1.7;margin-bottom:28px;}
+
+/* Card do protocolo */
+.suc-card{background:rgba(255,255,255,.04);border:1px solid rgba(91,141,239,.25);border-radius:18px;padding:20px 24px;width:100%;max-width:520px;margin-bottom:24px;box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.suc-card-row{display:flex;align-items:center;gap:0;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.07);}
+.suc-card-item{flex:1;text-align:center;}
+.suc-card-divider{width:1px;height:40px;background:rgba(255,255,255,.08);flex-shrink:0;}
+.suc-card-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(160,160,200,.5);margin-bottom:5px;}
+.suc-card-value{font-size:15px;font-weight:700;color:#e0e0f0;}
+.suc-protocolo{font-family:var(--mono);font-size:18px;color:#8ab4ff;letter-spacing:.06em;}
+.suc-card-titulo{font-size:14px;font-weight:600;color:#e0e0f0;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.suc-card-meta{font-size:12px;color:rgba(160,160,200,.6);}
+
+/* Info row */
+.suc-info-row{display:flex;gap:12px;width:100%;max-width:520px;margin-bottom:28px;flex-wrap:wrap;}
+.suc-info-item{flex:1;min-width:140px;display:flex;align-items:flex-start;gap:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:12px 14px;}
+.suc-info-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.suc-info-text{font-size:12px;color:rgba(180,185,220,.75);line-height:1.5;}
+
+/* Ações */
+.suc-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.suc-btn-meus{display:flex;align-items:center;gap:7px;}
 .atd-tip-title{font-weight:700;margin-bottom:4px;font-size:11px;}
 .atd-tip li{margin-bottom:2px;padding-left:4px;}
 
@@ -788,6 +829,15 @@ img { max-width: 100%; height: auto; }
 </style>
 </head>
 <body>
+<!-- SVG defs globais -->
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <linearGradient id="sucGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2fd89a;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#5b8def;stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+</svg>
 
 <!-- SIDEBAR OVERLAY -->
 <div class="sb-overlay" id="sb-overlay" onclick="toggleSidebar(false)" style="display:none;"></div>
@@ -1153,16 +1203,76 @@ img { max-width: 100%; height: auto; }
         </div>
       </div>
 
-      <div class="success-screen" id="chamado-success">
-        <div class="success-icon">✓</div>
-        <h2 style="font-size:20px;font-weight:600;margin-bottom:6px;">Chamado aberto!</h2>
-        <p style="font-size:13px;color:var(--muted);max-width:360px;line-height:1.7;">O time de TI foi notificado e já está ciente do seu chamado.</p>
-        <div class="ticket-box" id="ticket-box">—</div>
-        <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;justify-content:center;">
-        <button class="btn btn-ghost" onclick="irParaNovoChamado()">Abrir outro chamado</button>
-        <button class="btn btn-ghost" onclick="showPage('meus-chamados');loadMeusChamados();">📋 Meus chamados</button>
-        <button class="btn btn-primary" id="btn-painel" onclick="irParaPainel()" style="display:none;">Ver painel admin</button>
-      </div>
+      <div class="success-screen" id="chamado-success" style="display:none;">
+
+        <!-- Anel de sucesso animado -->
+        <div class="suc-ring-wrap">
+          <svg class="suc-ring" viewBox="0 0 120 120">
+            <circle class="suc-ring-bg" cx="60" cy="60" r="54"/>
+            <circle class="suc-ring-fill" cx="60" cy="60" r="54"/>
+          </svg>
+          <div class="suc-check">
+            <svg viewBox="0 0 52 52" fill="none">
+              <polyline class="suc-checkmark" points="14,27 23,36 38,20" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Título -->
+        <div class="suc-title">Chamado aberto com sucesso!</div>
+        <div class="suc-sub">Seu chamado foi registrado e a equipe de TI já foi notificada.</div>
+
+        <!-- Card do protocolo -->
+        <div class="suc-card">
+          <div class="suc-card-row">
+            <div class="suc-card-item">
+              <div class="suc-card-label">Número do Protocolo</div>
+              <div class="suc-card-value suc-protocolo" id="suc-protocolo">—</div>
+            </div>
+            <div class="suc-card-divider"></div>
+            <div class="suc-card-item">
+              <div class="suc-card-label">Status</div>
+              <div class="suc-card-value" style="display:flex;align-items:center;gap:6px;">
+                <span style="width:8px;height:8px;border-radius:50%;background:#2fd89a;box-shadow:0 0 8px #2fd89a;"></span>
+                <span style="color:#2fd89a;font-weight:700;">Aberto</span>
+              </div>
+            </div>
+            <div class="suc-card-divider"></div>
+            <div class="suc-card-item">
+              <div class="suc-card-label">Prioridade</div>
+              <div class="suc-card-value" id="suc-prioridade">—</div>
+            </div>
+          </div>
+          <div class="suc-card-titulo" id="suc-titulo-chamado">—</div>
+          <div class="suc-card-meta" id="suc-meta">—</div>
+        </div>
+
+        <!-- Info extra -->
+        <div class="suc-info-row">
+          <div class="suc-info-item">
+            <div class="suc-info-icon">📧</div>
+            <div class="suc-info-text">Notificação enviada para o e-mail cadastrado</div>
+          </div>
+          <div class="suc-info-item">
+            <div class="suc-info-icon">⏰</div>
+            <div class="suc-info-text" id="suc-sla-texto">Prazo de atendimento conforme SLA</div>
+          </div>
+          <div class="suc-info-item">
+            <div class="suc-info-icon">🔍</div>
+            <div class="suc-info-text">Acompanhe o andamento em "Meus chamados"</div>
+          </div>
+        </div>
+
+        <!-- Ações -->
+        <div class="suc-actions">
+          <button class="btn btn-ghost" onclick="irParaNovoChamado()">+ Abrir outro chamado</button>
+          <button class="btn btn-primary suc-btn-meus" onclick="showPage('meus-chamados');loadMeusChamados();">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Meus chamados
+          </button>
+          <button class="btn btn-primary" id="btn-painel" onclick="irParaPainel()" style="display:none;">Ver painel admin</button>
+        </div>
+
       </div>
     </div>
   </div>
@@ -2922,12 +3032,33 @@ async function enviarChamado() {
   }
 
   document.getElementById('chamado-form').style.display = 'none';
+
+  // Preenche tela de sucesso com dados ricos
+  const prioMap = {critico:{label:'🔴 Crítico',cor:'#f05a5a'}, alto:{label:'🟠 Alto',cor:'#f5a623'}, medio:{label:'🔵 Médio',cor:'#5b8def'}, baixo:{label:'🟢 Baixo',cor:'#2fd89a'}};
+  const prio = prioMap[selectedPrio] || {label:selectedPrio, cor:'#7a7a8c'};
+  const agora = new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const cfg = SLA_CONFIG[selectedPrio] || {resolucao:24};
+
+  document.getElementById('suc-protocolo').textContent = ticketNum;
+  document.getElementById('suc-titulo-chamado').textContent = titulo;
+  document.getElementById('suc-meta').textContent = `${area || 'Geral'} · ${cat || 'Sem categoria'} · Aberto em ${agora}`;
+  document.getElementById('suc-prioridade').innerHTML = `<span style="color:${prio.cor};font-weight:700;">${prio.label}</span>`;
+  document.getElementById('suc-sla-texto').textContent = `Prazo de resolução: até ${cfg.resolucao}h conforme SLA`;
+
   const ss = document.getElementById('chamado-success');
   ss.style.display = 'flex';
-  document.getElementById('ticket-box').textContent = ticketNum + ' — ' + titulo.substring(0,45)+(titulo.length>45?'...':'');
+
+  // Re-anima o anel SVG a cada abertura
+  const ring = ss.querySelector('.suc-ring-fill');
+  const check = ss.querySelector('.suc-checkmark');
+  if (ring) { ring.style.animation='none'; void ring.offsetWidth; ring.style.animation=''; }
+  if (check) { check.style.animation='none'; void check.offsetWidth; check.style.animation=''; }
+
   const btnPainel = document.getElementById('btn-painel');
   if (btnPainel && currentPerfil && isStaffRole(currentPerfil.role)) {
     btnPainel.style.display = 'inline-flex';
+  } else if (btnPainel) {
+    btnPainel.style.display = 'none';
   }
   btn.innerHTML='Abrir chamado →'; btn.disabled=false;
 }
