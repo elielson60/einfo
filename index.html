@@ -1840,44 +1840,43 @@ img { max-width: 100%; height: auto; }
           <!-- ABA: E-mail -->
           <div class="conta-tab" id="conta-tab-email" style="display:none;">
             <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
-              <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📧 Configuração de E-mail (EmailJS)</div>
+              <div style="font-size:14px;font-weight:500;margin-bottom:4px;">📧 Configuração de E-mail (Hostgator)</div>
               <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.7;">
-                O sistema usa o <strong>EmailJS</strong> para enviar notificações. É gratuito para até 200 e-mails/mês.<br>
-                <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent);">Crie sua conta em emailjs.com</a> → crie um serviço de e-mail → crie um template → copie as credenciais abaixo.
+                O sistema usa um arquivo PHP hospedado no seu Hostgator para enviar e-mails via SMTP.<br>
+                Sem limites mensais, sem dependência de serviço externo.
               </div>
 
-              <div class="field">
-                <label>Service ID <span class="req">*</span></label>
-                <input type="text" id="cfg-emailjs-service" placeholder="service_xxxxxxx"/>
-                <div style="font-size:11px;color:var(--muted);margin-top:4px;">Ex: service_abc123 — encontrado em Email Services no painel do EmailJS</div>
-              </div>
-              <div class="field">
-                <label>Template ID <span class="req">*</span></label>
-                <input type="text" id="cfg-emailjs-template" placeholder="template_xxxxxxx"/>
-                <div style="font-size:11px;color:var(--muted);margin-top:4px;">Ex: template_xyz456 — encontrado em Email Templates</div>
-              </div>
-              <div class="field">
-                <label>Public Key <span class="req">*</span></label>
-                <input type="text" id="cfg-emailjs-pubkey" placeholder="AbCdEfGhIjKlMnOp"/>
-                <div style="font-size:11px;color:var(--muted);margin-top:4px;">Encontrado em Account → General → Public Key</div>
-              </div>
-
-              <!-- Template sugerido -->
-              <div style="background:rgba(91,141,239,.06);border:1px solid rgba(91,141,239,.2);border-radius:12px;padding:16px;margin-top:8px;margin-bottom:16px;">
-                <div style="font-size:12px;font-weight:600;color:#8ab4ff;margin-bottom:10px;">📄 Template sugerido para o EmailJS</div>
-                <div style="font-size:11px;color:rgba(180,185,220,.8);line-height:1.8;font-family:var(--mono);">
-                  <div><strong>To Email:</strong> {{to_email}}</div>
-                  <div><strong>To Name:</strong> {{to_name}}</div>
-                  <div><strong>Subject:</strong> [EliTicket] {{ticket_num}} — {{assunto}}</div>
-                  <div style="margin-top:8px;"><strong>Body:</strong></div>
-                  <div style="padding:8px;background:rgba(0,0,0,.2);border-radius:6px;margin-top:4px;">
-                    Olá, {{to_name}}!<br><br>
-                    {{mensagem}}<br><br>
-                    Protocolo: {{ticket_num}}<br>
-                    Acesse o sistema para mais detalhes.<br><br>
-                    Equipe E-INFO Consultoria
+              <!-- Passo a passo -->
+              <div style="background:rgba(91,141,239,.06);border:1px solid rgba(91,141,239,.2);border-radius:12px;padding:16px;margin-bottom:18px;">
+                <div style="font-size:12px;font-weight:600;color:#8ab4ff;margin-bottom:12px;">🚀 Passo a passo de instalação</div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <div style="display:flex;gap:10px;align-items:flex-start;">
+                    <span style="background:rgba(91,141,239,.3);color:#8ab4ff;font-size:10px;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">1</span>
+                    <span style="font-size:12px;color:rgba(180,185,220,.85);line-height:1.6;">Baixe o arquivo <strong style="color:#e0e0f0;">send_email.php</strong> que foi gerado junto com este sistema</span>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start;">
+                    <span style="background:rgba(91,141,239,.3);color:#8ab4ff;font-size:10px;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">2</span>
+                    <span style="font-size:12px;color:rgba(180,185,220,.85);line-height:1.6;">Abra o arquivo e edite as 4 linhas de configuração no topo: <strong style="color:#e0e0f0;">SMTP_HOST, SMTP_USER, SMTP_PASS, EMAIL_FROM</strong></span>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start;">
+                    <span style="background:rgba(91,141,239,.3);color:#8ab4ff;font-size:10px;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">3</span>
+                    <span style="font-size:12px;color:rgba(180,185,220,.85);line-height:1.6;">No cPanel do Hostgator, crie uma conta de e-mail em <strong style="color:#e0e0f0;">E-mail → Contas de E-mail</strong><br>Ex: <span style="font-family:var(--mono);color:#8ab4ff;">noreply@martinsimport.com.br</span></span>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start;">
+                    <span style="background:rgba(91,141,239,.3);color:#8ab4ff;font-size:10px;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">4</span>
+                    <span style="font-size:12px;color:rgba(180,185,220,.85);line-height:1.6;">Faça upload do arquivo para o Hostgator via <strong style="color:#e0e0f0;">Gerenciador de Arquivos → public_html/eliticket/send_email.php</strong></span>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start;">
+                    <span style="background:rgba(91,141,239,.3);color:#8ab4ff;font-size:10px;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">5</span>
+                    <span style="font-size:12px;color:rgba(180,185,220,.85);line-height:1.6;">Cole a URL do arquivo no campo abaixo e clique em Salvar</span>
                   </div>
                 </div>
+              </div>
+
+              <div class="field">
+                <label>URL do send_email.php <span class="req">*</span></label>
+                <input type="url" id="cfg-email-phpurl" placeholder="https://seudominio.com.br/eliticket/send_email.php"/>
+                <div style="font-size:11px;color:var(--muted);margin-top:4px;">Ex: https://martinsimport.com.br/eliticket/send_email.php</div>
               </div>
 
               <!-- Status -->
@@ -2600,95 +2599,80 @@ img { max-width: 100%; height: auto; }
 const SUPABASE_URL = 'https://vubwgibczdzoyqwxnhma.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_iZtv8vEC4fr9Lw5VufVZaA_0drcPhCT';
 
-// ── EMAILJS CONFIG ──────────────────────────────────────
-// Credenciais carregadas do Supabase (configuracoes.email)
+// ── E-MAIL VIA PHP (Hostgator) ──────────────────────────
+// URL do send_email.php hospedado no Hostgator
 // Configure pela aba "E-mail" em Administração → Configurações da Conta
-let EMAILJS_SERVICE_ID  = '';
-let EMAILJS_TEMPLATE_ID = '';
-let EMAILJS_PUBLIC_KEY  = '';
-let EMAILJS_INITIALIZED = false;
-
-function inicializarEmailJS(serviceId, templateId, pubKey) {
-  EMAILJS_SERVICE_ID  = serviceId  || '';
-  EMAILJS_TEMPLATE_ID = templateId || '';
-  EMAILJS_PUBLIC_KEY  = pubKey     || '';
-  if (EMAILJS_PUBLIC_KEY && window.emailjs && !EMAILJS_INITIALIZED) {
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-    EMAILJS_INITIALIZED = true;
-  }
-}
+let EMAIL_PHP_URL = '';  // ex: https://seudominio.com.br/eliticket/send_email.php
 
 async function carregarConfigEmail() {
   try {
     const { data } = await sb.from('configuracoes').select('email').eq('id',1).single();
-    if (data?.email) {
-      inicializarEmailJS(data.email.serviceId, data.email.templateId, data.email.publicKey);
-    }
+    if (data?.email?.phpUrl) EMAIL_PHP_URL = data.email.phpUrl;
   } catch(e) {}
 }
 
 async function salvarConfigEmail() {
-  const serviceId  = document.getElementById('cfg-emailjs-service').value.trim();
-  const templateId = document.getElementById('cfg-emailjs-template').value.trim();
-  const publicKey  = document.getElementById('cfg-emailjs-pubkey').value.trim();
-  const statusEl   = document.getElementById('cfg-email-status');
+  const phpUrl  = document.getElementById('cfg-email-phpurl').value.trim();
+  const statusEl = document.getElementById('cfg-email-status');
 
-  if (!serviceId || !templateId || !publicKey) {
-    statusEl.textContent = '⚠️ Preencha todos os três campos antes de salvar.';
+  if (!phpUrl || !phpUrl.startsWith('http')) {
+    statusEl.textContent = '⚠️ Informe uma URL válida (começando com https://)';
     statusEl.style.cssText = 'display:block;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);color:#f5a623;font-size:12px;border-radius:8px;padding:10px 14px;margin-bottom:14px;';
     return;
   }
 
-  await sb.from('configuracoes').upsert({ id:1, email: { serviceId, templateId, publicKey }, updated_at: new Date().toISOString() });
-  inicializarEmailJS(serviceId, templateId, publicKey);
+  EMAIL_PHP_URL = phpUrl;
+  await sb.from('configuracoes').upsert({ id:1, email: { phpUrl }, updated_at: new Date().toISOString() });
 
-  statusEl.textContent = '✅ Credenciais salvas! E-mails serão enviados a partir de agora.';
+  statusEl.textContent = '✅ URL salva! E-mails serão enviados pelo Hostgator.';
   statusEl.style.cssText = 'display:block;background:rgba(47,216,154,.1);border:1px solid rgba(47,216,154,.3);color:#2fd89a;font-size:12px;border-radius:8px;padding:10px 14px;margin-bottom:14px;';
 
   const msg = document.getElementById('conta-email-cfg-msg');
-  if (msg) { msg.textContent = '✅ Configurações salvas com sucesso!'; msg.style.display = 'block'; setTimeout(()=>msg.style.display='none',3000); }
-  showToast('Configurações de e-mail salvas!','ok');
+  if (msg) { msg.textContent = '✅ Configuração salva!'; msg.style.display='block'; setTimeout(()=>msg.style.display='none',3000); }
+  showToast('URL de e-mail salva!','ok');
 }
 
 async function testarEmail() {
-  if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
-    showToast('Salve as credenciais antes de testar.','err'); return;
-  }
+  if (!EMAIL_PHP_URL) { showToast('Configure e salve a URL do send_email.php antes de testar.','err'); return; }
   const email = currentPerfil?.email;
   if (!email) { showToast('Perfil sem e-mail cadastrado.','err'); return; }
   showToast('Enviando e-mail de teste...','ok');
-  await enviarEmailNotificacao(email, currentPerfil.nome || 'Admin', 'ET-TESTE', 'Teste de Configuração',
-    'Este é um e-mail de teste do EliTicket. Se você recebeu esta mensagem, as notificações estão funcionando corretamente!');
-  showToast('E-mail de teste enviado para ' + email,'ok');
+  const ok = await enviarEmailNotificacao(email, currentPerfil.nome||'Admin', 'ET-TESTE', 'Teste de Configuração',
+    'Este é um e-mail de teste do EliTicket. Se você recebeu esta mensagem as notificações estão funcionando corretamente!');
+  if (ok) showToast('✅ E-mail de teste enviado para '+email,'ok');
+  else showToast('❌ Falha ao enviar — verifique o arquivo PHP e a URL.','err');
 }
 
 function preencherConfigEmail() {
-  document.getElementById('cfg-emailjs-service').value  = EMAILJS_SERVICE_ID  || '';
-  document.getElementById('cfg-emailjs-template').value = EMAILJS_TEMPLATE_ID || '';
-  document.getElementById('cfg-emailjs-pubkey').value   = EMAILJS_PUBLIC_KEY  || '';
+  const el = document.getElementById('cfg-email-phpurl');
+  if (el) el.value = EMAIL_PHP_URL || '';
   const statusEl = document.getElementById('cfg-email-status');
-  if (EMAILJS_PUBLIC_KEY) {
-    statusEl.textContent = '✅ E-mail configurado e ativo.';
+  if (EMAIL_PHP_URL) {
+    statusEl.textContent = '✅ E-mail configurado e ativo via Hostgator.';
     statusEl.style.cssText = 'display:block;background:rgba(47,216,154,.1);border:1px solid rgba(47,216,154,.3);color:#2fd89a;font-size:12px;border-radius:8px;padding:10px 14px;margin-bottom:14px;';
   } else {
-    statusEl.textContent = '⚠️ E-mail não configurado — notificações desativadas.';
+    statusEl.textContent = '⚠️ URL não configurada — notificações por e-mail desativadas.';
     statusEl.style.cssText = 'display:block;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);color:#f5a623;font-size:12px;border-radius:8px;padding:10px 14px;margin-bottom:14px;';
   }
 }
 
 async function enviarEmailNotificacao(toEmail, toName, ticketNum, assunto, mensagem) {
-  if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
-    console.log('EmailJS não configurado — notificação ignorada para:', toEmail);
-    return;
+  if (!EMAIL_PHP_URL) {
+    console.log('E-mail não configurado — ignorado para:', toEmail);
+    return false;
   }
   try {
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email: toEmail, to_name: toName,
-      ticket_num: ticketNum, assunto: assunto, mensagem: mensagem
+    const res = await fetch(EMAIL_PHP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to_email:toEmail, to_name:toName, ticket_num:ticketNum, assunto, mensagem })
     });
-    console.log('E-mail enviado para:', toEmail);
-  } catch (e) {
+    const json = await res.json();
+    if (!json.ok) console.error('Erro ao enviar e-mail:', json.error);
+    return json.ok;
+  } catch(e) {
     console.error('Erro ao enviar e-mail:', e);
+    return false;
   }
 }
 
@@ -3164,7 +3148,7 @@ async function enviarChamado() {
   // Atualiza ícone de e-mail conforme configuração real
   const emailTexto = document.getElementById('suc-email-texto');
   const emailIcone = document.getElementById('suc-email-icon');
-  if (EMAILJS_PUBLIC_KEY && emailTexto) {
+  if (EMAIL_PHP_URL && emailTexto) {
     emailTexto.textContent = 'Notificação enviada para o e-mail cadastrado';
     if (emailIcone) emailIcone.textContent = '📧';
   } else if (emailTexto) {
@@ -4924,7 +4908,7 @@ async function loadConfig() {
     if (data.sla) SLA_CONFIG = data.sla;
     if (data.horario) HORARIO_CONFIG = data.horario;
     if (data.conta) CONTA_CONFIG = { ...CONTA_CONFIG, ...data.conta };
-    if (data.email) inicializarEmailJS(data.email.serviceId, data.email.templateId, data.email.publicKey);
+    if (data.email?.phpUrl) EMAIL_PHP_URL = data.email.phpUrl;
   }
 }
 
