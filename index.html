@@ -2366,28 +2366,81 @@ img { max-width: 100%; height: auto; }
           <!-- ABA: Notificações -->
           <div class="conta-tab" id="conta-tab-notificacoes" style="display:none;">
             <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
-              <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🔔 Notificações por E-mail</div>
-              <div style="font-size:12px;color:var(--muted);margin-bottom:18px;">Controle quando o sistema envia e-mails automáticos.</div>
+              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">🔔 Notificações por E-mail</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:6px;line-height:1.6;">Controle quando o sistema envia e-mails automáticos.<br>
+                <span style="color:var(--accent);font-weight:600;">Regra geral:</span> apenas o solicitante e os atendentes do departamento recebem notificações.</div>
 
-              <div class="field">
-                <label class="chk-wrap"><input type="checkbox" id="notif-novo-chamado" checked/><span class="chk-box"></span><span>Notificar administradores ao abrir um novo chamado</span></label>
-              </div>
-              <div class="field">
-                <label class="chk-wrap"><input type="checkbox" id="notif-resposta" checked/><span class="chk-box"></span><span>Notificar solicitante quando houver resposta do suporte</span></label>
-              </div>
-              <div class="field">
-                <label class="chk-wrap"><input type="checkbox" id="notif-status" checked/><span class="chk-box"></span><span>Notificar solicitante quando o status mudar</span></label>
-              </div>
-              <div class="field">
-                <label class="chk-wrap"><input type="checkbox" id="notif-encerramento" checked/><span class="chk-box"></span><span>Notificar solicitante ao encerrar o chamado</span></label>
-              </div>
-              <div class="field">
-                <label class="chk-wrap"><input type="checkbox" id="notif-escalonamento" checked/><span class="chk-box"></span><span>Notificar atendente ao receber um chamado escalonado</span></label>
+              <div class="tgl-section-title">Atendentes</div>
+
+              <div class="tgl-row">
+                <span class="tgl-label">
+                  Notificar atendentes do departamento ao abrir um novo chamado
+                  <span style="font-size:11px;color:var(--dim);display:block;margin-top:2px;">Os atendentes cadastrados no departamento do chamado recebem um e-mail imediatamente.</span>
+                </span>
+                <label class="tgl-switch"><input type="checkbox" id="notif-novo-chamado" checked/><span class="tgl-slider"></span></label>
               </div>
 
-              <div style="margin-top:8px;">
+              <div class="tgl-row">
+                <span class="tgl-label">
+                  Notificar atendente ao receber um chamado escalonado
+                  <span style="font-size:11px;color:var(--dim);display:block;margin-top:2px;">Quando um chamado é escalonado, o novo atendente responsável é avisado por e-mail.</span>
+                </span>
+                <label class="tgl-switch"><input type="checkbox" id="notif-escalonamento" checked/><span class="tgl-slider"></span></label>
+              </div>
+
+              <div class="tgl-section-title" style="margin-top:18px;">Solicitante</div>
+
+              <div class="tgl-row">
+                <span class="tgl-label">
+                  Notificar solicitante quando o suporte responder
+                  <span style="font-size:11px;color:var(--dim);display:block;margin-top:2px;">O usuário recebe o texto da resposta por e-mail para acompanhar sem precisar acessar o sistema.</span>
+                </span>
+                <label class="tgl-switch"><input type="checkbox" id="notif-resposta" checked/><span class="tgl-slider"></span></label>
+              </div>
+
+              <div class="tgl-row">
+                <span class="tgl-label">
+                  Notificar solicitante quando o status do chamado mudar
+                  <span style="font-size:11px;color:var(--dim);display:block;margin-top:2px;">Mantém o solicitante informado sobre a etapa atual do atendimento.</span>
+                </span>
+                <label class="tgl-switch"><input type="checkbox" id="notif-status" checked/><span class="tgl-slider"></span></label>
+              </div>
+
+              <div class="tgl-row">
+                <span class="tgl-label">
+                  Notificar solicitante ao encerrar o chamado
+                  <span style="font-size:11px;color:var(--dim);display:block;margin-top:2px;">Inclui pedido de avaliação se a política de avaliação estiver ativa.</span>
+                </span>
+                <label class="tgl-switch"><input type="checkbox" id="notif-encerramento" checked/><span class="tgl-slider"></span></label>
+              </div>
+
+              <div class="tgl-row">
+                <span class="tgl-label">
+                  Notificar solicitante quando o chamado for editado pelo suporte
+                  <span style="font-size:11px;color:var(--dim);display:block;margin-top:2px;">Informa quais campos foram alterados (assunto, categoria, prioridade, etc).</span>
+                </span>
+                <label class="tgl-switch"><input type="checkbox" id="notif-edicao" checked/><span class="tgl-slider"></span></label>
+              </div>
+
+              <div class="tgl-row">
+                <span class="tgl-label">
+                  Notificar solicitante quando o chamado for escalonado
+                  <span style="font-size:11px;color:var(--dim);display:block;margin-top:2px;">Informa o solicitante que houve troca de responsável, sem revelar detalhes internos.</span>
+                </span>
+                <label class="tgl-switch"><input type="checkbox" id="notif-escalonamento-solicitante" checked/><span class="tgl-slider"></span></label>
+              </div>
+
+              <div class="tgl-row">
+                <span class="tgl-label">
+                  Notificar solicitante ao cancelar o chamado
+                  <span style="font-size:11px;color:var(--dim);display:block;margin-top:2px;">Avisa o usuário quando o chamado for cancelado pelo suporte.</span>
+                </span>
+                <label class="tgl-switch"><input type="checkbox" id="notif-cancelamento" checked/><span class="tgl-slider"></span></label>
+              </div>
+
+              <div style="margin-top:20px;display:flex;align-items:center;gap:12px;">
                 <button class="btn btn-primary" onclick="salvarNotificacoes()">💾 Salvar notificações</button>
-                <p id="conta-notif-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Preferências salvas!</p>
+                <p id="conta-notif-msg" style="font-size:12px;color:var(--green);margin:0;display:none;">✅ Preferências salvas!</p>
               </div>
             </div>
           </div>
@@ -3215,10 +3268,11 @@ function preencherConfigEmail() {
 
 // ── NOTIFICAÇÕES CENTRALIZADAS ──────────────────────────
 // Busca e notifica o solicitante de um chamado
-async function notificarSolicitante(chamado, mensagem) {
+async function notificarSolicitante(chamado, mensagem, tipoNotif) {
   if (!chamado?.usuario_id) return;
-  const pol = CONTA_CONFIG.politica || {};
-  if (pol['notif-resposta'] === false && pol['notif-status'] === false) return;
+  const notif = CONTA_CONFIG.notificacoes || {};
+  // Verifica se esse tipo de notificação está ativo
+  if (tipoNotif && notif[tipoNotif] === false) return;
   try {
     const { data: perfil } = await sb.from('perfis').select('email,nome').eq('id', chamado.usuario_id).single();
     if (perfil?.email) {
@@ -3232,8 +3286,10 @@ async function notificarSolicitante(chamado, mensagem) {
 }
 
 // Busca e notifica os atendentes responsáveis pelo departamento do chamado
-async function notificarAtendentes(chamado, mensagem) {
+async function notificarAtendentes(chamado, mensagem, tipoNotif) {
   if (!chamado) return;
+  const notif = CONTA_CONFIG.notificacoes || {};
+  if (tipoNotif && notif[tipoNotif] === false) return;
   try {
     // Somente atendentes do departamento do chamado
     const { data: atendentes } = await sb.from('perfis')
@@ -3714,17 +3770,19 @@ async function enviarChamado() {
   // Chamado salvo no Supabase
 
   // notificar admins sobre novo chamado
-  // Notifica somente atendentes do departamento
-  const { data: staffNotif } = await sb.from('perfis')
-    .select('email,nome,departamentos')
-    .eq('role','atendente')
-    .eq('ativo', true);
-  (staffNotif||[]).forEach(a => {
-    if ((a.departamentos || []).includes(area)) {
-      enviarEmailNotificacao(a.email, a.nome, ticketNum, titulo,
-        `🎫 Novo chamado aberto para o departamento ${area}.\n\nSolicitante: ${currentPerfil.nome} (${currentPerfil.empresa})\nPrioridade: ${selectedPrio}\nCategoria: ${cat || '—'}\n\nAcesse o painel para atender.`);
-    }
-  });
+  // Notifica somente atendentes do departamento (se política ativa)
+  if ((CONTA_CONFIG.notificacoes||{}).novoChamado !== false) {
+    const { data: staffNotif } = await sb.from('perfis')
+      .select('email,nome,departamentos')
+      .eq('role','atendente')
+      .eq('ativo', true);
+    (staffNotif||[]).forEach(a => {
+      if ((a.departamentos || []).includes(area)) {
+        enviarEmailNotificacao(a.email, a.nome, ticketNum, titulo,
+          `🎫 Novo chamado aberto para o departamento ${area}.\n\nSolicitante: ${currentPerfil.nome} (${currentPerfil.empresa})\nPrioridade: ${selectedPrio}\nCategoria: ${cat || '—'}\n\nAcesse o painel para atender.`);
+      }
+    });
+  }
 
   // Notifica o e-mail de cópia informado, se houver
   if (emailCopia) {
@@ -4725,8 +4783,8 @@ async function salvarStatus() {
 
   // Notificar solicitante sobre mudança de status
   if (ticket) {
-    await notificarSolicitante(ticket,
-      `🔄 O status do seu chamado foi atualizado.\n\nNovo status: ${statusLabel(status)}\n\nAcesse o sistema para acompanhar.`);
+    if ((CONTA_CONFIG.notificacoes||{}).status !== false) await notificarSolicitante(ticket,
+      `🔄 O status do seu chamado foi atualizado.\n\nNovo status: ${statusLabel(status)}\n\nAcesse o sistema para acompanhar.`, 'status');
   }
 
   loadChamados();
@@ -5562,6 +5620,9 @@ function preencherFormConta() {
   document.getElementById('notif-status').checked = n.status !== false;
   document.getElementById('notif-encerramento').checked = n.encerramento !== false;
   document.getElementById('notif-escalonamento').checked = n.escalonamento !== false;
+  document.getElementById('notif-edicao').checked = n.edicao !== false;
+  document.getElementById('notif-escalonamento-solicitante').checked = n.escalonamentoSolicitante !== false;
+  document.getElementById('notif-cancelamento').checked = n.cancelamento !== false;
 
   const a = CONTA_CONFIG.aparencia || {};
   document.getElementById('conta-nome-sistema').value = a.nomeSistema || 'EliTicket';
@@ -5621,7 +5682,10 @@ async function salvarNotificacoes() {
     resposta: document.getElementById('notif-resposta').checked,
     status: document.getElementById('notif-status').checked,
     encerramento: document.getElementById('notif-encerramento').checked,
-    escalonamento: document.getElementById('notif-escalonamento').checked
+    escalonamento: document.getElementById('notif-escalonamento').checked,
+    edicao: document.getElementById('notif-edicao').checked,
+    escalonamentoSolicitante: document.getElementById('notif-escalonamento-solicitante').checked,
+    cancelamento: document.getElementById('notif-cancelamento').checked
   };
   await persistirContaConfig();
   const msg = document.getElementById('conta-notif-msg');
@@ -5890,7 +5954,7 @@ async function acaoDetalhe(tipo) {
     await sb.from('chamados').update({status:cancelKey, atualizado_em:new Date().toISOString(), comentarios:c.comentarios}).eq('id', id);
     showToast('Chamado cancelado!','ok');
     // Notificar solicitante
-    await notificarSolicitante(c, `❌ Seu chamado foi cancelado por ${currentPerfil?.nome || 'suporte técnico'}.\n\nSe tiver dúvidas, entre em contato com a equipe de TI.`);
+    if ((CONTA_CONFIG.notificacoes||{}).cancelamento !== false) await notificarSolicitante(c, `❌ Seu chamado foi cancelado por ${currentPerfil?.nome || 'suporte técnico'}.\n\nSe tiver dúvidas, entre em contato com a equipe de TI.`, 'cancelamento');
     closeModalDetalhe();
     loadChamados();
 
@@ -6020,8 +6084,8 @@ async function salvarEdicaoChamado() {
   showToast('Chamado atualizado!', 'ok');
   // Notificar solicitante sobre edição
   if (chamado && mudancas.length) {
-    await notificarSolicitante({...chamado, titulo, ticket_num: chamado.ticket_num},
-      `✏️ Seu chamado foi atualizado pelo suporte técnico.\n\nCampos alterados: ${mudancas.join(', ')}.\n\nAcesse o sistema para ver as mudanças.`);
+    if ((CONTA_CONFIG.notificacoes||{}).edicao !== false) await notificarSolicitante({...chamado, titulo, ticket_num: chamado.ticket_num},
+      `✏️ Seu chamado foi atualizado pelo suporte técnico.\n\nCampos alterados: ${mudancas.join(', ')}.\n\nAcesse o sistema para ver as mudanças.`, 'edicao');
   }
   closeModalDetalhe();
   loadChamados();
