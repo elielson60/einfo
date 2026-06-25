@@ -529,6 +529,221 @@ body.theme-light [style*="background:rgba(255,255,255,.07)"]{background:rgba(59,
 body.theme-light [style*="border:1px solid rgba(255,255,255"]{border-color:#c8d0e8 !important;}
 body.theme-light [style*="border-bottom:1px solid rgba(255,255,255"]{border-bottom-color:#dce4f0 !important;}
 body.theme-light [style*="border-top:1px solid rgba(255,255,255"]{border-top-color:#dce4f0 !important;}
+/* ════════════════════════════════════════════════════
+   TEMA CLARO — DASHBOARD & ATENDENTES (overrides globais)
+   ════════════════════════════════════════════════════ */
+
+/* ── STATS cards (topo do dashboard) ── */
+body.theme-light .stat{
+  background:linear-gradient(135deg,#f4f6fc,#eef1fb) !important;
+  border:1px solid #c0cae4 !important;
+  box-shadow:0 2px 12px rgba(20,30,80,0.10),0 1px 3px rgba(20,30,80,0.07) !important;
+}
+body.theme-light .stat-n{color:#111827 !important;font-weight:800;font-size:26px;}
+body.theme-light .stat-l{color:#3b4a7a !important;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.09em;}
+body.theme-light .stat-icon{font-size:22px;}
+body.theme-light .stat-accent{border-color:rgba(59,91,219,0.35) !important;background:linear-gradient(135deg,rgba(59,91,219,0.08),rgba(59,91,219,0.04)) !important;}
+body.theme-light .stat-accent .stat-n{color:#3b5bdb !important;}
+body.theme-light .stat-accent::after{background:radial-gradient(ellipse at top left,rgba(59,91,219,0.12),transparent 70%) !important;}
+body.theme-light .stat-green{border-color:rgba(8,127,91,0.3) !important;background:linear-gradient(135deg,rgba(8,127,91,0.08),rgba(8,127,91,0.04)) !important;}
+body.theme-light .stat-green .stat-n{color:#087f5b !important;}
+body.theme-light .stat-red .stat-n{color:#c92a2a !important;}
+
+/* ── CHART WRAPS (caixas dos gráficos) ── */
+body.theme-light .dk-chart-wrap{
+  background:linear-gradient(135deg,#f4f6fc,#eef1fb) !important;
+  border:1px solid #c0cae4 !important;
+  box-shadow:0 2px 12px rgba(20,30,80,0.09),0 1px 3px rgba(20,30,80,0.06) !important;
+}
+body.theme-light .dk-chart-wrap::before{
+  background:linear-gradient(90deg,transparent,rgba(59,91,219,0.4),rgba(108,87,245,0.4),transparent) !important;
+}
+body.theme-light .dk-chart-wrap:hover{
+  box-shadow:0 6px 24px rgba(59,91,219,0.18),0 2px 6px rgba(20,30,80,0.08) !important;
+  transform:translateY(-1px);
+}
+body.theme-light .dk-chart-title{color:#111827 !important;font-weight:700;font-size:14px;}
+body.theme-light .dk-chart-sub{color:#5060a0 !important;font-weight:600;}
+body.theme-light .dk-chart-hdr{border-bottom:1px solid rgba(0,0,0,0.06);padding-bottom:10px;margin-bottom:14px;}
+
+/* Forçar cores escuras em textos inline dos gráficos */
+body.theme-light .dk-chart-wrap [style*="color:rgba(160"]{color:#3b4a7a !important;}
+body.theme-light .dk-chart-wrap [style*="color:rgba(180"]{color:#2a3470 !important;}
+body.theme-light .dk-chart-wrap [style*="color:#e0e0"]{color:#111827 !important;}
+body.theme-light .dk-chart-wrap [style*="color:#f0f0"]{color:#111827 !important;}
+body.theme-light .dk-chart-wrap [style*="font-weight:700"]{color:#111827 !important;}
+body.theme-light .dk-chart-wrap [style*="font-weight:800"]{color:#111827 !important;}
+body.theme-light .dk-chart-wrap [style*="font-size:2"]{color:#111827 !important;}
+body.theme-light .dk-chart-wrap [style*="font-size:3"]{color:#111827 !important;}
+
+/* Período select nos gráficos */
+body.theme-light #dash-periodo,body.theme-light select[style*="font-size:12px"]{
+  background:#eef1fb !important;border:1px solid #c0cae4 !important;color:#111827 !important;
+}
+
+/* ── ABAS DASHBOARD ── */
+body.theme-light #dash-tab-geral,body.theme-light #dash-tab-atendentes{
+  color:#5060a0 !important;font-weight:600;
+}
+body.theme-light #dash-tab-geral.active,body.theme-light #dash-tab-atendentes.active{
+  color:#3b5bdb !important;font-weight:700;border-bottom-color:#3b5bdb !important;
+}
+
+/* ── ATENDENTES CARDS ── */
+body.theme-light .atd-card{
+  background:linear-gradient(135deg,#f4f6fc,#eef1fb) !important;
+  border:1px solid #c0cae4 !important;
+  box-shadow:0 2px 12px rgba(20,30,80,0.09) !important;
+}
+body.theme-light .atd-card::before{background:linear-gradient(90deg,transparent,rgba(59,91,219,0.4),transparent) !important;}
+body.theme-light .atd-card-nome{color:#111827 !important;font-weight:700;font-size:15px;}
+body.theme-light .atd-card-role{color:#3b5bdb !important;font-weight:600;font-size:11px;}
+body.theme-light .atd-card-meta{color:#5060a0 !important;}
+
+/* KPIs dos atendentes */
+body.theme-light .atd-kpi{
+  background:rgba(255,255,255,0.75) !important;
+  border:1px solid #c0cae4 !important;
+  box-shadow:0 1px 6px rgba(20,30,80,0.08) !important;
+}
+body.theme-light .atd-kpi-n{color:#111827 !important;font-weight:800;font-size:18px;}
+body.theme-light .atd-kpi-l{color:#3b4a7a !important;font-weight:700;font-size:9px;}
+
+/* Gauges SVG nos atendentes */
+body.theme-light .atd-gauge-wrap [style*="color:#"]{color:#111827 !important;}
+body.theme-light .atd-gauge-wrap [style*="color:rgba"]{color:#5060a0 !important;}
+
+/* Sparklines e barras */
+body.theme-light .atd-spark-label{color:#5060a0 !important;font-weight:600;}
+body.theme-light .atd-bar-label{color:#3b4a7a !important;font-weight:600;}
+body.theme-light .atd-bar-bg{background:#dde4f4 !important;}
+
+/* Sugestões automáticas */
+body.theme-light .atd-tip{
+  background:#eef1fb !important;
+  border:1px solid #c0cae4 !important;
+  color:#2a3470 !important;
+  font-weight:500;
+}
+body.theme-light .atd-tip::before{color:#3b5bdb !important;}
+body.theme-light .atd-tip.success{
+  background:rgba(8,127,91,0.08) !important;
+  border-color:rgba(8,127,91,0.25) !important;
+  color:#087f5b !important;
+}
+body.theme-light .atd-tip.warning{
+  background:rgba(179,89,0,0.08) !important;
+  border-color:rgba(179,89,0,0.25) !important;
+  color:#b35900 !important;
+}
+
+/* Score dos atendentes */
+body.theme-light .atd-score{color:#111827 !important;font-weight:800;}
+body.theme-light .atd-score-label{color:#5060a0 !important;font-weight:600;}
+body.theme-light .atd-divider{background:#dde4f4 !important;}
+
+/* Textos inline dentro dos atendentes */
+body.theme-light .atd-card [style*="color:#e0e0"]{color:#111827 !important;}
+body.theme-light .atd-card [style*="color:#f0f0"]{color:#111827 !important;}
+body.theme-light .atd-card [style*="color:rgba(160"]{color:#3b4a7a !important;}
+body.theme-light .atd-card [style*="color:rgba(180"]{color:#2a3470 !important;}
+body.theme-light .atd-card [style*="color:rgba(200"]{color:#1e2a5e !important;}
+body.theme-light .atd-card [style*="color:rgba(220"]{color:#111827 !important;}
+body.theme-light .atd-card [style*="background:rgba(255,255,255,.05)"]{background:rgba(59,91,219,0.06) !important;}
+body.theme-light .atd-card [style*="background:rgba(255,255,255,.06)"]{background:rgba(59,91,219,0.07) !important;}
+body.theme-light .atd-card [style*="background:rgba(255,255,255,.08)"]{background:rgba(59,91,219,0.08) !important;}
+body.theme-light .atd-card [style*="background:rgba(255,255,255,.1)"]{background:rgba(59,91,219,0.09) !important;}
+body.theme-light .atd-card [style*="border:1px solid rgba(255,255,255"]{border-color:#c0cae4 !important;}
+body.theme-light .atd-card [style*="border-bottom:1px solid rgba(255,255,255"]{border-bottom-color:#dde4f4 !important;}
+body.theme-light .atd-card [style*="border-top:1px solid rgba(255,255,255"]{border-top-color:#dde4f4 !important;}
+
+/* ── STAT rows no dashboard ── */
+body.theme-light .stats-row .stat{margin-bottom:0;}
+body.theme-light [class*="stats-row"]{gap:12px;}
+
+/* ── LOG DE ALTERAÇÕES ── */
+body.theme-light #log-lista > div{
+  border-bottom:1px solid #dde4f4 !important;
+  padding:12px 4px;
+}
+body.theme-light #log-lista [style*="background:"]{background:#eef1fb !important;border-color:#c0cae4 !important;}
+body.theme-light #log-lista [style*="color:#e0e0"]{color:#111827 !important;}
+body.theme-light #log-lista [style*="color:rgba"]{color:#5060a0 !important;}
+
+/* ── MODAL ESCALONAR ── */
+body.theme-light #modal-escalonar .modal,
+body.theme-light #modal-editar-chamado .modal,
+body.theme-light #modal-log .modal{
+  background:#f4f6fc !important;
+}
+
+/* ── SLA BADGE no tema claro ── */
+body.theme-light .sla-badge{font-weight:700 !important;border-width:1.5px !important;}
+
+/* ── ADMIN SUB PAGE textos ── */
+body.theme-light .admin-sub-page > p{color:#3b4a7a !important;font-weight:500;}
+body.theme-light .admin-sub-page h3,body.theme-light .admin-sub-page h4{color:#111827 !important;font-weight:700;}
+body.theme-light .admin-sub-page label{color:#1e2a5e !important;font-weight:700;}
+
+/* ── TABELAS DE CADASTRO ── */
+body.theme-light .tbl-wrap table{background:transparent;}
+body.theme-light .tbl-wrap table th{
+  background:#e0e8f8 !important;
+  color:#1e2a5e !important;
+  font-weight:800;
+  border-bottom:2px solid #b0bcd8 !important;
+}
+body.theme-light .tbl-wrap table td{
+  color:#1e2a60 !important;
+  font-weight:500;
+  border-bottom:1px solid #dde4f4 !important;
+}
+body.theme-light .tbl-wrap table tr:hover td{background:rgba(59,91,219,0.05) !important;}
+
+/* ── CHIPS STATUS ── */
+body.theme-light .chip{
+  background:rgba(255,255,255,0.80) !important;
+  border:1.5px solid #b0bcd8 !important;
+  color:#1e2a5e !important;
+  font-weight:700;
+}
+body.theme-light .chip.active{
+  background:linear-gradient(135deg,rgba(59,91,219,0.16),rgba(108,87,245,0.10)) !important;
+  color:#3b5bdb !important;
+  border-color:rgba(59,91,219,0.45) !important;
+  box-shadow:0 2px 8px rgba(59,91,219,0.18) !important;
+}
+
+/* ── BUSCA TOPBAR / SIDEBAR ── */
+body.theme-light .sb-search-wrap{
+  background:rgba(255,255,255,0.75) !important;
+  border:1.5px solid #b8c4dc !important;
+  box-shadow:inset 0 1px 3px rgba(20,30,80,0.06) !important;
+}
+
+/* ── SELECT OPTIONS ── */
+body.theme-light select option{
+  background:#f4f6fc !important;
+  color:#111827 !important;
+  font-weight:500;
+}
+
+/* ── FORM PAGE (abrir chamado) ── */
+body.theme-light .perfil-badge{
+  background:rgba(59,91,219,0.08) !important;
+  border:1px solid rgba(59,91,219,0.20) !important;
+}
+body.theme-light .card-lbl{
+  color:#3b5bdb !important;
+  font-weight:800;
+  letter-spacing:.06em;
+}
+
+/* ── TOAST ── */
+body.theme-light .toast.ok{border-left:3px solid #087f5b;}
+body.theme-light .toast.err{border-left:3px solid #c92a2a;}
+
+
 /* Transição suave entre temas */
 *,body{transition:background-color .25s ease,border-color .25s ease,color .15s ease,box-shadow .25s ease;}
 /* Exceções que NÃO devem ter transição (animations, transforms) */
