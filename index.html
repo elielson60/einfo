@@ -1063,27 +1063,60 @@ body.theme-light .atd-card [style*="background:rgba(255,255,255,0.05)"]{backgrou
 body.theme-light .atd-card [style*="background:rgba(255,255,255,0.06)"]{background:rgba(59,91,219,0.07) !important;}
 body.theme-light .atd-card [style*="border-bottom:1px solid var(--border)"]{border-bottom-color:#e0e6f4 !important;}
 
-/* ── OVERRIDE NUCLEAR: textos pretos no dashboard claro ── */
-body.theme-light #sec-dashboard *,
-body.theme-light #dash-tab-content-geral *,
-body.theme-light #dash-tab-content-atendentes * {
-  color:#111827;
+/* ════════════════════════════════════════
+   OVERRIDE NUCLEAR TOTAL — DASHBOARD CLARO
+   Tudo preto. Sem exceção de cinza.
+   ════════════════════════════════════════ */
+body.theme-light #sec-dashboard { color:#000000; }
+body.theme-light #sec-dashboard * { color:#000000 !important; }
+
+/* SVG inline (pizza, gauges) */
+body.theme-light #sec-dashboard svg text { fill:#000000 !important; }
+body.theme-light #sec-dashboard svg tspan { fill:#000000 !important; }
+
+/* Canvas: Chart.js — controlado via JS, CSS não alcança */
+
+/* EXCEÇÕES que precisam de cor própria */
+/* Números KPI com cor de acento */
+body.theme-light #sec-dashboard .dk-kpi-n { color:var(--k-color,#000000) !important; }
+body.theme-light #sec-dashboard .atd-kpi-n { color:var(--kpi-color,#000000) !important; }
+
+/* Score gradiente (texto transparente com clip) */
+body.theme-light #sec-dashboard .atd-score-val {
+  color:transparent !important;
+  -webkit-text-fill-color:transparent !important;
 }
-/* Exceções: cores funcionais e de acento devem ser preservadas */
-body.theme-light .dk-kpi-n { color:var(--k-color,#000000) !important; }
-body.theme-light .atd-kpi-n { color:var(--kpi-color,#000000) !important; }
-body.theme-light .atd-score-val { color:transparent !important; }
-body.theme-light .atd-metric-fill { color:transparent !important; }
-body.theme-light .sla-badge { color:inherit; }
-body.theme-light #sec-dashboard canvas { color:transparent !important; }
-body.theme-light #sec-dashboard svg text { fill:#111827 !important; }
-body.theme-light #sec-dashboard .badge { color:inherit !important; }
-body.theme-light #sec-dashboard .btn { color:inherit !important; }
+
+/* Avatar (fundo colorido, texto branco) */
+body.theme-light #sec-dashboard .atd-card-avatar { color:#ffffff !important; }
+body.theme-light #sec-dashboard [class*="avatar"] { color:#ffffff !important; }
+
+/* Botões primários */
+body.theme-light #sec-dashboard .btn-primary,
+body.theme-light #sec-dashboard .btn-primary * { color:#ffffff !important; }
+body.theme-light #sec-dashboard .btn-danger,
+body.theme-light #sec-dashboard .btn-danger * { color:#ffffff !important; }
+
+/* Abas ativas */
+body.theme-light #sec-dashboard .dash-tab.active { color:#3b5bdb !important; }
 body.theme-light #sec-dashboard #dash-tab-geral.active,
 body.theme-light #sec-dashboard #dash-tab-atendentes.active { color:#3b5bdb !important; }
-body.theme-light #sec-dashboard .atd-tip.success { color:#047857 !important; }
-body.theme-light #sec-dashboard .atd-card-avatar { color:#fff !important; }
-body.theme-light #sec-dashboard .atd-status-dot { color:transparent !important; }
+
+/* Tips coloridas */
+body.theme-light #sec-dashboard .atd-tip { color:#000000 !important; }
+body.theme-light #sec-dashboard .atd-tip.success,
+body.theme-light #sec-dashboard .atd-tip.success * { color:#047857 !important; }
+
+/* Badges de status e prioridade — manter cor original */
+body.theme-light #sec-dashboard .badge { color:inherit !important; }
+body.theme-light #sec-dashboard [class*="badge"] { color:inherit !important; }
+
+/* Barra de progresso — sem cor de texto */
+body.theme-light #sec-dashboard .dk-kpi-bar-fill,
+body.theme-light #sec-dashboard .atd-metric-fill { color:transparent !important; }
+
+/* Números em cor de acento na pizza (label %) — branco pois está sobre fatia colorida */
+body.theme-light #sec-dashboard .pizza-pct { color:#ffffff !important; }
 
 /* Transição suave entre temas */
 *,body{transition:background-color .25s ease,border-color .25s ease,color .15s ease,box-shadow .25s ease;}
@@ -4546,7 +4579,7 @@ function setSlaKpi(numId, cardId, pct, base) {
     const existing = labelEl.querySelector('.sla-base');
     const txt = ' · '+base+' cham.';
     if (existing) existing.textContent = txt;
-    else labelEl.insertAdjacentHTML('beforeend','<span class="sla-base" style="opacity:.5;">'+txt+'</span>');
+    else { const isL=document.body.classList.contains('theme-light'); labelEl.insertAdjacentHTML('beforeend','<span class="sla-base" style="color:'+(isL?'#334070':'inherit')+';font-weight:'+(isL?'600':'400')+';opacity:'+(isL?'1':'.5')+';">'+txt+'</span>'); }
   }
 }
 
@@ -4649,9 +4682,10 @@ const PALETA = ['#5b8def','#2fd89a','#f5a623','#f05a5a','#a78bfa','#06b6d4','#f9
 // Global Chart.js defaults — adapta conforme o tema
 function aplicarChartDefaults() {
   const isLight = document.body.classList.contains('theme-light');
-  Chart.defaults.color = isLight ? 'rgba(50,60,120,0.75)' : 'rgba(160,160,200,0.65)';
+  Chart.defaults.color = isLight ? '#000000' : 'rgba(160,160,200,0.65)';
   Chart.defaults.font.family = "'DM Sans',sans-serif";
-  Chart.defaults.font.size = 11;
+  Chart.defaults.font.size = isLight ? 12 : 11;
+  Chart.defaults.font.weight = isLight ? '700' : '400';
 }
 aplicarChartDefaults();
 
@@ -4663,18 +4697,18 @@ const LEGEND_STYLE = { labels:{ color:'rgba(160,160,200,0.8)', font:{size:11}, p
 // Retorna opções dinâmicas baseadas no tema atual
 function getChartOpts() {
   const isLight = document.body.classList.contains('theme-light');
-  const gridColor = isLight ? 'rgba(0,0,60,0.07)' : 'rgba(255,255,255,0.04)';
-  const tickColor = isLight ? 'rgba(40,50,120,0.65)' : 'rgba(160,160,200,0.6)';
-  const legendColor = isLight ? 'rgba(30,40,100,0.8)' : 'rgba(160,160,200,0.8)';
-  const tooltipBg = isLight ? 'rgba(255,255,255,0.97)' : 'rgba(12,12,28,0.92)';
-  const tooltipBorder = isLight ? 'rgba(59,91,219,0.2)' : 'rgba(255,255,255,0.12)';
-  const tooltipTitle = isLight ? '#1a1a2e' : '#e0e0f0';
-  const tooltipBody = isLight ? 'rgba(40,50,120,0.85)' : 'rgba(160,160,200,0.85)';
+  const gridColor = isLight ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.04)';
+  const tickColor = isLight ? '#000000' : 'rgba(160,160,200,0.6)';
+  const legendColor = isLight ? '#000000' : 'rgba(160,160,200,0.8)';
+  const tooltipBg = isLight ? '#ffffff' : 'rgba(12,12,28,0.92)';
+  const tooltipBorder = isLight ? 'rgba(59,91,219,0.3)' : 'rgba(255,255,255,0.12)';
+  const tooltipTitle = isLight ? '#000000' : '#e0e0f0';
+  const tooltipBody = isLight ? '#111827' : 'rgba(160,160,200,0.85)';
   return {
     responsive:true,
     animation:{ duration:800, easing:'easeOutQuart' },
     plugins:{
-      legend:{ labels:{ color:legendColor, font:{size:11}, padding:14, usePointStyle:true, pointStyleWidth:8 } },
+      legend:{ labels:{ color:legendColor, font:{size:isLight?12:11, weight:isLight?'700':'400'}, padding:14, usePointStyle:true, pointStyleWidth:8 } },
       tooltip:{
         backgroundColor:tooltipBg,
         backdropFilter:'blur(12px)',
@@ -4684,13 +4718,13 @@ function getChartOpts() {
         bodyColor:tooltipBody,
         padding:12,
         cornerRadius:10,
-        titleFont:{size:12,weight:'600'},
-        bodyFont:{size:11}
+        titleFont:{size:12,weight:'700'},
+        bodyFont:{size:isLight?12:11, weight:isLight?'600':'400'}
       }
     },
     scales:{
-      x:{ ticks:{ color:tickColor, font:{size:11}, padding:6 }, grid:{ color:gridColor, drawBorder:false }, border:{display:false} },
-      y:{ ticks:{ color:tickColor, font:{size:11}, padding:6 }, grid:{ color:gridColor, drawBorder:false }, border:{display:false} }
+      x:{ ticks:{ color:tickColor, font:{size:isLight?12:11, weight:isLight?'700':'400'}, padding:6 }, grid:{ color:gridColor, drawBorder:false }, border:{display:false} },
+      y:{ ticks:{ color:tickColor, font:{size:isLight?12:11, weight:isLight?'700':'400'}, padding:6 }, grid:{ color:gridColor, drawBorder:false }, border:{display:false} }
     }
   };
 }
@@ -4720,7 +4754,7 @@ function renderLinha(list, dias) {
       { label:'Abertos', data:abertosPorDia, borderColor:'#4f8cff', backgroundColor:'rgba(79,140,255,.15)', fill:true, tension:.4, pointRadius:2 },
       { label:'Resolvidos', data:fechadosPorDia, borderColor:'#3ecf8e', backgroundColor:'rgba(62,207,142,.1)', fill:true, tension:.4, pointRadius:2 }
     ]},
-    options:(()=>{ const o=getChartOpts(); return {...o, plugins:{...o.plugins, legend:{position:'top', labels:{color:document.body.classList.contains('theme-light')?'rgba(40,50,120,0.75)':'#a1a1aa',font:{size:11}}}}}; })()
+    options:(()=>{ const o=getChartOpts(); return {...o, plugins:{...o.plugins, legend:{position:'top', labels:{color:document.body.classList.contains('theme-light')?'#000000':'#a1a1aa',font:{size:11}}}}}; })()
   });
 }
 
@@ -4730,10 +4764,11 @@ function renderRosca(list) {
   if (!ctx) return;
   const dados = STATUS_LIST.map(s=>({ nome:s.nome, count:list.filter(c=>c.status===s.chave).length, cor:s.cor })).filter(d=>d.count>0);
   if (!dados.length) return;
+  const _rl = document.body.classList.contains('theme-light');
   CHARTS['rosca-status'] = new Chart(ctx, {
     type:'doughnut',
-    data:{ labels:dados.map(d=>d.nome), datasets:[{ data:dados.map(d=>d.count), backgroundColor:dados.map(d=>d.cor), borderWidth:2, borderColor:'#1a1a2e' }] },
-    options:{ responsive:true, cutout:'68%', plugins:{ legend:{ position:'bottom', labels:{ color:'#a1a1aa', font:{size:11}, padding:8 } } } }
+    data:{ labels:dados.map(d=>d.nome), datasets:[{ data:dados.map(d=>d.count), backgroundColor:dados.map(d=>d.cor), borderWidth:2, borderColor:_rl?'#ffffff':'#1a1a2e' }] },
+    options:{ responsive:true, cutout:'68%', plugins:{ legend:{ position:'bottom', labels:{ color:_rl?'#000000':'#a1a1aa', font:{size:11,weight:_rl?'700':'400'}, padding:8 } }, tooltip:getChartOpts().plugins.tooltip } }
   });
 }
 
@@ -4764,7 +4799,7 @@ function renderPizza(list) {
   ];
 
   const dados = prios.map(p=>({ ...p, count:list.filter(c=>c.prioridade===p.key).length })).filter(d=>d.count>0);
-  if (!dados.length) { container.innerHTML='<p style="text-align:center;color:rgba(160,160,200,.5);padding:40px;">Sem dados</p>'; return; }
+  if (!dados.length) { const _il=document.body.classList.contains('theme-light'); container.innerHTML='<p style="text-align:center;color:'+(_il?'#334070':'rgba(160,160,200,.5)')+';font-weight:'+(_il?'600':'400')+';padding:40px;">Sem dados</p>'; return; }
 
   const total = dados.reduce((a,b)=>a+b.count,0);
 
@@ -4787,6 +4822,7 @@ function renderPizza(list) {
     return { d, path, pct, lx, ly, mid };
   });
 
+  const isLightPizza = document.body.classList.contains('theme-light');
   const svgPaths = paths.map((p,i)=>`
     <g class="pizza-slice" style="--slice-delay:${i*120}ms">
       <filter id="glow${i}">
@@ -4809,16 +4845,16 @@ function renderPizza(list) {
     </g>`).join('');
 
   const svgCenter = `
-    <circle cx="${cx}" cy="${cy}" r="${ir-2}" fill="rgba(7,7,17,0.85)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-    <text x="${cx}" y="${cy-7}" text-anchor="middle" dominant-baseline="middle" fill="rgba(160,160,200,0.6)" font-size="9" font-family="DM Sans,sans-serif" text-transform="uppercase" letter-spacing="0.1em">TOTAL</text>
-    <text x="${cx}" y="${cy+8}" text-anchor="middle" dominant-baseline="middle" fill="#e0e0f0" font-size="22" font-weight="700" font-family="DM Sans,sans-serif">${total}</text>`;
+    <circle cx="${cx}" cy="${cy}" r="${ir-2}" fill="${isLightPizza?'rgba(240,244,255,0.95)':'rgba(7,7,17,0.85)'}" stroke="${isLightPizza?'rgba(59,91,219,0.15)':'rgba(255,255,255,0.06)'}" stroke-width="1"/>
+    <text x="${cx}" y="${cy-7}" text-anchor="middle" dominant-baseline="middle" fill="${isLightPizza?'#334070':'rgba(160,160,200,0.6)'}" font-size="9" font-weight="${isLightPizza?'700':'400'}" font-family="DM Sans,sans-serif" text-transform="uppercase" letter-spacing="0.1em">TOTAL</text>
+    <text x="${cx}" y="${cy+8}" text-anchor="middle" dominant-baseline="middle" fill="${isLightPizza?'#000000':'#e0e0f0'}" font-size="22" font-weight="700" font-family="DM Sans,sans-serif">${total}</text>`;
 
   const legend = dados.map(d=>`
-    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;">
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid ${isLightPizza?'#e8ecf8':'rgba(255,255,255,0.04)'};">
       <div style="width:10px;height:10px;border-radius:50%;background:${d.color};box-shadow:0 0 8px ${d.glow};flex-shrink:0;"></div>
-      <span style="font-size:12px;color:rgba(160,160,200,0.85);flex:1;">${d.emoji} ${d.label}</span>
-      <span style="font-size:12px;font-weight:700;color:${d.color};">${d.count}</span>
-      <span style="font-size:11px;color:rgba(160,160,200,0.5);min-width:34px;text-align:right;">${Math.round(d.count/total*100)}%</span>
+      <span style="font-size:12px;font-weight:${isLightPizza?'700':'400'};color:${isLightPizza?'#000000':'rgba(160,160,200,0.85)'};flex:1;">${d.emoji} ${d.label}</span>
+      <span style="font-size:13px;font-weight:800;color:${d.color};">${d.count}</span>
+      <span style="font-size:11px;font-weight:${isLightPizza?'600':'400'};color:${isLightPizza?'#334070':'rgba(160,160,200,0.5)'};min-width:34px;text-align:right;">${Math.round(d.count/total*100)}%</span>
     </div>`).join('');
 
   container.innerHTML = `
@@ -4887,14 +4923,21 @@ function renderTopUsers(containerId, list) {
   });
   const sorted = Object.entries(counts).sort((a,b)=>b[1].total-a[1].total).slice(0,7);
   if(!sorted.length){container.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Sem dados</p>';return;}
+  const isLightU = document.body.classList.contains('theme-light');
+  const uBorder = isLightU ? '#dde4f0' : 'var(--border)';
+  const uBg = isLightU ? 'rgba(59,91,219,0.12)' : 'var(--accent-s)';
+  const uBorderC = isLightU ? 'rgba(59,91,219,0.3)' : 'var(--accent-b)';
+  const uAccent = isLightU ? '#3b5bdb' : 'var(--accent)';
+  const uText = isLightU ? '#000000' : 'inherit';
+  const uMuted = isLightU ? '#334070' : 'var(--dim)';
   container.innerHTML = sorted.map(([name,d],i)=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);">
-      <div style="width:22px;height:22px;border-radius:50%;background:var(--accent-s);border:1px solid var(--accent-b);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--accent);flex-shrink:0;">${i+1}</div>
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid ${uBorder};">
+      <div style="width:24px;height:24px;border-radius:50%;background:${uBg};border:1px solid ${uBorderC};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${uAccent};flex-shrink:0;">${i+1}</div>
       <div style="flex:1;min-width:0;">
-        <div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
-        <div style="font-size:11px;color:var(--dim);">Total: ${d.total} · Aberto: ${d.aberto} · Resolvido: ${d.resolvido}</div>
+        <div style="font-size:13px;font-weight:700;color:${uText};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
+        <div style="font-size:11px;font-weight:600;color:${uMuted};">Total: ${d.total} · Aberto: ${d.aberto} · Resolvido: ${d.resolvido}</div>
       </div>
-      <span style="font-size:16px;font-weight:700;color:var(--accent);">${d.total}</span>
+      <span style="font-size:18px;font-weight:900;color:${uAccent};">${d.total}</span>
     </div>`).join('');
 }
 
@@ -4917,6 +4960,9 @@ function reloadDashTab() {
 }
 
 // ── DASHBOARD ATENDENTES FUTURÍSTICO ─────────
+// Helper: retorna cor de texto baseada no tema
+function tc(light, dark) { return document.body.classList.contains('theme-light') ? light : dark; }
+
 async function loadDashAtendentes() {
   const grid = document.getElementById('dash-atendentes-grid');
   grid.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(161,161,170,.6);">Carregando dados...</div>';
