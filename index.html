@@ -2677,9 +2677,10 @@ img { max-width: 100%; height: auto; }
               <div class="field">
                 <label>Perfil</label>
                 <select id="atd-edit-role">
-                  <option value="atendente">Atendente</option>
-                  <option value="admin">Administrador</option>
                   <option value="usuario">Usuário</option>
+                  <option value="atendente">Atendente</option>
+                  <option value="gerente">Gerente</option>
+                  <option value="admin">Administrador</option>
                 </select>
               </div>
               <div class="field">
@@ -3032,6 +3033,7 @@ img { max-width: 100%; height: auto; }
         <select id="usu-role" onchange="toggleAtendenteDepts()">
           <option value="usuario">Usuário</option>
           <option value="atendente">Atendente</option>
+          <option value="gerente">Gerente</option>
           <option value="admin">Administrador</option>
         </select>
       </div>
@@ -3209,6 +3211,43 @@ function preencherConfigEmail() {
     statusEl.textContent = '⚠️ URL não configurada — notificações por e-mail desativadas.';
     statusEl.style.cssText = 'display:block;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);color:#f5a623;font-size:12px;border-radius:8px;padding:10px 14px;margin-bottom:14px;';
   }
+}
+
+// ── NOTIFICAÇÕES CENTRALIZADAS ──────────────────────────
+// Busca e notifica o solicitante de um chamado
+async function notificarSolicitante(chamado, mensagem) {
+  if (!chamado?.usuario_id) return;
+  const pol = CONTA_CONFIG.politica || {};
+  if (pol['notif-resposta'] === false && pol['notif-status'] === false) return;
+  try {
+    const { data: perfil } = await sb.from('perfis').select('email,nome').eq('id', chamado.usuario_id).single();
+    if (perfil?.email) {
+      await enviarEmailNotificacao(perfil.email, perfil.nome, chamado.ticket_num, chamado.titulo, mensagem);
+      // Cópia se houver
+      if (chamado.email_copia) {
+        await enviarEmailNotificacao(chamado.email_copia, 'Cópia', chamado.ticket_num, chamado.titulo, mensagem);
+      }
+    }
+  } catch(e) { console.error('Erro ao notificar solicitante:', e); }
+}
+
+// Busca e notifica os atendentes responsáveis pelo departamento do chamado
+async function notificarAtendentes(chamado, mensagem) {
+  if (!chamado) return;
+  try {
+    // Somente atendentes do departamento do chamado
+    const { data: atendentes } = await sb.from('perfis')
+      .select('id,email,nome,departamentos')
+      .eq('role','atendente')
+      .eq('ativo', true);
+
+    (atendentes || []).forEach(a => {
+      if (a.id === currentUser?.id) return; // não notifica quem fez a ação
+      if ((a.departamentos || []).includes(chamado.departamento)) {
+        enviarEmailNotificacao(a.email, a.nome, chamado.ticket_num, chamado.titulo, mensagem);
+      }
+    });
+  } catch(e) { console.error('Erro ao notificar atendentes:', e); }
 }
 
 async function enviarEmailNotificacao(toEmail, toName, ticketNum, assunto, mensagem) {
@@ -3675,10 +3714,16 @@ async function enviarChamado() {
   // Chamado salvo no Supabase
 
   // notificar admins sobre novo chamado
-  const { data: staffNotif } = await sb.from('perfis').select('email,nome,role').in('role',['admin','gerente']);
+  // Notifica somente atendentes do departamento
+  const { data: staffNotif } = await sb.from('perfis')
+    .select('email,nome,departamentos')
+    .eq('role','atendente')
+    .eq('ativo', true);
   (staffNotif||[]).forEach(a => {
-    enviarEmailNotificacao(a.email, a.nome, ticketNum, titulo,
-      `Novo chamado aberto por ${currentPerfil.nome} (${currentPerfil.empresa}/${area}). Prioridade: ${selectedPrio}.`);
+    if ((a.departamentos || []).includes(area)) {
+      enviarEmailNotificacao(a.email, a.nome, ticketNum, titulo,
+        `🎫 Novo chamado aberto para o departamento ${area}.\n\nSolicitante: ${currentPerfil.nome} (${currentPerfil.empresa})\nPrioridade: ${selectedPrio}\nCategoria: ${cat || '—'}\n\nAcesse o painel para atender.`);
+    }
   });
 
   // Notifica o e-mail de cópia informado, se houver
@@ -4552,7 +4597,7 @@ function renderUsuarios(list) {
       <td style="font-size:12px;">${u.empresa||'—'}</td>
       <td style="font-size:12px;">${u.role==='atendente' && u.departamentos?.length ? u.departamentos.join(', ') : '<span style="color:var(--dim);">—</span>'}</td>
       <td>
-        <span class="badge ${u.role==='admin'?'b-admin':u.role==='gerente'?'b-gerente':u.role==='atendente'?'b-atendente':'b-user'}">${u.role==='gerente'?'gerente':u.role}</span>
+        <span class="badge ${u.role==='admin'?'b-admin':u.role==='gerente'?'b-gerente':u.role==='atendente'?'b-atendente':'b-user'}">${getRoleLabel(u.role)}</span>
         ${u.ativo===false?'<span class="badge" style="background:var(--red-s);color:#f87171;border-color:rgba(239,68,68,.35);margin-left:4px;">Inativo</span>':''}
       </td>
       <td style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -4607,6 +4652,10 @@ async function openModalUsuario(id) {
 function toggleAtendenteDepts() {
   const role = document.getElementById('usu-role').value;
   document.getElementById('usu-depts-field').style.display = role === 'atendente' ? 'block' : 'none';
+}
+function getRoleLabel(role) {
+  const labels = {admin:'Administrador', gerente:'Gerente', atendente:'Atendente', usuario:'Usuário'};
+  return labels[role] || role;
 }
 
 function closeModalUsuario() {
@@ -4674,15 +4723,10 @@ async function salvarStatus() {
   closeModal();
   showToast('Status atualizado para informar o solicitante!','ok');
 
-  // notificar usuário por e-mail
+  // Notificar solicitante sobre mudança de status
   if (ticket) {
-    const { data: perfil } = await sb.from('perfis').select('email,nome').eq('id', ticket.usuario_id).single();
-    if (perfil?.email) {
-            enviarEmailNotificacao(
-        perfil.email, perfil.nome, ticket.ticket_num, ticket.titulo,
-        `O status do seu chamado foi atualizado para: ${statusLabel(status)}.`
-      );
-    }
+    await notificarSolicitante(ticket,
+      `🔄 O status do seu chamado foi atualizado.\n\nNovo status: ${statusLabel(status)}\n\nAcesse o sistema para acompanhar.`);
   }
 
   loadChamados();
@@ -5819,18 +5863,21 @@ async function acaoDetalhe(tipo) {
     const { data: perfil } = await sb.from('perfis').select('email,nome').eq('id', c.usuario_id).single();
 
     // Política: "Enviar avaliação ao solicitante após finalizar um chamado"
-    if (pol['pol-avaliacao-email'] !== false && perfil?.email) {
-      enviarEmailNotificacao(perfil.email, perfil.nome, c.ticket_num, c.titulo,
-        'Seu chamado foi encerrado. Por favor, avalie o atendimento acessando o sistema e clicando em ⭐ Avaliar.');
-    } else if (perfil?.email) {
-      enviarEmailNotificacao(perfil.email, perfil.nome, c.ticket_num, c.titulo,
-        'Seu chamado foi encerrado pelo suporte técnico.');
+    if (perfil?.email) {
+      const msgEncerramento = pol['pol-avaliacao-email'] !== false
+        ? `✅ Seu chamado foi encerrado pelo suporte técnico.\n\nPor favor, avalie o atendimento acessando o sistema e clicando em ⭐ Avaliar.\n\nSua avaliação nos ajuda a melhorar continuamente.`
+        : `✅ Seu chamado foi encerrado pelo suporte técnico.\n\nObrigado por utilizar nosso sistema de atendimento.`;
+      await enviarEmailNotificacao(perfil.email, perfil.nome, c.ticket_num, c.titulo, msgEncerramento);
     }
-
-    // Notifica e-mail de cópia se houver
+    // Cópia
     if (c.email_copia) {
-      enviarEmailNotificacao(c.email_copia, 'Cópia', c.ticket_num, c.titulo,
-        'O chamado em que você estava em cópia foi encerrado.');
+      await enviarEmailNotificacao(c.email_copia, 'Cópia', c.ticket_num, c.titulo,
+        `✅ O chamado em que você estava em cópia foi encerrado pelo suporte técnico.`);
+    }
+    // Notifica atendentes que o chamado foi encerrado (pelo usuário comum, por ex)
+    if (!isStaffRole(currentPerfil?.role)) {
+      await notificarAtendentes(c,
+        `🔒 O solicitante ${currentPerfil?.nome} encerrou o chamado "${c.titulo}".`);
     }
 
     closeModalDetalhe();
@@ -5842,6 +5889,8 @@ async function acaoDetalhe(tipo) {
     await registrarLog(c, 'cancelamento', `Chamado cancelado por ${currentPerfil?.nome || 'staff'}.`);
     await sb.from('chamados').update({status:cancelKey, atualizado_em:new Date().toISOString(), comentarios:c.comentarios}).eq('id', id);
     showToast('Chamado cancelado!','ok');
+    // Notificar solicitante
+    await notificarSolicitante(c, `❌ Seu chamado foi cancelado por ${currentPerfil?.nome || 'suporte técnico'}.\n\nSe tiver dúvidas, entre em contato com a equipe de TI.`);
     closeModalDetalhe();
     loadChamados();
 
@@ -5911,7 +5960,10 @@ async function confirmarEscalonar() {
   // Notifica o novo atendente por e-mail
   if (atendente.email) {
     enviarEmailNotificacao(atendente.email, atendente.nome, chamado.ticket_num, chamado.titulo,
-      `Um chamado foi escalonado para você por ${currentPerfil?.nome || 'um colega'}.` + (motivo ? ` Motivo: ${motivo}` : ''));
+      `🔀 Um chamado foi escalonado para você.\n\nEscalonado por: ${currentPerfil?.nome || 'um colega'}${motivo ? '\nMotivo: ' + motivo : ''}\n\nAcesse o painel para atender.`);
+    // Notificar o solicitante que o chamado foi escalonado
+    await notificarSolicitante(chamado,
+      `🔀 Seu chamado foi transferido para outro atendente.\n\nNovo responsável: ${atendente.nome}\n\nO atendimento continuará normalmente.`);
   }
 
   closeModalDetalhe();
@@ -5966,6 +6018,11 @@ async function salvarEdicaoChamado() {
 
   document.getElementById('modal-editar-chamado').classList.remove('open');
   showToast('Chamado atualizado!', 'ok');
+  // Notificar solicitante sobre edição
+  if (chamado && mudancas.length) {
+    await notificarSolicitante({...chamado, titulo, ticket_num: chamado.ticket_num},
+      `✏️ Seu chamado foi atualizado pelo suporte técnico.\n\nCampos alterados: ${mudancas.join(', ')}.\n\nAcesse o sistema para ver as mudanças.`);
+  }
   closeModalDetalhe();
   loadChamados();
 }
@@ -6046,22 +6103,16 @@ async function addComentario() {
   input.value = '';
   showToast('Comentário adicionado!','ok');
 
-  // notificar a outra parte por e-mail
+  // Notificar a outra parte por e-mail
+  const textoResumido = texto.length > 120 ? texto.substring(0, 120) + '...' : texto;
   if (isStaff) {
-    const { data: perfil } = await sb.from('perfis').select('email,nome').eq('id', currentDetalhe.usuario_id).single();
-    if (perfil?.email) {
-      enviarEmailNotificacao(perfil.email, perfil.nome, currentDetalhe.ticket_num, currentDetalhe.titulo,
-        `O suporte TI respondeu seu chamado: "${texto}"`);
-    }
+    // Staff respondeu → notifica o solicitante
+    await notificarSolicitante(currentDetalhe,
+      `📬 ${currentPerfil?.nome || 'Suporte TI'} respondeu seu chamado:\n\n"${textoResumido}"\n\nAcesse o sistema para ver a resposta completa.`);
   } else {
-    // notifica admins e atendentes do departamento
-    const { data: staff } = await sb.from('perfis').select('email,nome,role,departamentos').or('role.eq.admin,role.eq.atendente');
-    (staff||[]).forEach(a => {
-      if (a.role==='admin' || (a.departamentos||[]).includes(currentDetalhe.departamento)) {
-        enviarEmailNotificacao(a.email, a.nome, currentDetalhe.ticket_num, currentDetalhe.titulo,
-          `${currentPerfil?.nome||'Usuário'} respondeu o chamado: "${texto}"`);
-      }
-    });
+    // Usuário respondeu → notifica atendentes do departamento
+    await notificarAtendentes(currentDetalhe,
+      `💬 ${currentPerfil?.nome || 'Usuário'} respondeu o chamado "${currentDetalhe.titulo}":\n\n"${textoResumido}"\n\nAcesse o painel para responder.`);
   }
 
   // recarrega listas em background
