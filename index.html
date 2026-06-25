@@ -55,13 +55,18 @@ body.theme-light{
   --shadow-md:0 4px 16px rgba(20,30,80,0.10),0 12px 40px rgba(20,30,80,0.07);
   --shadow-glow:0 0 30px rgba(59,91,219,0.15);
   --r:14px;--r-sm:10px;--r-xs:8px;
+  background:#cdd5e8;
+  background-image:
+    radial-gradient(ellipse at 0% 0%, rgba(59,91,219,0.18) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 100%, rgba(108,87,245,0.14) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 30%, rgba(59,91,219,0.06) 0%, transparent 60%);
 }
 
 /* ════════════════════════════════════════════════════
    TEMA CLARO — DESIGN PREMIUM MODERNO
    ════════════════════════════════════════════════════ */
 
-/* BODY */
+/* BODY — force background override */
 body.theme-light{
   background:#cdd5e8 !important;
   background-image:
@@ -743,6 +748,209 @@ body.theme-light .card-lbl{
 body.theme-light .toast.ok{border-left:3px solid #087f5b;}
 body.theme-light .toast.err{border-left:3px solid #c92a2a;}
 
+
+/* ════════════════════════════════════════════════════
+   TEMA CLARO — DASHBOARD FUTURÍSTICO (dk-kpi, dk-chart)
+   ════════════════════════════════════════════════════ */
+
+/* KPI CARDS — fundo branco sólido com borda e sombra */
+body.theme-light .dk-kpi{
+  background:#ffffff !important;
+  border:1px solid #c8d0e8 !important;
+  box-shadow:0 4px 20px rgba(20,30,80,0.10),0 1px 4px rgba(20,30,80,0.06) !important;
+}
+body.theme-light .dk-kpi::before{
+  background:linear-gradient(90deg,transparent,var(--k-color,#4f7fe8),transparent) !important;
+  opacity:.5;
+}
+body.theme-light .dk-kpi::after{
+  background:radial-gradient(ellipse at top left,rgba(79,140,255,.06),transparent 70%) !important;
+}
+body.theme-light .dk-kpi-n{
+  color:var(--k-color,#1a1a2e) !important;
+  font-weight:800 !important;
+}
+body.theme-light .dk-kpi-l{
+  color:#4a5080 !important;
+  font-weight:700 !important;
+}
+body.theme-light .dk-kpi-bar{
+  background:rgba(0,0,0,0.08) !important;
+}
+body.theme-light .dk-kpi:hover{
+  box-shadow:0 8px 28px rgba(20,30,80,0.14) !important;
+  transform:translateY(-3px);
+}
+
+/* CHART WRAPS */
+body.theme-light .dk-chart-wrap{
+  background:#ffffff !important;
+  border:1px solid #c8d0e8 !important;
+  box-shadow:0 4px 20px rgba(20,30,80,0.09) !important;
+}
+body.theme-light .dk-chart-wrap::before{
+  background:linear-gradient(90deg,transparent,rgba(59,91,219,0.5),rgba(108,87,245,0.4),transparent) !important;
+}
+body.theme-light .dk-chart-title{
+  color:#111827 !important;
+  font-weight:700 !important;
+}
+body.theme-light .dk-chart-sub{
+  color:#5060a0 !important;
+}
+body.theme-light .dk-chart-hdr{
+  border-bottom:1px solid #e8ecf8 !important;
+  padding-bottom:10px;
+  margin-bottom:14px;
+}
+body.theme-light .dk-chart-wrap:hover{
+  box-shadow:0 8px 32px rgba(59,91,219,0.15) !important;
+}
+
+/* STAT CARDS do painel de chamados */
+body.theme-light .stat{
+  background:#ffffff !important;
+  border:1px solid #c8d0e8 !important;
+  box-shadow:0 4px 16px rgba(20,30,80,0.09) !important;
+}
+body.theme-light .stat::before{
+  background:linear-gradient(90deg,transparent,rgba(79,140,255,.5),transparent) !important;
+}
+body.theme-light .stat-n{
+  color:#111827 !important;
+  font-weight:800 !important;
+}
+body.theme-light .stat-l{
+  color:#4a5080 !important;
+  font-weight:700 !important;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+body.theme-light .stat-accent .stat-n{color:#3b5bdb !important;}
+body.theme-light .stat-accent{
+  border-color:rgba(59,91,219,0.35) !important;
+  background:linear-gradient(135deg,#f0f4ff,#ffffff) !important;
+}
+body.theme-light .stat-green .stat-n{color:#087f5b !important;}
+body.theme-light .stat-green{
+  border-color:rgba(8,127,91,0.3) !important;
+  background:linear-gradient(135deg,#f0fdf8,#ffffff) !important;
+}
+body.theme-light .stat-red .stat-n{color:#c92a2a !important;}
+body.theme-light .stat-red{
+  border-color:rgba(201,42,42,0.3) !important;
+  background:linear-gradient(135deg,#fff5f5,#ffffff) !important;
+}
+
+/* ATENDENTES CARDS */
+body.theme-light .atd-card{
+  background:#ffffff !important;
+  border:1px solid #c8d0e8 !important;
+  box-shadow:0 4px 20px rgba(20,30,80,0.09) !important;
+}
+body.theme-light .atd-card::before{
+  background:linear-gradient(90deg,transparent,rgba(59,91,219,0.5),rgba(108,87,245,0.4),transparent) !important;
+}
+body.theme-light .atd-card::after{
+  background:radial-gradient(circle,rgba(79,140,255,.05) 0%,transparent 70%) !important;
+}
+body.theme-light .atd-card:hover{
+  box-shadow:0 12px 40px rgba(59,91,219,0.15) !important;
+}
+body.theme-light .atd-card-nome{
+  color:#111827 !important;
+  font-weight:700 !important;
+}
+body.theme-light .atd-card-deptos{
+  color:#5060a0 !important;
+}
+body.theme-light .atd-score-val{
+  background:linear-gradient(135deg,#3b5bdb,#7c6cf5) !important;
+  -webkit-background-clip:text !important;
+  -webkit-text-fill-color:transparent !important;
+}
+body.theme-light .atd-score-lbl{
+  color:#6070a0 !important;
+}
+
+/* KPI MINI DOS ATENDENTES */
+body.theme-light .atd-kpi{
+  background:rgba(59,91,219,0.06) !important;
+  border:1px solid rgba(59,91,219,0.15) !important;
+  box-shadow:none !important;
+}
+body.theme-light .atd-kpi-n{
+  color:var(--kpi-color,#111827) !important;
+  font-weight:800 !important;
+}
+body.theme-light .atd-kpi-l{
+  color:#4a5080 !important;
+  font-weight:700 !important;
+}
+
+/* MÉTRICAS DOS ATENDENTES */
+body.theme-light .atd-metric-label{color:#5060a0 !important;}
+body.theme-light .atd-metric-track{background:rgba(0,0,0,0.10) !important;}
+body.theme-light .atd-mini-chart-title{color:#5060a0 !important;}
+
+/* TIPS DOS ATENDENTES */
+body.theme-light .atd-tip{
+  background:rgba(59,91,219,0.06) !important;
+  border:1px solid rgba(59,91,219,0.18) !important;
+  color:#2a3470 !important;
+}
+body.theme-light .atd-tip.success{
+  background:rgba(8,127,91,0.07) !important;
+  border-color:rgba(8,127,91,0.22) !important;
+  color:#087f5b !important;
+}
+
+/* TOP USERS do dashboard */
+body.theme-light #chart-users > div{
+  border-bottom-color:#e8ecf8 !important;
+}
+body.theme-light #chart-users [style*="color:var(--accent)"]{
+  color:#3b5bdb !important;
+}
+body.theme-light #chart-users [style*="color:var(--muted)"]{
+  color:#5060a0 !important;
+}
+body.theme-light #chart-users [style*="color:var(--dim)"]{
+  color:#7080b0 !important;
+}
+body.theme-light #chart-users [style*="font-weight:500"]{
+  color:#111827 !important;
+}
+
+/* Abas do dashboard (Geral / Atendentes) */
+body.theme-light #dash-tab-geral,
+body.theme-light #dash-tab-atendentes{
+  color:#5060a0 !important;
+  font-weight:600;
+}
+body.theme-light #dash-tab-geral.active,
+body.theme-light #dash-tab-atendentes.active{
+  color:#3b5bdb !important;
+  border-bottom-color:#3b5bdb !important;
+  font-weight:700;
+}
+
+/* Select período */
+body.theme-light #dash-periodo{
+  background:#f0f4ff !important;
+  border:1px solid #c0cae4 !important;
+  color:#111827 !important;
+}
+
+/* CH-KPI (stats menores na lista de chamados) */
+body.theme-light .ch-kpi{
+  background:#ffffff !important;
+  border:1px solid #c8d0e8 !important;
+  box-shadow:0 2px 10px rgba(20,30,80,0.08) !important;
+}
+body.theme-light .ch-kpi-n{color:#111827 !important;font-weight:800 !important;}
+body.theme-light .ch-kpi-l{color:#4a5080 !important;font-weight:700 !important;}
 
 /* Transição suave entre temas */
 *,body{transition:background-color .25s ease,border-color .25s ease,color .15s ease,box-shadow .25s ease;}
