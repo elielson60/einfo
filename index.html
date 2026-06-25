@@ -1373,7 +1373,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 
 /* Chamados table card-style */
 .ch-list{display:flex;flex-direction:column;gap:0;}
-.ch-item{display:grid;grid-template-columns:36px minmax(0,1fr) 90px 120px 140px 110px 100px 72px;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.05);transition:background .15s;cursor:pointer;}
+.ch-item{display:grid;grid-template-columns:36px minmax(0,1fr) 90px 120px 140px 110px 100px 72px;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid rgba(255,255,255,0.06);transition:background .18s,box-shadow .18s;cursor:pointer;}
 #tbl-meus .ch-item{grid-template-columns:36px minmax(0,1fr) 90px 140px 110px 100px 50px;}
 @media(max-width:900px){#tbl-meus .ch-item{grid-template-columns:36px minmax(0,1fr) 90px 50px!important;}#tbl-meus .ch-sla-col,#tbl-meus .ch-prio-col{display:none;}}
 .ch-item:last-child{border-bottom:none;}
@@ -5395,45 +5395,51 @@ function avatarColor(name) { let h=0; for(let i=0;i<(name||'').length;i++) h=(h*
 
 function renderChamados(list) {
   const tb = document.getElementById('tbl-chamados');
+  const isLight = document.body.classList.contains('theme-light');
+  const catColor = isLight ? '#374151' : 'rgba(160,160,200,.75)';
+  const catWeight = isLight ? '600' : '400';
+
   if (!list.length) {
-    tb.innerHTML = '<div style="text-align:center;color:var(--muted);padding:50px 20px;"><div style="font-size:32px;margin-bottom:8px;">📭</div><div>Nenhum chamado encontrado</div></div>';
+    tb.innerHTML = `<div style="text-align:center;color:${isLight?'#374151':'var(--muted)'};padding:50px 20px;"><div style="font-size:32px;margin-bottom:8px;">📭</div><div style="font-weight:${isLight?'600':'400'};">Nenhum chamado encontrado</div></div>`;
     renderChDonut(list);
     return;
   }
-  const prioColor = {critico:'#f05a5a',alto:'#f5a623',medio:'#5b8def',baixo:'#2fd89a'};
+  const prioColor = {critico:'#ef4444',alto:'#f97316',medio:'#3b82f6',baixo:'#22c55e'};
+  const prioBg    = {critico:isLight?'#fee2e2':'rgba(239,68,68,.15)',alto:isLight?'#fff7ed':'rgba(249,115,22,.15)',medio:isLight?'#dbeafe':'rgba(59,130,246,.15)',baixo:isLight?'#dcfce7':'rgba(34,197,94,.15)'};
   const prioLabel = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
 
   tb.innerHTML = list.map(c => {
     const ini = getInitials(c.nome_solicitante);
     const avatarBg = avatarColor(c.nome_solicitante||'');
-    const pColor = prioColor[c.prioridade] || 'var(--muted)';
+    const pColor = prioColor[c.prioridade] || (isLight?'#6b7280':'var(--muted)');
+    const pBg    = prioBg[c.prioridade]   || (isLight?'#f3f4f6':'rgba(107,114,128,.12)');
     const pLabel = prioLabel[c.prioridade] || c.prioridade || '—';
     const sla = slaInfo(c);
     const dt = c.criado_em ? new Date(c.criado_em).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
-    const hasAnexo = c.anexos && c.anexos.length;
 
     return `<div class="ch-item" onclick="openModalDetalhe('${c.id}')">
-      <div class="ch-avatar" style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,${avatarBg},${avatarBg}99);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;">${ini}</div>
+      <div class="ch-avatar" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,${avatarBg},${avatarBg}cc);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 2px 8px ${avatarBg}66;">${ini}</div>
       <div class="ch-info" style="min-width:0;">
-        <div class="ch-titulo">${c.titulo}</div>
-        <div class="ch-meta">${c.nome_solicitante||'—'} · ${c.empresa||''} · ${dt}</div>
+        <div class="ch-titulo" style="font-size:13px;font-weight:700;color:${isLight?'#000000':'#f0f0f8'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.titulo}</div>
+        <div class="ch-meta" style="font-size:11px;color:${isLight?'#374151':'rgba(160,160,200,.8)'};font-weight:${isLight?'600':'400'};margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.nome_solicitante||'—'} · ${c.empresa||''} · ${dt}</div>
       </div>
-      <span class="ch-ticket" style="font-size:10px;font-family:var(--mono);color:var(--accent);background:rgba(91,141,239,.1);padding:3px 7px;border-radius:6px;white-space:nowrap;justify-self:start;" title="Protocolo: ${c.ticket_num}">${c.ticket_num}</span>
+      <span class="ch-ticket" style="font-size:10px;font-family:var(--mono);font-weight:700;color:${isLight?'#1d4ed8':'#93c5fd'};background:${isLight?'#dbeafe':'rgba(59,130,246,.12)'};border:1px solid ${isLight?'#93c5fd':'rgba(59,130,246,.3)'};padding:3px 8px;border-radius:6px;white-space:nowrap;justify-self:start;" title="Protocolo: ${c.ticket_num}">${c.ticket_num}</span>
       <div class="ch-cat-col" style="min-width:0;">
-        <span style="font-size:11px;color:rgba(160,160,200,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;">${c.categoria||'—'}</span>
+        <span style="font-size:11px;font-weight:${catWeight};color:${catColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;">${c.categoria||'—'}</span>
       </div>
       <div class="ch-sla-col" style="min-width:0;">${sla.html}</div>
-      <div class="ch-prio-col" style="display:flex;align-items:center;gap:5px;min-width:0;">
-        <span style="width:7px;height:7px;border-radius:50%;background:${pColor};flex-shrink:0;box-shadow:0 0 5px ${pColor}88;"></span>
-        <span style="font-size:11px;color:${pColor};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${pLabel}</span>
+      <div class="ch-prio-col" style="min-width:0;">
+        <span style="display:inline-flex;align-items:center;gap:5px;background:${pBg};border:1px solid ${pColor}44;border-radius:20px;padding:3px 8px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:${pColor};flex-shrink:0;"></span>
+          <span style="font-size:11px;font-weight:700;color:${pColor};white-space:nowrap;">${pLabel}</span>
+        </span>
       </div>
       <div style="min-width:0;">${statusBadgeHtml(c.status)}</div>
       <div class="ch-actions" onclick="event.stopPropagation()" style="display:flex;gap:4px;justify-content:flex-end;flex-shrink:0;">
-        <button class="ch-action-btn" onclick="openModalDetalhe('${c.id}')" title="Ver detalhes">👁</button>
+        <button class="ch-action-btn" onclick="openModalDetalhe('${c.id}')" title="Ver detalhes" style="color:${isLight?'#374151':'rgba(160,160,200,.8)'};border-color:${isLight?'#c8d4ec':'rgba(255,255,255,.1)'};">👁</button>
       </div>
     </div>`;
   }).join('');
-
 }
 
 // Mini donut chart ao lado
@@ -5703,6 +5709,7 @@ function buscarMeus(q) {
 function renderMeusChamados(list) {
   const tb = document.getElementById('tbl-meus');
   const empty = document.getElementById('mu-empty-state');
+  const isLight = document.body.classList.contains('theme-light');
   if (!list.length) {
     tb.innerHTML = '';
     tb.parentElement.style.display = 'none';
@@ -5712,33 +5719,37 @@ function renderMeusChamados(list) {
   tb.parentElement.style.display = 'block';
   if (empty) empty.style.display = 'none';
 
-  const prioColor = {critico:'#f05a5a',alto:'#f5a623',medio:'#5b8def',baixo:'#2fd89a'};
+  const prioColor = {critico:'#ef4444',alto:'#f97316',medio:'#3b82f6',baixo:'#22c55e'};
+  const prioBg    = {critico:isLight?'#fee2e2':'rgba(239,68,68,.15)',alto:isLight?'#fff7ed':'rgba(249,115,22,.15)',medio:isLight?'#dbeafe':'rgba(59,130,246,.15)',baixo:isLight?'#dcfce7':'rgba(34,197,94,.15)'};
   const prioLabel = {critico:'Crítico',alto:'Alto',medio:'Médio',baixo:'Baixo'};
 
   tb.innerHTML = list.map((c, idx) => {
     const ini = getInitials(c.titulo);
     const avatarBg = avatarColor(c.titulo||'');
-    const pColor = prioColor[c.prioridade] || 'var(--muted)';
+    const pColor = prioColor[c.prioridade] || (isLight?'#6b7280':'var(--muted)');
+    const pBg    = prioBg[c.prioridade]   || (isLight?'#f3f4f6':'rgba(107,114,128,.12)');
     const pLabel = prioLabel[c.prioridade] || c.prioridade || '—';
     const dt = c.criado_em ? new Date(c.criado_em).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
     const sla = slaInfo(c);
     const delay = Math.min(idx * 40, 320);
 
     const avalBadge = c.status==='resolvido' && !c.avaliacao
-      ? `<button class="ch-action-btn" onclick="event.stopPropagation();openModalAval('${c.id}')" title="Avaliar atendimento" style="color:#fbbf24;border-color:rgba(245,158,11,.4);">⭐</button>`
-      : c.avaliacao ? `<span style="font-size:11px;color:#fbbf24;white-space:nowrap;">⭐ ${JSON.parse(c.avaliacao).nota}/5</span>` : '';
+      ? `<button class="ch-action-btn" onclick="event.stopPropagation();openModalAval('${c.id}')" title="Avaliar atendimento" style="color:#fbbf24;border-color:rgba(245,158,11,.5);">⭐</button>`
+      : c.avaliacao ? `<span style="font-size:12px;font-weight:700;color:#f59e0b;white-space:nowrap;">⭐ ${JSON.parse(c.avaliacao).nota}/5</span>` : '';
 
     return `<div class="ch-item" style="animation-delay:${delay}ms" onclick="openModalDetalhe('${c.id}')">
-      <div class="ch-avatar" style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,${avatarBg},${avatarBg}99);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;">${ini}</div>
+      <div class="ch-avatar" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,${avatarBg},${avatarBg}cc);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 2px 8px ${avatarBg}66;">${ini}</div>
       <div class="ch-info" style="min-width:0;">
-        <div class="ch-titulo">${c.titulo}</div>
-        <div class="ch-meta">${c.empresa||''} · ${c.categoria||''} · ${dt}</div>
+        <div class="ch-titulo" style="font-size:13px;font-weight:700;color:${isLight?'#000000':'#f0f0f8'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.titulo}</div>
+        <div class="ch-meta" style="font-size:11px;color:${isLight?'#374151':'rgba(160,160,200,.8)'};font-weight:${isLight?'600':'400'};margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.empresa||''} · ${c.categoria||''} · ${dt}</div>
       </div>
-      <span class="ch-ticket" style="font-size:10px;font-family:var(--mono);color:var(--accent);background:rgba(91,141,239,.1);padding:3px 7px;border-radius:6px;white-space:nowrap;justify-self:start;">${c.ticket_num}</span>
+      <span class="ch-ticket" style="font-size:10px;font-family:var(--mono);font-weight:700;color:${isLight?'#1d4ed8':'#93c5fd'};background:${isLight?'#dbeafe':'rgba(59,130,246,.12)'};border:1px solid ${isLight?'#93c5fd':'rgba(59,130,246,.3)'};padding:3px 8px;border-radius:6px;white-space:nowrap;justify-self:start;">${c.ticket_num}</span>
       <div class="ch-sla-col" style="min-width:0;">${sla.html}</div>
-      <div class="ch-prio-col" style="display:flex;align-items:center;gap:5px;min-width:0;">
-        <span style="width:7px;height:7px;border-radius:50%;background:${pColor};flex-shrink:0;box-shadow:0 0 5px ${pColor}88;"></span>
-        <span style="font-size:11px;color:${pColor};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${pLabel}</span>
+      <div class="ch-prio-col" style="min-width:0;">
+        <span style="display:inline-flex;align-items:center;gap:5px;background:${pBg};border:1px solid ${pColor}44;border-radius:20px;padding:3px 8px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:${pColor};flex-shrink:0;"></span>
+          <span style="font-size:11px;font-weight:700;color:${pColor};white-space:nowrap;">${pLabel}</span>
+        </span>
       </div>
       <div style="min-width:0;">${statusBadgeHtml(c.status)}</div>
       <div onclick="event.stopPropagation()" style="display:flex;align-items:center;justify-content:flex-end;">${avalBadge}</div>
@@ -5879,8 +5890,16 @@ function statusBadgeHtml(chave) {
   const s = STATUS_MAP[chave];
   const cor = s?.cor || '#7a7a8c';
   const nome = s?.nome || chave;
-  return `<span style="display:inline-flex;align-items:center;gap:5px;background:${cor}25;color:${cor};border:1px solid ${cor}70;border-radius:20px;font-size:11px;font-weight:600;padding:3px 10px;white-space:nowrap;letter-spacing:.02em;text-shadow:0 0 8px ${cor}44;">
-    <span style="width:6px;height:6px;border-radius:50%;background:${cor};box-shadow:0 0 5px ${cor};flex-shrink:0;"></span>${nome}</span>`;
+  const isLight = document.body.classList.contains('theme-light');
+  // No tema claro: fundo mais opaco e texto mais escuro para garantir contraste
+  const bg = isLight ? cor + '22' : cor + '20';
+  const border = isLight ? cor + 'aa' : cor + '60';
+  const textColor = isLight ? cor : cor;
+  const fontW = isLight ? '700' : '600';
+  // Calcular cor de texto mais escura para tema claro (adiciona sombra de contraste)
+  const shadow = isLight ? 'none' : `0 0 8px ${cor}44`;
+  return `<span style="display:inline-flex;align-items:center;gap:5px;background:${bg};color:${textColor};border:1.5px solid ${border};border-radius:20px;font-size:11px;font-weight:${fontW};padding:4px 10px;white-space:nowrap;letter-spacing:.02em;text-shadow:${shadow};filter:${isLight?'saturate(1.4) brightness(0.8)':'none'};">
+    <span style="width:7px;height:7px;border-radius:50%;background:${cor};flex-shrink:0;box-shadow:0 0 4px ${cor}88;"></span>${nome}</span>`;
 }
 
 // ── ADMINISTRAÇÃO: GENERIC LIST/DETAIL PATTERN ──
@@ -8066,6 +8085,16 @@ function toggleTheme() {
   if (secDash && secDash.classList.contains('active')) {
     setTimeout(() => reloadDashTab(), 50);
   }
+  // Recarrega lista de chamados se estiver visível
+  setTimeout(() => {
+    if (allChamados && allChamados.length) {
+      const filtered = filterStatus === 'todos' ? allChamados : allChamados.filter(c=>c.status===filterStatus);
+      renderChamados(filtered);
+    }
+    if (allMeusChamados && allMeusChamados.length) {
+      renderMeusChamados(allMeusChamados);
+    }
+  }, 80);
   try { localStorage.setItem('et-theme', novo); } catch(e) {}
 }
 
