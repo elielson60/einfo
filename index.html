@@ -4513,39 +4513,56 @@ async function loadDashboard() {
 
 const PALETA = ['#5b8def','#2fd89a','#f5a623','#f05a5a','#a78bfa','#06b6d4','#f97316','#ec4899','#14b8a6','#84cc16'];
 
-// Global Chart.js defaults — glassmorphism clean style
-Chart.defaults.color = 'rgba(160,160,200,0.65)';
-Chart.defaults.font.family = "'DM Sans',sans-serif";
-Chart.defaults.font.size = 11;
+// Global Chart.js defaults — adapta conforme o tema
+function aplicarChartDefaults() {
+  const isLight = document.body.classList.contains('theme-light');
+  Chart.defaults.color = isLight ? 'rgba(50,60,120,0.75)' : 'rgba(160,160,200,0.65)';
+  Chart.defaults.font.family = "'DM Sans',sans-serif";
+  Chart.defaults.font.size = 11;
+}
+aplicarChartDefaults();
 
 const GRID_NONE = { display:false };
 const GRID_SUBTLE = { color:'rgba(255,255,255,0.04)', drawBorder:false };
 const TICK_STYLE = { color:'rgba(160,160,200,0.6)', font:{size:11}, padding:6 };
 const LEGEND_STYLE = { labels:{ color:'rgba(160,160,200,0.8)', font:{size:11}, padding:14, usePointStyle:true, pointStyleWidth:8 } };
 
-const CHART_OPTS = {
-  responsive:true,
-  animation:{ duration:800, easing:'easeOutQuart' },
-  plugins:{
-    legend:LEGEND_STYLE,
-    tooltip:{
-      backgroundColor:'rgba(12,12,28,0.92)',
-      backdropFilter:'blur(12px)',
-      borderColor:'rgba(255,255,255,0.12)',
-      borderWidth:1,
-      titleColor:'#e0e0f0',
-      bodyColor:'rgba(160,160,200,0.85)',
-      padding:12,
-      cornerRadius:10,
-      titleFont:{size:12,weight:'600'},
-      bodyFont:{size:11}
+// Retorna opções dinâmicas baseadas no tema atual
+function getChartOpts() {
+  const isLight = document.body.classList.contains('theme-light');
+  const gridColor = isLight ? 'rgba(0,0,60,0.07)' : 'rgba(255,255,255,0.04)';
+  const tickColor = isLight ? 'rgba(40,50,120,0.65)' : 'rgba(160,160,200,0.6)';
+  const legendColor = isLight ? 'rgba(30,40,100,0.8)' : 'rgba(160,160,200,0.8)';
+  const tooltipBg = isLight ? 'rgba(255,255,255,0.97)' : 'rgba(12,12,28,0.92)';
+  const tooltipBorder = isLight ? 'rgba(59,91,219,0.2)' : 'rgba(255,255,255,0.12)';
+  const tooltipTitle = isLight ? '#1a1a2e' : '#e0e0f0';
+  const tooltipBody = isLight ? 'rgba(40,50,120,0.85)' : 'rgba(160,160,200,0.85)';
+  return {
+    responsive:true,
+    animation:{ duration:800, easing:'easeOutQuart' },
+    plugins:{
+      legend:{ labels:{ color:legendColor, font:{size:11}, padding:14, usePointStyle:true, pointStyleWidth:8 } },
+      tooltip:{
+        backgroundColor:tooltipBg,
+        backdropFilter:'blur(12px)',
+        borderColor:tooltipBorder,
+        borderWidth:1,
+        titleColor:tooltipTitle,
+        bodyColor:tooltipBody,
+        padding:12,
+        cornerRadius:10,
+        titleFont:{size:12,weight:'600'},
+        bodyFont:{size:11}
+      }
+    },
+    scales:{
+      x:{ ticks:{ color:tickColor, font:{size:11}, padding:6 }, grid:{ color:gridColor, drawBorder:false }, border:{display:false} },
+      y:{ ticks:{ color:tickColor, font:{size:11}, padding:6 }, grid:{ color:gridColor, drawBorder:false }, border:{display:false} }
     }
-  },
-  scales:{
-    x:{ ticks:TICK_STYLE, grid:GRID_SUBTLE, border:{display:false} },
-    y:{ ticks:TICK_STYLE, grid:GRID_SUBTLE, border:{display:false} }
-  }
-};
+  };
+}
+
+const CHART_OPTS = getChartOpts();
 
 function renderLinha(list, dias) {
   destroyChart('linha');
@@ -4570,7 +4587,7 @@ function renderLinha(list, dias) {
       { label:'Abertos', data:abertosPorDia, borderColor:'#4f8cff', backgroundColor:'rgba(79,140,255,.15)', fill:true, tension:.4, pointRadius:2 },
       { label:'Resolvidos', data:fechadosPorDia, borderColor:'#3ecf8e', backgroundColor:'rgba(62,207,142,.1)', fill:true, tension:.4, pointRadius:2 }
     ]},
-    options:{ ...CHART_OPTS, plugins:{ ...CHART_OPTS.plugins, legend:{ position:'top', labels:{ color:'#a1a1aa', font:{size:11} } } } }
+    options:(()=>{ const o=getChartOpts(); return {...o, plugins:{...o.plugins, legend:{position:'top', labels:{color:document.body.classList.contains('theme-light')?'rgba(40,50,120,0.75)':'#a1a1aa',font:{size:11}}}}}; })()
   });
 }
 
@@ -4598,7 +4615,7 @@ function renderColunas(list, field, canvasId) {
   CHARTS[canvasId] = new Chart(ctx, {
     type:'bar',
     data:{ labels:entries.map(e=>e[0].length>18?e[0].substring(0,18)+'…':e[0]), datasets:[{ label:'Chamados', data:entries.map(e=>e[1]), backgroundColor:PALETA, borderRadius:8 }] },
-    options:{ ...CHART_OPTS, plugins:{ legend:{display:false}, tooltip:CHART_OPTS.plugins.tooltip }, scales:{ x:{ ticks:TICK_STYLE, grid:GRID_NONE, border:{display:false} }, y:{ ticks:TICK_STYLE, grid:GRID_SUBTLE, border:{display:false} } } }
+    options:(()=>{ const o=getChartOpts(); return {...o, plugins:{legend:{display:false},tooltip:o.plugins.tooltip}, scales:o.scales}; })()
   });
 }
 
@@ -4706,7 +4723,7 @@ function renderBarrasH(list, field, canvasId) {
   CHARTS[canvasId] = new Chart(ctx, {
     type:'bar',
     data:{ labels:entries.map(e=>e[0].length>22?e[0].substring(0,22)+'…':e[0]), datasets:[{ label:'Chamados', data:entries.map(e=>e[1]), backgroundColor:PALETA, borderRadius:8 }] },
-    options:{ ...CHART_OPTS, indexAxis:'y', plugins:{ legend:{display:false}, tooltip:CHART_OPTS.plugins.tooltip }, scales:{ x:{ ticks:TICK_STYLE, grid:GRID_SUBTLE, border:{display:false} }, y:{ ticks:TICK_STYLE, grid:GRID_NONE, border:{display:false} } } }
+    options:(()=>{ const o=getChartOpts(); return {...o, indexAxis:'y', plugins:{legend:{display:false},tooltip:o.plugins.tooltip}, scales:o.scales}; })()
   });
 }
 
@@ -4720,7 +4737,7 @@ function renderDiaSemana(list) {
   CHARTS['diasemana'] = new Chart(ctx, {
     type:'bar',
     data:{ labels:dias, datasets:[{ label:'Chamados', data:counts, backgroundColor:counts.map((_,i)=>i===0||i===6?'rgba(79,140,255,.4)':'#4f8cff'), borderRadius:8 }] },
-    options:{ ...CHART_OPTS, plugins:{ legend:{display:false}, tooltip:CHART_OPTS.plugins.tooltip }, scales:{ x:{ ticks:TICK_STYLE, grid:GRID_NONE, border:{display:false} }, y:{ ticks:TICK_STYLE, grid:GRID_SUBTLE, border:{display:false} } } }
+    options:(()=>{ const o=getChartOpts(); return {...o, plugins:{legend:{display:false},tooltip:o.plugins.tooltip}, scales:o.scales}; })()
   });
 }
 
@@ -7641,6 +7658,12 @@ function toggleTheme() {
   const isLight = document.body.classList.contains('theme-light');
   const novo = isLight ? 'dark' : 'light';
   aplicarTema(novo);
+  // Recarrega gráficos do dashboard se estiver visível
+  aplicarChartDefaults();
+  const secDash = document.getElementById('sec-dashboard');
+  if (secDash && secDash.classList.contains('active')) {
+    setTimeout(() => reloadDashTab(), 50);
+  }
   try { localStorage.setItem('et-theme', novo); } catch(e) {}
 }
 
