@@ -2,6 +2,21 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<link rel="manifest" href="data:application/json,{
+  %22name%22:%22EliTicket%22,
+  %22short_name%22:%22EliTicket%22,
+  %22description%22:%22Plataforma de Atendimento%22,
+  %22start_url%22:%22./%22,
+  %22display%22:%22standalone%22,
+  %22background_color%22:%22%23070711%22,
+  %22theme_color%22:%22%235b8def%22,
+  %22icons%22:[{%22src%22:%22https://img.icons8.com/fluency/96/technical-support.png%22,%22sizes%22:%2296x96%22,%22type%22:%22image/png%22}]
+}">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EliTicket">
+<meta name="theme-color" content="#070711">
 
 <style id="emergency-theme-fixes">
 /* EMERGENCY FIX v2.1 - Aplicado diretamente */
@@ -100,32 +115,36 @@ body.theme-light .badge-fechado { background: #f1f5f9 !important; color: #475569
 
 /* ── TEMA CLARO ────────────────────────────── */
 body.theme-light{
-  --bg:#e8ecf6;
-  --surface:#f4f6fc;
-  --surface2:#eaeefc;
-  --surface3:#dfe4f4;
-  --border:#c8d0e8;
-  --border2:#a8b4d0;
-  --text:#111827;
-  --muted:#374060;
-  --dim:#6b7aa0;
-  --accent:#3b5bdb;
-  --accent-s:rgba(59,91,219,0.13);
-  --accent-b:rgba(59,91,219,0.38);
-  --green:#087f5b;--green-s:rgba(8,127,91,0.12);
-  --red:#c92a2a;--red-s:rgba(201,42,42,0.12);
-  --orange:#b35900;--orange-s:rgba(179,89,0,0.12);
-  --glass:#f4f6fc;
-  --glass-border:#c0c8e0;
-  --shadow-sm:0 1px 4px rgba(20,30,80,0.08),0 4px 16px rgba(20,30,80,0.06);
-  --shadow-md:0 4px 16px rgba(20,30,80,0.10),0 12px 40px rgba(20,30,80,0.07);
-  --shadow-glow:0 0 30px rgba(59,91,219,0.15);
+  /* ── Paleta Slate-Índigo Premium ── */
+  --bg:#e2e8f4;
+  --surface:#f8faff;
+  --surface2:#eef2fb;
+  --surface3:#e4eaf6;
+  --border:#c4cee8;
+  --border2:#a0aed0;
+  --text:#0f172a;
+  --muted:#334155;
+  --dim:#64748b;
+  --accent:#4361ee;
+  --accent-s:rgba(67,97,238,0.12);
+  --accent-b:rgba(67,97,238,0.35);
+  --green:#059669;--green-s:rgba(5,150,105,0.12);
+  --red:#dc2626;--red-s:rgba(220,38,38,0.12);
+  --orange:#d97706;--orange-s:rgba(217,119,6,0.12);
+  --glass:#f8faff;
+  --glass-border:#bcc8e4;
+  --shadow-sm:0 1px 3px rgba(15,23,42,0.06),0 4px 16px rgba(15,23,42,0.08);
+  --shadow-md:0 4px 16px rgba(15,23,42,0.10),0 16px 48px rgba(15,23,42,0.10);
+  --shadow-glow:0 0 30px rgba(67,97,238,0.18);
   --r:14px;--r-sm:10px;--r-xs:8px;
-  background:#cdd5e8;
+
+  /* ── Background: Slate azulado com profundidade ── */
+  background: #1e2a4a;
   background-image:
-    radial-gradient(ellipse at 0% 0%, rgba(59,91,219,0.18) 0%, transparent 50%),
-    radial-gradient(ellipse at 100% 100%, rgba(108,87,245,0.14) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 30%, rgba(59,91,219,0.06) 0%, transparent 60%);
+    radial-gradient(ellipse at 15% 15%, rgba(67,97,238,0.35) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 80%, rgba(124,92,245,0.25) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 50%, rgba(16,24,56,0.60) 0%, transparent 70%),
+    linear-gradient(160deg, #1e2a4a 0%, #16213e 40%, #1a1f3a 100%);
 }
 
 /* ════════════════════════════════════════════════════
@@ -137,7 +156,12 @@ body.theme-light{
   -webkit-font-smoothing:antialiased !important;
   -moz-osx-font-smoothing:grayscale !important;
   text-rendering:optimizeLegibility !important;
-  background:#cdd5e8 !important;
+  background: #1e2a4a !important;
+  background-image:
+    radial-gradient(ellipse at 15% 15%, rgba(67,97,238,0.35) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 80%, rgba(124,92,245,0.25) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 50%, rgba(16,24,56,0.60) 0%, transparent 70%),
+    linear-gradient(160deg, #1e2a4a 0%, #16213e 40%, #1a1f3a 100%) !important;
   background-image:
     radial-gradient(ellipse at 0% 0%, rgba(59,91,219,0.18) 0%, transparent 50%),
     radial-gradient(ellipse at 100% 100%, rgba(108,87,245,0.14) 0%, transparent 50%),
@@ -313,12 +337,18 @@ body.theme-light .ch-wrap{
   border-radius:16px;
   box-shadow:0 2px 8px rgba(20,30,80,0.08),0 8px 32px rgba(20,30,80,0.06) !important;
 }
+body.theme-light .ch-item{border-bottom:1px solid var(--border) !important;}
 body.theme-light .ch-item{border-bottom:1px solid #dce4f4 !important;}
+body:not(.theme-light) .ch-item{border-bottom:1px solid rgba(255,255,255,0.06) !important;}
 body.theme-light .ch-item:hover{
   background:linear-gradient(90deg,rgba(59,91,219,0.05),rgba(59,91,219,0.02)) !important;
 }
-body.theme-light .ch-titulo{color:#111827 !important;font-weight:700;}
-body.theme-light .ch-meta{color:#5060a0 !important;font-weight:500;}
+body.theme-light .ch-titulo{color:var(--text);font-weight:700;}
+body.theme-light .ch-titulo{color:#000000 !important;}
+body:not(.theme-light) .ch-titulo{color:#f0f0f8 !important;}
+body.theme-light .ch-meta{color:var(--muted);font-weight:500;}
+body.theme-light .ch-meta{color:#374151 !important;font-weight:600;}
+body:not(.theme-light) .ch-meta{color:rgba(160,160,200,0.8) !important;}
 body.theme-light .ch-ticket{
   color:#3b5bdb !important;
   background:rgba(59,91,219,0.12) !important;
@@ -1407,6 +1437,305 @@ body.theme-light .alert-success { background: #dcfce7 !important; border-color: 
 body.theme-light .alert-warning { background: #fef9c3 !important; border-color: #fde047 !important; color: #854d0e !important; }
 body.theme-light .alert-error { background: #fee2e2 !important; border-color: #fca5a5 !important; color: #991b1b !important; }
 
+/* ══════════════════════════════════════════════════════
+   TEMA CLARO — SUPERFÍCIES HARMONIZADAS COM FUNDO SLATE
+   Fundo: azul-ardósia escuro (#1e2a4a)
+   Cards/Sidebar/Modais: branco levemente azulado
+   ══════════════════════════════════════════════════════ */
+
+/* ── ÁREA PRINCIPAL (main content) ── */
+body.theme-light #main-content,
+body.theme-light .main-content,
+body.theme-light #page-chamados,
+body.theme-light #page-admin,
+body.theme-light #page-meus {
+  background: rgba(15, 23, 42, 0.0) !important;
+}
+
+/* ── SIDEBAR ── */
+body.theme-light .sidebar,
+body.theme-light #sidebar {
+  background: rgba(248, 250, 255, 0.97) !important;
+  backdrop-filter: blur(20px) !important;
+  border-right: 1px solid rgba(196,206,232,0.6) !important;
+  box-shadow: 4px 0 24px rgba(15,23,42,0.18) !important;
+}
+body.theme-light .nav-item {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+  border-radius: 10px !important;
+}
+body.theme-light .nav-item:hover {
+  background: rgba(67,97,238,0.10) !important;
+  color: #4361ee !important;
+}
+body.theme-light .nav-item.active {
+  background: linear-gradient(135deg, rgba(67,97,238,0.18), rgba(67,97,238,0.10)) !important;
+  color: #4361ee !important;
+  font-weight: 700 !important;
+  border-left: 3px solid #4361ee !important;
+}
+body.theme-light .nav-section {
+  color: #64748b !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: .12em !important;
+  text-transform: uppercase !important;
+}
+body.theme-light .sidebar-logo { opacity: 1 !important; }
+
+/* ── TOPBAR ── */
+body.theme-light .topbar,
+body.theme-light #topbar {
+  background: rgba(248, 250, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(196,206,232,0.5) !important;
+  box-shadow: 0 2px 20px rgba(15,23,42,0.12) !important;
+}
+body.theme-light .topbar * { color: #0f172a !important; }
+body.theme-light .topbar .logo-text { color: #4361ee !important; }
+
+/* ── SEÇÃO PRINCIPAL (container dos cards/lista) ── */
+body.theme-light #sec-chamados,
+body.theme-light #sec-dashboard,
+body.theme-light #sec-meus,
+body.theme-light #page-admin .admin-content {
+  background: transparent !important;
+}
+
+/* ── CABEÇALHO DAS SEÇÕES ── */
+body.theme-light .sec-header,
+body.theme-light .ch-header,
+body.theme-light .page-header {
+  background: rgba(248,250,255,0.92) !important;
+  backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(196,206,232,0.5) !important;
+  border-radius: 16px 16px 0 0 !important;
+}
+body.theme-light .sec-header *,
+body.theme-light .ch-header *,
+body.theme-light .page-header * { color: #0f172a !important; }
+
+/* ── LISTA DE CHAMADOS: wrapper e itens ── */
+body.theme-light #tbl-chamados,
+body.theme-light #tbl-meus {
+  background: rgba(248,250,255,0.95) !important;
+  backdrop-filter: blur(12px) !important;
+  border-radius: 0 0 16px 16px !important;
+  border: 1px solid rgba(196,206,232,0.5) !important;
+  border-top: none !important;
+  box-shadow: 0 8px 32px rgba(15,23,42,0.20) !important;
+}
+body.theme-light .ch-item {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(196,206,232,0.4) !important;
+}
+body.theme-light .ch-item:hover {
+  background: rgba(67,97,238,0.06) !important;
+}
+
+/* ── KPI STATS (topo da lista) ── */
+body.theme-light .ch-kpi,
+body.theme-light .ch-kpis .ch-kpi {
+  background: rgba(248,250,255,0.95) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(196,206,232,0.5) !important;
+  box-shadow: 0 4px 20px rgba(15,23,42,0.14) !important;
+}
+
+/* ── FILTROS (Todos / Aberto / Em andamento...) ── */
+body.theme-light .ch-chip,
+body.theme-light .filter-chip {
+  background: rgba(248,250,255,0.92) !important;
+  border: 1.5px solid rgba(196,206,232,0.6) !important;
+  color: #1e293b !important;
+  font-weight: 600 !important;
+  backdrop-filter: blur(8px) !important;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.12) !important;
+}
+body.theme-light .ch-chip.active,
+body.theme-light .filter-chip.active {
+  background: #4361ee !important;
+  border-color: #4361ee !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(67,97,238,0.40) !important;
+}
+body.theme-light .ch-chip:hover:not(.active) {
+  background: rgba(67,97,238,0.12) !important;
+  border-color: rgba(67,97,238,0.40) !important;
+  color: #4361ee !important;
+}
+
+/* ── SEARCH BAR ── */
+body.theme-light .ch-search,
+body.theme-light #ch-search,
+body.theme-light input[type="search"],
+body.theme-light .search-bar {
+  background: rgba(248,250,255,0.95) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1.5px solid rgba(196,206,232,0.6) !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 12px rgba(15,23,42,0.12) !important;
+}
+
+/* ── DASHBOARD KPI CARDS ── */
+body.theme-light .dk-kpi {
+  background: rgba(248,250,255,0.95) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(196,206,232,0.5) !important;
+  box-shadow: 0 4px 24px rgba(15,23,42,0.18) !important;
+}
+body.theme-light .dk-chart-wrap {
+  background: rgba(248,250,255,0.95) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(196,206,232,0.5) !important;
+  box-shadow: 0 4px 24px rgba(15,23,42,0.18) !important;
+}
+
+/* ── MODAIS ── */
+body.theme-light .modal-overlay {
+  background: rgba(15,23,42,0.65) !important;
+  backdrop-filter: blur(8px) !important;
+}
+body.theme-light .modal-box,
+body.theme-light .modal-content {
+  background: #f8faff !important;
+  border: 1px solid rgba(196,206,232,0.6) !important;
+  box-shadow: 0 24px 80px rgba(15,23,42,0.35) !important;
+}
+
+/* ── DETALHE DO CHAMADO ── */
+body.theme-light .det-wrap,
+body.theme-light #modal-detalhe .modal-box {
+  background: #f8faff !important;
+}
+body.theme-light .det-header {
+  background: rgba(248,250,255,0.98) !important;
+  border-bottom: 1.5px solid rgba(196,206,232,0.5) !important;
+}
+body.theme-light .tl-msg-wrap {
+  background: rgba(238,242,251,0.9) !important;
+  border: 1px solid rgba(196,206,232,0.5) !important;
+}
+body.theme-light .tl-msg-staff {
+  background: rgba(67,97,238,0.08) !important;
+  border-color: rgba(67,97,238,0.25) !important;
+}
+
+/* ── ADMIN PANELS ── */
+body.theme-light .adm-card,
+body.theme-light .admin-card,
+body.theme-light .tbl-wrap {
+  background: rgba(248,250,255,0.95) !important;
+  border: 1px solid rgba(196,206,232,0.5) !important;
+  box-shadow: 0 4px 20px rgba(15,23,42,0.14) !important;
+}
+
+/* ── FORMULÁRIOS ── */
+body.theme-light input:not([type="range"]),
+body.theme-light textarea,
+body.theme-light select {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(196,206,232,0.8) !important;
+  color: #0f172a !important;
+}
+body.theme-light input:focus,
+body.theme-light textarea:focus,
+body.theme-light select:focus {
+  border-color: #4361ee !important;
+  box-shadow: 0 0 0 3px rgba(67,97,238,0.18) !important;
+}
+
+/* ── BOTÃO NOVO CHAMADO (destaque) ── */
+body.theme-light .btn-primary {
+  background: linear-gradient(135deg, #4361ee, #3a0ca3) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 20px rgba(67,97,238,0.45) !important;
+}
+body.theme-light .btn-primary:hover {
+  background: linear-gradient(135deg, #3451e0, #2f0b8f) !important;
+  box-shadow: 0 6px 28px rgba(67,97,238,0.55) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ── TÍTULO DA PÁGINA ── */
+body.theme-light .page-title,
+body.theme-light h1, body.theme-light h2, body.theme-light h3 {
+  color: #ffffff !important;
+  text-shadow: 0 2px 12px rgba(15,23,42,0.5) !important;
+}
+/* EXCETO dentro de cards/modais — ali é escuro */
+body.theme-light .dk-kpi h1, body.theme-light .dk-kpi h2, body.theme-light .dk-kpi h3,
+body.theme-light .modal-box h1, body.theme-light .modal-box h2, body.theme-light .modal-box h3,
+body.theme-light .tbl-wrap h1, body.theme-light .tbl-wrap h2, body.theme-light .tbl-wrap h3,
+body.theme-light #tbl-chamados h1, body.theme-light #tbl-chamados h2, body.theme-light #tbl-chamados h3 {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+/* ── SCROLL BAR ── */
+body.theme-light ::-webkit-scrollbar { width: 6px; height: 6px; }
+body.theme-light ::-webkit-scrollbar-track { background: rgba(196,206,232,0.2); }
+body.theme-light ::-webkit-scrollbar-thumb { background: rgba(67,97,238,0.35); border-radius: 8px; }
+body.theme-light ::-webkit-scrollbar-thumb:hover { background: rgba(67,97,238,0.55); }
+
+/* ── BUSCA LATERAL ── */
+body.theme-light #search-wrap input,
+body.theme-light #sb-search {
+  background: rgba(238,242,251,0.9) !important;
+  border: 1px solid rgba(196,206,232,0.5) !important;
+  color: #0f172a !important;
+}
+
+/* ── PDF & DRAG DROP MELHORIAS ── */
+.det-reply-box.drag-over {
+  border-color: var(--accent) !important;
+  background: var(--accent-s) !important;
+  box-shadow: 0 0 0 3px rgba(67,97,238,0.2) !important;
+}
+body.theme-light .det-reply-box.drag-over {
+  border-color: #4361ee !important;
+  background: rgba(67,97,238,0.07) !important;
+}
+
+/* ── TOAST NOTIFICATIONS ── */
+#toast-container {
+  position: fixed; bottom: 24px; right: 24px;
+  display: flex; flex-direction: column; gap: 8px;
+  z-index: 99999; pointer-events: none;
+}
+.toast {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(30,30,60,0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px; padding: 12px 16px;
+  font-size: 13px; font-weight: 600; color: #f0f0f8;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  animation: toastIn .3s cubic-bezier(.34,1.56,.64,1);
+  pointer-events: all; min-width: 220px; max-width: 360px;
+}
+.toast.success { border-color: rgba(34,197,94,0.4); }
+.toast.error   { border-color: rgba(239,68,68,0.4); }
+.toast.info    { border-color: rgba(59,130,246,0.4); }
+body.theme-light .toast {
+  background: rgba(248,250,255,0.97);
+  border-color: rgba(196,206,232,0.8);
+  color: #0f172a;
+  box-shadow: 0 8px 32px rgba(15,23,42,0.20);
+}
+body.theme-light .toast.success { border-color: rgba(34,197,94,0.5); }
+body.theme-light .toast.error   { border-color: rgba(239,68,68,0.5); }
+@keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:none} }
+@keyframes toastOut{ to{opacity:0;transform:translateX(20px)} }
+
+/* ── BADGE de Nota Interna no histórico ── */
+.comentario-nota-interna {
+  border: 1.5px dashed rgba(245,158,11,0.5) !important;
+  background: repeating-linear-gradient(45deg,rgba(245,158,11,0.03),rgba(245,158,11,0.03) 10px,transparent 10px,transparent 20px) !important;
+}
+@keyframes fadeInUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
 /* Transição suave entre temas */
 *,body{transition:background-color .25s ease,border-color .25s ease,color .15s ease,box-shadow .25s ease;}
 /* Exceções que NÃO devem ter transição (animations, transforms) */
@@ -1808,6 +2137,83 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .sla-warn{background:var(--orange-s);color:#fbbf24;border-color:rgba(245,158,11,.4);}
 .sla-late{background:var(--red-s);color:#f87171;border-color:rgba(239,68,68,.35);}
 .sla-done{background:var(--surface3);color:var(--muted);border-color:var(--border);}
+/* SLA badges no tema claro — cores sólidas e legíveis */
+body.theme-light .sla-ok   { background:#dcfce7 !important; color:#15803d !important; border-color:#86efac !important; font-weight:700 !important; }
+body.theme-light .sla-warn { background:#fefce8 !important; color:#92400e !important; border-color:#fde68a !important; font-weight:700 !important; }
+body.theme-light .sla-late { background:#fee2e2 !important; color:#b91c1c !important; border-color:#fca5a5 !important; font-weight:700 !important; }
+body.theme-light .sla-done { background:#f1f5f9 !important; color:#475569 !important; border-color:#cbd5e1 !important; font-weight:600 !important; }
+body.theme-light .sla-running { background:#dbeafe !important; color:#1d4ed8 !important; border-color:#93c5fd !important; font-weight:700 !important; }
+
+/* ── NOTAS INTERNAS (staff only) ── */
+.nota-interna-wrap{
+  background: repeating-linear-gradient(
+    45deg, rgba(245,158,11,0.03), rgba(245,158,11,0.03) 10px,
+    transparent 10px, transparent 20px
+  ) !important;
+  border: 1.5px dashed rgba(245,158,11,0.5) !important;
+  border-radius: 12px !important;
+  padding: 12px 14px !important;
+  position: relative;
+}
+.nota-interna-wrap::before{
+  content: '🔒 NOTA INTERNA';
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  color: #f59e0b;
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  background: var(--surface);
+  padding: 0 6px;
+  border-radius: 4px;
+}
+body.theme-light .nota-interna-wrap { background: repeating-linear-gradient(45deg,rgba(245,158,11,0.05),rgba(245,158,11,0.05) 10px,transparent 10px,transparent 20px) !important; border-color: rgba(217,119,6,0.5) !important; }
+body.theme-light .nota-interna-wrap::before { background: #f8faff; color: #d97706; }
+.nota-interna-text { color: #fbbf24 !important; }
+body.theme-light .nota-interna-text { color: #92400e !important; }
+
+/* ── SLA urgente ── */
+.sla-urgent{ background:rgba(239,68,68,.18) !important; color:#fca5a5 !important; border-color:rgba(239,68,68,.5) !important; animation: sla-pulse 1.5s ease-in-out infinite; }
+body.theme-light .sla-urgent{ background:#fee2e2 !important; color:#b91c1c !important; border-color:#fca5a5 !important; }
+.sla-running{ background:rgba(59,130,246,.15) !important; color:#93c5fd !important; border-color:rgba(59,130,246,.4) !important; }
+body.theme-light .sla-running{ background:#dbeafe !important; color:#1d4ed8 !important; border-color:#93c5fd !important; }
+@keyframes sla-pulse{ 0%,100%{opacity:1} 50%{opacity:.6} }
+
+/* ── RESPOSTAS RÁPIDAS ── */
+.quick-replies{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.quick-reply-btn{
+  font-size:11px; font-weight:600; padding:5px 12px;
+  background:rgba(91,141,239,0.10); color:var(--accent);
+  border:1px solid rgba(91,141,239,0.25); border-radius:20px;
+  cursor:pointer; transition:all .15s; white-space:nowrap;
+}
+.quick-reply-btn:hover{ background:rgba(91,141,239,0.22); border-color:var(--accent); transform:translateY(-1px); }
+body.theme-light .quick-reply-btn{ background:rgba(67,97,238,0.10); color:#3451e0; border-color:rgba(67,97,238,0.3); }
+
+/* ── CHAT INTERNO (notas internas toggle) ── */
+.nota-toggle-btn{
+  font-size:11px; font-weight:700; padding:5px 12px;
+  background:rgba(245,158,11,0.12); color:#f59e0b;
+  border:1px solid rgba(245,158,11,0.3); border-radius:20px;
+  cursor:pointer; transition:all .15s;
+}
+.nota-toggle-btn.active{ background:rgba(245,158,11,0.25); border-color:#f59e0b; }
+body.theme-light .nota-toggle-btn{ background:rgba(217,119,6,0.10); color:#d97706; border-color:rgba(217,119,6,0.3); }
+
+/* ── RELATÓRIO PDF BTN ── */
+.btn-pdf{ background:linear-gradient(135deg,#ef4444,#b91c1c); color:#fff; border:none; font-weight:700; }
+.btn-pdf:hover{ filter:brightness(1.1); }
+
+/* ── AVAL EMOJI ── */
+.aval-emoji-row{ display:flex; gap:12px; justify-content:center; margin:12px 0; }
+.aval-emoji-btn{
+  font-size:28px; cursor:pointer; transition:transform .2s;
+  padding:8px; border-radius:50%; border:2px solid transparent;
+  background:rgba(255,255,255,0.05);
+}
+.aval-emoji-btn:hover{ transform:scale(1.3); }
+.aval-emoji-btn.selected{ border-color:var(--accent); background:var(--accent-s); transform:scale(1.2); }
 
 /* ── COMENTARIOS ── */
 .comment-item{background:rgba(255,255,255,0.04);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.09);border-radius:12px;padding:10px 14px;margin-bottom:8px;}
@@ -3873,11 +4279,35 @@ img { max-width: 100%; height: auto; }
 
     <!-- Comentários estilo conversa -->
     <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:10px;">
-      <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:#e0e0f0;">💬 Comentários / Tratativas</div>
-      <div id="det-comentarios" style="max-height:280px;overflow-y:auto;margin-bottom:12px;padding-right:4px;"></div>
-      <div class="det-reply-box">
-        <textarea id="det-novo-comentario" placeholder="Escreva uma resposta..." rows="2" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addComentario();}"></textarea>
-        <button class="btn btn-primary btn-sm" onclick="addComentario()">↩ Responder</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);">💬 Comentários / Tratativas</div>
+        <div style="display:flex;gap:6px;">
+          <button class="nota-toggle-btn" id="btn-nota-interna" onclick="toggleNotaInterna()" style="display:none;">🔒 Nota Interna</button>
+        </div>
+      </div>
+      <div id="quick-replies-wrap" style="display:none;margin-bottom:10px;">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;">⚡ Respostas Rápidas</div>
+        <div class="quick-replies" id="quick-replies-list"></div>
+      </div>
+      <div id="det-comentarios" style="max-height:300px;overflow-y:auto;margin-bottom:12px;padding-right:4px;"></div>
+      <div>
+        <div id="nota-interna-indicator" style="display:none;font-size:10px;font-weight:800;color:#f59e0b;letter-spacing:.1em;margin-bottom:6px;">🔒 NOTA INTERNA — visível apenas para a equipe</div>
+        <div class="det-reply-box" id="det-reply-drop-zone"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="handleReplyDrop(event)">
+          <textarea id="det-novo-comentario"
+            placeholder="Escreva uma resposta… (arraste arquivos | Enter=enviar | Shift+Enter=nova linha)"
+            rows="3"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.ctrlKey){event.preventDefault();addComentario();}"></textarea>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <button class="btn btn-primary btn-sm" onclick="addComentario()">↩ Enviar</button>
+            <label class="btn btn-ghost btn-sm" style="cursor:pointer;font-size:11px;text-align:center;" title="Anexar">
+              📎<input type="file" style="display:none" multiple onchange="handleReplyFileSelect(this.files)">
+            </label>
+          </div>
+        </div>
+        <div id="reply-files-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
       </div>
     </div>
 
@@ -3886,6 +4316,9 @@ img { max-width: 100%; height: auto; }
     </div>
   </div>
 </div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
 
 <!-- ÁREA OCULTA PARA IMPRESSÃO -->
 <div id="print-area" style="display:none;"></div>
@@ -5246,6 +5679,7 @@ function switchDashTab(tab, btn) {
 function reloadDashTab() {
   if (dashTabAtual === 'geral') loadDashboard();
   else loadDashAtendentes();
+  setTimeout(addPdfButton, 300);
 }
 
 // ── DASHBOARD ATENDENTES FUTURÍSTICO ─────────
@@ -5954,18 +6388,27 @@ function popularChipsStatus() {
 
 function statusBadgeHtml(chave) {
   const s = STATUS_MAP[chave];
-  const cor = s?.cor || '#7a7a8c';
   const nome = s?.nome || chave;
   const isLight = document.body.classList.contains('theme-light');
-  // No tema claro: fundo mais opaco e texto mais escuro para garantir contraste
-  const bg = isLight ? cor + '22' : cor + '20';
-  const border = isLight ? cor + 'aa' : cor + '60';
-  const textColor = isLight ? cor : cor;
-  const fontW = isLight ? '700' : '600';
-  // Calcular cor de texto mais escura para tema claro (adiciona sombra de contraste)
-  const shadow = isLight ? 'none' : `0 0 8px ${cor}44`;
-  return `<span style="display:inline-flex;align-items:center;gap:5px;background:${bg};color:${textColor};border:1.5px solid ${border};border-radius:20px;font-size:11px;font-weight:${fontW};padding:4px 10px;white-space:nowrap;letter-spacing:.02em;text-shadow:${shadow};filter:${isLight?'saturate(1.4) brightness(0.8)':'none'};">
-    <span style="width:7px;height:7px;border-radius:50%;background:${cor};flex-shrink:0;box-shadow:0 0 4px ${cor}88;"></span>${nome}</span>`;
+
+  // Paleta fixa por status — garante contraste em qualquer tema
+  const PALETTE = {
+    aberto:    { dk:{ bg:'rgba(59,130,246,.20)',  txt:'#93c5fd', bdr:'rgba(59,130,246,.5)',  dot:'#3b82f6'  }, lt:{ bg:'#dbeafe', txt:'#1d4ed8', bdr:'#93c5fd', dot:'#3b82f6'  } },
+    andamento: { dk:{ bg:'rgba(251,146,60,.20)',  txt:'#fdba74', bdr:'rgba(251,146,60,.5)',  dot:'#f97316'  }, lt:{ bg:'#fff7ed', txt:'#c2410c', bdr:'#fdba74', dot:'#f97316'  } },
+    resolvido: { dk:{ bg:'rgba(34,197,94,.20)',   txt:'#4ade80', bdr:'rgba(34,197,94,.5)',   dot:'#22c55e'  }, lt:{ bg:'#dcfce7', txt:'#15803d', bdr:'#86efac', dot:'#22c55e'  } },
+    fechado:   { dk:{ bg:'rgba(148,163,184,.18)', txt:'#cbd5e1', bdr:'rgba(148,163,184,.4)', dot:'#94a3b8'  }, lt:{ bg:'#f1f5f9', txt:'#475569', bdr:'#cbd5e1', dot:'#64748b'  } },
+    cancelado: { dk:{ bg:'rgba(239,68,68,.20)',   txt:'#fca5a5', bdr:'rgba(239,68,68,.5)',   dot:'#ef4444'  }, lt:{ bg:'#fee2e2', txt:'#b91c1c', bdr:'#fca5a5', dot:'#ef4444'  } },
+    pendente:  { dk:{ bg:'rgba(245,158,11,.20)',  txt:'#fcd34d', bdr:'rgba(245,158,11,.5)',  dot:'#f59e0b'  }, lt:{ bg:'#fefce8', txt:'#92400e', bdr:'#fde68a', dot:'#f59e0b'  } },
+    pausado:   { dk:{ bg:'rgba(139,92,246,.20)',  txt:'#c4b5fd', bdr:'rgba(139,92,246,.5)',  dot:'#8b5cf6'  }, lt:{ bg:'#f3e8ff', txt:'#7c3aed', bdr:'#d8b4fe', dot:'#8b5cf6'  } },
+  };
+
+  const theme = isLight ? 'lt' : 'dk';
+  const p = PALETTE[chave]?.[theme] || (isLight
+    ? { bg:'#f1f5f9', txt:'#374151', bdr:'#d1d5db', dot:'#6b7280' }
+    : { bg:'rgba(107,114,128,.18)', txt:'#d1d5db', bdr:'rgba(107,114,128,.4)', dot:'#9ca3af' });
+
+  return `<span style="display:inline-flex;align-items:center;gap:5px;background:${p.bg};color:${p.txt};border:1.5px solid ${p.bdr};border-radius:20px;font-size:11px;font-weight:700;padding:4px 11px;white-space:nowrap;letter-spacing:.02em;">
+    <span style="width:7px;height:7px;border-radius:50%;background:${p.dot};flex-shrink:0;"></span>${nome}</span>`;
 }
 
 // ── ADMINISTRAÇÃO: GENERIC LIST/DETAIL PATTERN ──
@@ -6696,29 +7139,41 @@ function slaInfo(c) {
   const criado = new Date(c.criado_em);
   const prazo = new Date(criado.getTime() + horas*60*60*1000);
   const agora = new Date();
+  const totalMs = prazo - criado;
+  const usadoMs = agora - criado;
+  const pct = Math.min(100, Math.max(0, (usadoMs/totalMs)*100));
 
-  if (c.status === 'resolvido') {
+  if (c.status === 'resolvido' || c.status === 'fechado' || c.status === 'cancelado') {
     const resolvidoEm = new Date(c.atualizado_em || c.criado_em);
     const noPrazo = resolvidoEm <= prazo;
-    return { html: `<span class="sla-badge ${noPrazo?'sla-ok':'sla-late'}">${noPrazo?'✓ Resolvido no prazo':'⚠ Resolvido com atraso'}</span>`, prazo };
+    return { html: `<span class="sla-badge ${noPrazo?'sla-ok':'sla-late'}">${noPrazo?'✓ No prazo':'⚠ Com atraso'}</span>`, prazo };
   }
 
   const diffH = (prazo - agora) / (1000*60*60);
   if (diffH < 0) {
     const atraso = Math.abs(diffH);
-    const txt = atraso < 24 ? `${Math.round(atraso)}h` : `${Math.round(atraso/24)}d`;
-    return { html: `<span class="sla-badge sla-late">⚠ Atrasado há ${txt}</span>`, prazo };
+    const txt = atraso < 24
+      ? `${Math.floor(atraso)}h ${Math.round((atraso%1)*60)}m`
+      : `${Math.floor(atraso/24)}d ${Math.floor(atraso%24)}h`;
+    return { html: `<span class="sla-badge sla-late" title="Atrasado há ${txt}">⚠ Atrasado há ${txt}</span>`, prazo };
   }
-  if (diffH < (horas*0.25)) {
-    const txt = diffH < 1 ? `${Math.round(diffH*60)}min` : `${Math.round(diffH)}h`;
-    return { html: `<span class="sla-badge sla-warn">⏰ Vence em ${txt}</span>`, prazo };
-  }
-  const txt = diffH < 24 ? `${Math.round(diffH)}h` : `${Math.round(diffH/24)}d`;
-  return { html: `<span class="sla-badge sla-ok">⏳ Prazo: ${txt}</span>`, prazo };
-}
 
-// ── MODAL DETALHES ───────────────────────────
-let currentDetalhe = null;
+  // Em prazo — mostrar tempo restante com urgência visual
+  let cls = 'sla-running';
+  let icon = '⏱';
+  if (diffH < 2) { cls = 'sla-urgent'; icon = '🔥'; }
+  else if (diffH < 6) { cls = 'sla-warn'; icon = '⚡'; }
+
+  const txt = diffH < 24
+    ? `${Math.floor(diffH)}h ${Math.round((diffH%1)*60)}m`
+    : `${Math.floor(diffH/24)}d ${Math.floor(diffH%24)}h`;
+
+  // Barra de progresso inline
+  const barColor = diffH < 2 ? '#ef4444' : diffH < 6 ? '#f97316' : '#3b82f6';
+  const bar = `<span style="display:inline-block;width:40px;height:3px;background:rgba(255,255,255,0.15);border-radius:2px;margin-left:4px;vertical-align:middle;overflow:hidden;"><span style="display:block;width:${pct}%;height:100%;background:${barColor};border-radius:2px;transition:width .3s;"></span></span>`;
+
+  return { html: `<span class="sla-badge ${cls}" title="Prazo: ${prazo.toLocaleString('pt-BR')}">${icon} ${txt}${bar}</span>`, prazo };
+}
 
 function findChamadoById(id) {
   return (allChamados.find(c=>c.id===id)) || (allMeusChamados.find(c=>c.id===id));
@@ -6728,7 +7183,7 @@ function openModalDetalhe(id) {
   const c = findChamadoById(id);
   if (!c) return;
   currentDetalhe = c;
-
+  initDetalheFeatures();
   const prioL = {critico:'🔴 Crítico',alto:'🟠 Alto',medio:'🔵 Médio',baixo:'🟢 Baixo'};
   const dataAbertura = new Date(c.criado_em).toLocaleString('pt-BR');
 
@@ -6807,7 +7262,7 @@ function openModalDetalhe(id) {
   }
   anexosDiv.innerHTML = anexosHtml;
 
-  renderComentarios(c.comentarios || []);
+  renderComentarios(c);
   document.getElementById('det-novo-comentario').value = '';
   document.getElementById('modal-detalhe').classList.add('open');
 }
@@ -7079,167 +7534,60 @@ async function addComentario() {
   const texto = input.value.trim();
   if (!texto || !currentDetalhe) return;
 
-  const isStaff = currentPerfil && (currentPerfil.role === 'admin' || currentPerfil.role === 'atendente');
+  const isStaff = currentPerfil && ['admin','gerente','atendente'].includes(currentPerfil.role);
+  const tipo = isNotaInterna && isStaff ? 'nota_interna' : (isStaff ? 'staff' : 'usuario');
+
   const novo = {
-    autor: isStaff ? 'admin' : 'usuario',
-    nome: currentPerfil?.nome || '—',
+    autor: currentPerfil?.nome || '—',
+    autor_id: currentPerfil?.id,
+    role: currentPerfil?.role,
     texto,
-    data: new Date().toISOString()
+    tipo,
+    criado_em: new Date().toISOString()
   };
 
   const lista = [...(currentDetalhe.comentarios || []), novo];
-  await sb.from('chamados').update({ comentarios: lista }).eq('id', currentDetalhe.id);
+  const { error } = await sb.from('chamados').update({ comentarios: lista }).eq('id', currentDetalhe.id);
+  if (error) { showToast('Erro ao enviar resposta', 'error'); return; }
+
   currentDetalhe.comentarios = lista;
-  renderComentarios(lista);
   input.value = '';
-  showToast('Comentário adicionado!','ok');
+  isNotaInterna = false;
+  replyFiles = [];
+  renderReplyFilesPreview();
+  const ind = document.getElementById('nota-interna-indicator');
+  const btn = document.getElementById('btn-nota-interna');
+  if (ind) ind.style.display = 'none';
+  if (btn) btn.classList.remove('active');
 
-  // Notificar a outra parte por e-mail
-  const textoResumido = texto.length > 120 ? texto.substring(0, 120) + '...' : texto;
-  if (isStaff) {
-    // Staff respondeu → notifica o solicitante
-    await notificarSolicitante(currentDetalhe,
-      `📬 ${currentPerfil?.nome || 'Suporte TI'} respondeu seu chamado:\n\n"${textoResumido}"\n\nAcesse o sistema para ver a resposta completa.`);
-  } else {
-    // Usuário respondeu → notifica atendentes do departamento
-    await notificarAtendentes(currentDetalhe,
-      `💬 ${currentPerfil?.nome || 'Usuário'} respondeu o chamado "${currentDetalhe.titulo}":\n\n"${textoResumido}"\n\nAcesse o painel para responder.`);
+  // Re-renderizar comentários
+  renderComentarios(currentDetalhe);
+
+  // Notificar (somente se não for nota interna)
+  if (tipo !== 'nota_interna') {
+    const resumo = texto.length > 80 ? texto.substring(0,80)+'…' : texto;
+    if (isStaff) {
+      await notificarSolicitante(currentDetalhe, `💬 Nova resposta do suporte:\n"${resumo}"`, 'notif-resposta');
+    } else {
+      await notificarAtendentes(currentDetalhe, `💬 ${currentPerfil?.nome||'Usuário'} respondeu:\n"${resumo}"`, 'notif-resposta');
+    }
   }
-
-  // recarrega listas em background
-  if (isStaff) loadChamados(); else loadMeusChamados();
+  showToast(tipo==='nota_interna'?'🔒 Nota interna adicionada':'✅ Resposta enviada!', 'success');
 }
 
-// ── IMPRIMIR ─────────────────────────────────
-function imprimirChamado() {
-  const c = currentDetalhe;
-  if (!c) return;
-  const prioL = {critico:'🔴 Crítico',alto:'🟠 Alto',medio:'🔵 Médio',baixo:'🟢 Baixo'};
-
-  // Identifica o atendente (último comentário do admin)
-  const comentarios = c.comentarios || [];
-  const comentariosAdmin = comentarios.filter(cm=>cm.autor==='admin');
-  const atendente = comentariosAdmin.length ? comentariosAdmin[comentariosAdmin.length-1].nome : '—';
-
-  const avaliacao = c.avaliacao ? JSON.parse(c.avaliacao) : null;
-  const resolvidoL = {sim:'Sim, totalmente',parcial:'Parcialmente',nao:'Não foi resolvido'};
-  const tempoL = {rapido:'Muito rápido',ok:'Dentro do esperado',lento:'Demorou mais que o esperado'};
-
-  const comentariosConversa = comentarios.filter(cm => cm.tipo !== 'log');
-  const comentariosLog = comentarios.filter(cm => cm.tipo === 'log');
-
-  const comentariosHtml = comentariosConversa.length ? comentariosConversa.map(cm=>`
-    <div class="os-comment"><b>${cm.autor==='admin'?'🛠️ Suporte TI — '+(cm.nome||''):'👤 '+(cm.nome||'Usuário')}</b>
-    &nbsp;<span style="color:#999;">(${new Date(cm.data).toLocaleString('pt-BR')})</span><br>${cm.texto}</div>
-  `).join('') : '<div class="os-comment">Nenhum comentário registrado.</div>';
-
-  const logHtml = comentariosLog.length ? comentariosLog.map(cm=>`
-    <div class="os-comment"><b>📜 ${cm.texto}</b>
-    &nbsp;<span style="color:#999;">(${cm.nome||''} · ${new Date(cm.data).toLocaleString('pt-BR')})</span></div>
-  `).join('') : '';
-
-  const anexosHtml = (c.anexos && c.anexos.length)
-    ? `<div class="os-section"><div class="os-title">Anexos</div><div style="font-size:12px;">${c.anexos.length} imagem(ns) anexada(s) — consulte o sistema online.</div></div>`
-    : '';
-
-  const camposExtraHtml = (c.campos_personalizados && Object.keys(c.campos_personalizados).length)
-    ? `<div class="os-section"><div class="os-title">Informações adicionais</div><div class="os-grid">
-        ${Object.entries(c.campos_personalizados).map(([k,v])=>`<div><b>${k}:</b> ${v}</div>`).join('')}
-       </div></div>`
-    : '';
-
-  const avaliacaoHtml = avaliacao ? `
-    <div class="os-section">
-      <div class="os-title">Avaliação do atendimento</div>
-      <div class="os-grid">
-        <div><b>Nota:</b> ${'⭐'.repeat(avaliacao.nota)} (${avaliacao.nota}/5)</div>
-        <div><b>Resolvido:</b> ${resolvidoL[avaliacao.resolvido]||'—'}</div>
-        <div><b>Tempo de atendimento:</b> ${tempoL[avaliacao.tempo]||'—'}</div>
-      </div>
-      ${avaliacao.comentario ? `<div class="os-box" style="margin-top:6px;">${avaliacao.comentario}</div>` : ''}
-    </div>` : '';
-
-  document.getElementById('print-area').innerHTML = `
-    <div class="os-header">
-      <div>
-        <h1>ORDEM DE SERVIÇO — SUPORTE TI</h1>
-        <div style="font-size:12px;margin-top:4px;">E-INFO Consultoria</div>
-      </div>
-      <div class="os-num">
-        Protocolo: ${c.ticket_num}<br>
-        Emitido em: ${new Date().toLocaleString('pt-BR')}
-      </div>
-    </div>
-
-    <div class="os-section">
-      <div class="os-title">Dados do Solicitante</div>
-      <div class="os-grid">
-        <div><b>Nome:</b> ${c.nome_solicitante||'—'}</div>
-        <div><b>Empresa:</b> ${c.empresa||'—'}</div>
-        <div><b>Departamento:</b> ${c.departamento||'—'}</div>
-        <div><b>Contato:</b> ${c.ramal||'—'}</div>
-      </div>
-    </div>
-
-    <div class="os-section">
-      <div class="os-title">Dados do Chamado</div>
-      <div class="os-grid">
-        <div><b>Assunto:</b> ${c.titulo}</div>
-        <div><b>Categoria:</b> ${c.categoria||'—'}</div>
-        <div><b>Prioridade:</b> ${prioL[c.prioridade]||c.prioridade}</div>
-        <div><b>Status:</b> ${statusLabel(c.status)}</div>
-        <div><b>Abertura:</b> ${new Date(c.criado_em).toLocaleString('pt-BR')}</div>
-        <div><b>Última atualização:</b> ${c.atualizado_em ? new Date(c.atualizado_em).toLocaleString('pt-BR') : '—'}</div>
-      </div>
-    </div>
-
-    <div class="os-section">
-      <div class="os-title">Descrição do Serviço / Problema</div>
-      <div class="os-box">${c.descricao}</div>
-    </div>
-
-    ${camposExtraHtml}
-
-    ${anexosHtml}
-
-    <div class="os-section">
-      <div class="os-title">Atendimento / Tratativas</div>
-      ${comentariosHtml}
-    </div>
-
-    ${logHtml ? `<div class="os-section">
-      <div class="os-title">Log de Alterações</div>
-      ${logHtml}
-    </div>` : ''}
-
-    <div class="os-section">
-      <div class="os-title">Dados do Atendente Responsável</div>
-      <div class="os-grid">
-        <div><b>Nome:</b> ${atendente}</div>
-        <div><b>Empresa:</b> E-INFO Consultoria</div>
-      </div>
-    </div>
-
-    ${avaliacaoHtml}
-
-    <div class="os-sign">
-      <div>Assinatura do Solicitante</div>
-      <div>Assinatura do Atendente (E-INFO)</div>
-    </div>
-
-    <div class="os-footer">E-INFO Consultoria — Portal de Chamados de TI · Documento gerado eletronicamente</div>
-  `;
-
-  const area = document.getElementById('print-area');
-  area.style.display = 'block';
-  window.print();
-  setTimeout(()=>{ area.style.display = 'none'; }, 500);
+function renderComentarios(c) {
+  const container = document.getElementById('det-comentarios');
+  if (!container) return;
+  const comentarios = (c.comentarios||[]).filter(com=>com.tipo!=='log');
+  const isStaff = currentPerfil && ['admin','gerente','atendente'].includes(currentPerfil.role);
+  if (!comentarios.length) {
+    container.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:12px;padding:20px;">Nenhuma interação ainda.</div>';
+    return;
+  }
+  container.innerHTML = comentarios.map(com => buildComentarioHtml(com, isStaff)).join('');
+  container.scrollTop = container.scrollHeight;
 }
 
-// ── CADASTROS (Empresas / Áreas / Categorias) ──
-let CADASTROS = { empresas: [], areas: [], categorias: [] };
-let ATENDENTES_LIST = [];
-let CAMPOS_POR_CATEGORIA = {};
 
 async function loadCadastrosLists() {
   for (const tabela of ['empresas','areas','categorias']) {
@@ -7256,6 +7604,214 @@ async function loadCamposCategorias() {
     if (!CAMPOS_POR_CATEGORIA[c.categoria_id]) CAMPOS_POR_CATEGORIA[c.categoria_id] = [];
     CAMPOS_POR_CATEGORIA[c.categoria_id].push(c);
   });
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// NOVAS FEATURES v3 — Respostas Rápidas, Notas Internas,
+//                     Drag & Drop, Relatório PDF
+// ══════════════════════════════════════════════════════════════
+
+// ── RESPOSTAS RÁPIDAS ──────────────────────────────────────────
+const QUICK_REPLIES = [
+  { label:'👋 Recebido', text:'Olá! Seu chamado foi recebido e está sendo analisado pela nossa equipe. Em breve retornaremos com mais informações.' },
+  { label:'🔍 Investigando', text:'Estamos investigando o problema relatado. Assim que tivermos uma atualização, entraremos em contato.' },
+  { label:'✅ Resolvido', text:'O problema foi identificado e solucionado. Por favor, verifique e confirme se está funcionando corretamente.' },
+  { label:'ℹ️ Mais info', text:'Para prosseguir com o atendimento, precisamos de mais informações. Poderia descrever melhor o problema ou enviar prints da tela?' },
+  { label:'⏳ Aguardando', text:'Estamos aguardando retorno do fornecedor/equipe responsável. Assim que tivermos novidades, atualizaremos este chamado.' },
+  { label:'📅 Agendado', text:'O atendimento foi agendado. Nossa equipe estará em contato para confirmar data e horário.' },
+];
+
+function renderQuickReplies() {
+  const wrap = document.getElementById('quick-replies-wrap');
+  const list = document.getElementById('quick-replies-list');
+  if (!wrap || !list) return;
+  const isStaff = currentPerfil && ['admin','gerente','atendente'].includes(currentPerfil.role);
+  if (!isStaff) return;
+  wrap.style.display = 'block';
+  list.innerHTML = QUICK_REPLIES.map(r =>
+    `<button class="quick-reply-btn" onclick="useQuickReply(${JSON.stringify(r.text).replace(/'/g,"\'")})">${r.label}</button>`
+  ).join('');
+}
+
+function useQuickReply(text) {
+  const ta = document.getElementById('det-novo-comentario');
+  if (!ta) return;
+  ta.value = text;
+  ta.focus();
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
+}
+
+// ── NOTA INTERNA ───────────────────────────────────────────────
+let isNotaInterna = false;
+
+function toggleNotaInterna() {
+  isNotaInterna = !isNotaInterna;
+  const btn = document.getElementById('btn-nota-interna');
+  const ind = document.getElementById('nota-interna-indicator');
+  const drop = document.getElementById('det-reply-drop-zone');
+  const ta = document.getElementById('det-novo-comentario');
+  if (btn) btn.classList.toggle('active', isNotaInterna);
+  if (ind) ind.style.display = isNotaInterna ? 'block' : 'none';
+  if (drop) drop.style.borderColor = isNotaInterna ? '#f59e0b' : '';
+  if (ta) ta.placeholder = isNotaInterna
+    ? '🔒 Nota interna — visível apenas para a equipe...'
+    : 'Escreva uma resposta… (arraste arquivos | Enter=enviar | Shift+Enter=nova linha)';
+}
+
+function showStaffControls() {
+  const isStaff = currentPerfil && ['admin','gerente','atendente'].includes(currentPerfil.role);
+  const btnNota = document.getElementById('btn-nota-interna');
+  if (btnNota) btnNota.style.display = isStaff ? 'inline-flex' : 'none';
+  renderQuickReplies();
+}
+
+// ── DRAG & DROP NO REPLY ───────────────────────────────────────
+let replyFiles = [];
+
+function handleReplyDrop(e) {
+  e.preventDefault();
+  const drop = document.getElementById('det-reply-drop-zone');
+  if (drop) drop.style.borderColor = '';
+  const files = Array.from(e.dataTransfer.files);
+  if (files.length) addReplyFiles(files);
+}
+
+function handleReplyFileSelect(fileList) {
+  addReplyFiles(Array.from(fileList));
+}
+
+function addReplyFiles(files) {
+  replyFiles = [...replyFiles, ...files];
+  renderReplyFilesPreview();
+}
+
+function removeReplyFile(idx) {
+  replyFiles.splice(idx, 1);
+  renderReplyFilesPreview();
+}
+
+function renderReplyFilesPreview() {
+  const wrap = document.getElementById('reply-files-preview');
+  if (!wrap) return;
+  if (!replyFiles.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = replyFiles.map((f, i) => {
+    const isImg = f.type.startsWith('image/');
+    const size = f.size < 1024*1024 ? `${(f.size/1024).toFixed(0)}KB` : `${(f.size/1024/1024).toFixed(1)}MB`;
+    return `<div style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:11px;">
+      <span>${isImg?'🖼':'📎'}</span>
+      <span style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${f.name}">${f.name}</span>
+      <span style="color:var(--muted);font-size:10px;">${size}</span>
+      <button onclick="removeReplyFile(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0;line-height:1;" title="Remover">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ── RENDERIZAR COMENTÁRIO COM NOTA INTERNA ─────────────────────
+function buildComentarioHtml(com, isStaff) {
+  const isNota = com.tipo === 'nota_interna';
+  if (isNota && !isStaff) return ''; // ocultar de não-staff
+  const isLight = document.body.classList.contains('theme-light');
+  const isAutor = com.autor_id === currentPerfil?.id;
+  const side = isAutor ? 'flex-end' : 'flex-start';
+  const bg = isNota
+    ? (isLight ? 'rgba(217,119,6,0.08)' : 'rgba(245,158,11,0.08)')
+    : isAutor
+      ? (isLight ? 'rgba(67,97,238,0.12)' : 'rgba(91,141,239,0.12)')
+      : (isLight ? '#f0f4ff' : 'rgba(255,255,255,0.05)');
+  const border = isNota ? '1.5px dashed rgba(245,158,11,0.5)' : '1px solid var(--border)';
+  const dt = new Date(com.criado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const notaLabel = isNota ? '<span style="font-size:9px;font-weight:800;color:#f59e0b;letter-spacing:.1em;display:block;margin-bottom:4px;">🔒 NOTA INTERNA</span>' : '';
+  const roleLabel = com.role && com.role !== 'usuario' ? `<span style="font-size:9px;background:var(--accent-s);color:var(--accent);border-radius:10px;padding:1px 6px;margin-left:4px;">${com.role}</span>` : '';
+  return `<div style="display:flex;justify-content:${side};margin-bottom:10px;animation:fadeInUp .2s ease;">
+    <div style="max-width:85%;background:${bg};border:${border};border-radius:${isAutor?'14px 14px 4px 14px':'14px 14px 14px 4px'};padding:10px 14px;">
+      ${notaLabel}
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+        <span style="font-size:12px;font-weight:700;color:var(--text);">${com.autor||'Sistema'}</span>
+        ${roleLabel}
+        <span style="font-size:10px;color:var(--muted);">${dt}</span>
+      </div>
+      <div style="font-size:13px;color:var(--text);white-space:pre-wrap;line-height:1.6;">${(com.texto||'').replace(/</g,'&lt;')}</div>
+      ${com.anexos?.length ? `<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">${com.anexos.map(a=>`<a href="${a.url}" target="_blank" style="font-size:11px;color:var(--accent);text-decoration:none;background:var(--accent-s);border:1px solid var(--accent-b);border-radius:6px;padding:2px 8px;">📎 ${a.nome||'Arquivo'}</a>`).join('')}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+// ── RELATÓRIO PDF DO DASHBOARD ─────────────────────────────────
+function gerarRelatorioPDF() {
+  const printWin = window.open('','_blank','width=900,height=700');
+  const isLight = document.body.classList.contains('theme-light');
+  const stats = {
+    total: document.getElementById('dk-total')?.textContent || '—',
+    aberto: document.getElementById('dk-aberto')?.textContent || '—',
+    resolvido: document.getElementById('dk-resolvido')?.textContent || '—',
+    nota: document.getElementById('dk-nota')?.textContent || '—',
+  };
+  const now = new Date().toLocaleString('pt-BR');
+  printWin.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <title>Relatório EliTicket — ${now}</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:32px;color:#111;background:#fff;}
+      h1{color:#3b5bdb;font-size:22px;margin-bottom:4px;}
+      .sub{color:#666;font-size:12px;margin-bottom:24px;}
+      .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+      .kpi{background:#f0f4ff;border:1px solid #c8d4ec;border-radius:12px;padding:16px;text-align:center;}
+      .kpi-n{font-size:28px;font-weight:900;color:#3b5bdb;}
+      .kpi-l{font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.08em;margin-top:4px;}
+      table{width:100%;border-collapse:collapse;margin-top:16px;}
+      th{background:#3b5bdb;color:#fff;padding:8px 12px;font-size:12px;text-align:left;}
+      td{padding:8px 12px;font-size:12px;border-bottom:1px solid #e8ecf8;}
+      tr:hover td{background:#f5f8ff;}
+      .footer{margin-top:32px;font-size:11px;color:#999;text-align:center;}
+      @media print{body{padding:16px;}}
+    </style>
+  </head><body>
+    <h1>📊 Relatório de Chamados — EliTicket</h1>
+    <div class="sub">Gerado em: ${now} | Sistema: E-INFO Consultoria</div>
+    <div class="kpis">
+      <div class="kpi"><div class="kpi-n">${stats.total}</div><div class="kpi-l">Total de Chamados</div></div>
+      <div class="kpi"><div class="kpi-n" style="color:#ef4444;">${stats.aberto}</div><div class="kpi-l">Em Aberto</div></div>
+      <div class="kpi"><div class="kpi-n" style="color:#22c55e;">${stats.resolvido}</div><div class="kpi-l">Resolvidos</div></div>
+      <div class="kpi"><div class="kpi-n" style="color:#f59e0b;">${stats.nota}</div><div class="kpi-l">Nota Média</div></div>
+    </div>
+    <h2 style="font-size:15px;color:#374151;margin-bottom:12px;">📋 Lista de Chamados</h2>
+    <table>
+      <thead><tr><th>Protocolo</th><th>Título</th><th>Solicitante</th><th>Empresa</th><th>Prioridade</th><th>Status</th><th>Abertura</th></tr></thead>
+      <tbody>
+        ${(allChamados||[]).slice(0,100).map(c=>`
+          <tr>
+            <td><code>${c.ticket_num||'—'}</code></td>
+            <td>${(c.titulo||'').substring(0,40)}</td>
+            <td>${c.nome_solicitante||'—'}</td>
+            <td>${c.empresa||'—'}</td>
+            <td>${{critico:'🔴 Crítico',alto:'🟠 Alto',medio:'🔵 Médio',baixo:'🟢 Baixo'}[c.prioridade]||c.prioridade||'—'}</td>
+            <td>${c.status||'—'}</td>
+            <td>${c.criado_em?new Date(c.criado_em).toLocaleDateString('pt-BR'):'—'}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <div class="footer">EliTicket © ${new Date().getFullYear()} — Relatório gerado automaticamente</div>
+    <scr'+'ipt>window.onload=()=>window.print();<'+'/scr'+'ipt>
+  </body></html>`);
+  printWin.document.close();
+}
+
+// ── INICIALIZAR FEATURES AO ABRIR DETALHE ─────────────────────
+function initDetalheFeatures() {
+  isNotaInterna = false;
+  replyFiles = [];
+  const ind = document.getElementById('nota-interna-indicator');
+  const btn = document.getElementById('btn-nota-interna');
+  const drop = document.getElementById('det-reply-drop-zone');
+  const ta = document.getElementById('det-novo-comentario');
+  if (ind) ind.style.display = 'none';
+  if (btn) btn.classList.remove('active');
+  if (drop) drop.style.borderColor = '';
+  if (ta) ta.placeholder = 'Escreva uma resposta… (arraste arquivos | Enter=enviar | Shift+Enter=nova linha)';
+  renderReplyFilesPreview();
+  showStaffControls();
 }
 
 // ── MODAL CAMPO PERSONALIZADO ─────────────────
