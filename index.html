@@ -4550,18 +4550,18 @@ async function salvarConfigEmail() {
 
   const msg = document.getElementById('conta-email-cfg-msg');
   if (msg) { msg.textContent = '✅ Configuração salva!'; msg.style.display='block'; setTimeout(()=>msg.style.display='none',3000); }
-  showToast('URL de e-mail salva!','ok');
+  showToast('URL de e-mail salva!','success');
 }
 
 async function testarEmail() {
-  if (!EMAIL_PHP_URL) { showToast('Configure e salve a URL do send_email.php antes de testar.','err'); return; }
+  if (!EMAIL_PHP_URL) { showToast('Configure e salve a URL do send_email.php antes de testar.','error'); return; }
   const email = currentPerfil?.email;
-  if (!email) { showToast('Perfil sem e-mail cadastrado.','err'); return; }
+  if (!email) { showToast('Perfil sem e-mail cadastrado.','error'); return; }
   showToast('Enviando e-mail de teste...','ok');
   const ok = await enviarEmailNotificacao(email, currentPerfil.nome||'Admin', 'ET-TESTE', 'Teste de Configuração',
     'Este é um e-mail de teste do EliTicket. Se você recebeu esta mensagem as notificações estão funcionando corretamente!');
-  if (ok) showToast('✅ E-mail de teste enviado para '+email,'ok');
-  else showToast('❌ Falha ao enviar — verifique o arquivo PHP e a URL.','err');
+  if (ok) showToast('✅ E-mail de teste enviado para '+email,'success');
+  else showToast('❌ Falha ao enviar — verifique o arquivo PHP e a URL.','error');
 }
 
 function preencherConfigEmail() {
