@@ -2765,7 +2765,7 @@ img { max-width: 100%; height: auto; }
 </div>
 
 <!-- ═══════════════════════════════════ PAGE: AUTH ═══ -->
-<div class="page active" id="page-auth">
+<div class="page active" id="page-auth" class="page active">
   <div class="et-login-split">
 
     <!-- LADO ESQUERDO: Ilustração / Branding -->
@@ -4707,6 +4707,8 @@ async function init() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     await loadPerfil(session.user);
+  } else {
+    showPage('auth');
   }
 }
 
@@ -4990,8 +4992,21 @@ async function logout() {
 
 // ── PAGES ────────────────────────────────────
 function showPage(p) {
-  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
+  // Remove active de todas as pages
+  document.querySelectorAll('.page').forEach(el => {
+    el.classList.remove('active');
+    el.style.display = '';
+  });
+  // Ativa a page correta
+  const target = document.getElementById('page-' + p);
+  if (target) {
+    target.classList.add('active');
+  }
+  // Garante que topbar aparece/some corretamente
+  const topbar = document.getElementById('main-topbar');
+  if (topbar) {
+    topbar.style.display = (p === 'auth') ? 'none' : 'flex';
+  }
 }
 
 // ── PRIORITY ─────────────────────────────────
