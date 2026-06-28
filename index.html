@@ -4571,6 +4571,16 @@ img { max-width: 100%; height: auto; }
 const SUPABASE_URL = 'https://vubwgibczdzoyqwxnhma.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_iZtv8vEC4fr9Lw5VufVZaA_0drcPhCT';
 
+// ── VARIÁVEIS GLOBAIS ──────────────────────────────────────────
+let CADASTROS = { empresas: [], areas: [], categorias: [] };
+let ATENDENTES_LIST = [];
+let CAMPOS_POR_CATEGORIA = {};
+let CONTA_CONFIG = {};
+let SLA_CONFIG = { critico:{resposta:1,resolucao:4}, alto:{resposta:2,resolucao:8}, medio:{resposta:4,resolucao:24}, baixo:{resposta:8,resolucao:48} };
+let STATUS_MAP = {};
+let CHARTS = {};
+let CADASTRO_BLOQUEADO = false;
+
 // ── E-MAIL VIA PHP (Hostgator) ──────────────────────────
 // URL do send_email.php hospedado no Hostgator
 // Configure pela aba "E-mail" em Administração → Configurações da Conta
@@ -4737,7 +4747,7 @@ async function aplicarPoliticaCadastroLogin() {
     CADASTRO_BLOQUEADO = false;
   }
 }
-let CADASTRO_BLOQUEADO = false;
+// [declaração movida para o topo] let CADASTRO_BLOQUEADO = false;
 
 function popularSelectRempresa() {
   const sel = document.getElementById('r-empresa');
@@ -5372,7 +5382,7 @@ function setSlaKpi(numId, cardId, pct, base) {
 }
 
 // ── CHART INSTANCES (para destruir antes de recriar) ──
-const CHARTS = {};
+// [declaração movida para o topo] const CHARTS = {};
 function destroyChart(id) { if (CHARTS[id]) { CHARTS[id].destroy(); delete CHARTS[id]; } }
 
 function getDashPeriodo() {
@@ -6388,7 +6398,7 @@ async function salvarAvaliacao() {
 
 // ── STATUS DE CHAMADO ─────────────────────────
 let STATUS_LIST = [];
-let STATUS_MAP = {};
+// [declaração movida para o topo] let STATUS_MAP = {};
 
 async function loadStatusList() {
   const { data } = await sb.from('status_chamado').select('*').order('ordem');
@@ -6986,14 +6996,14 @@ function slugify(txt) {
 }
 
 // ── SLA ──────────────────────────────────────
-let SLA_CONFIG = {
-  critico: { resposta: 1, resolucao: 4 },
-  alto: { resposta: 2, resolucao: 8 },
-  medio: { resposta: 4, resolucao: 24 },
-  baixo: { resposta: 8, resolucao: 72 }
-};
+// [declaração movida para o topo] let SLA_CONFIG = {
+//   critico: { resposta: 1, resolucao: 4 },
+//   alto: { resposta: 2, resolucao: 8 },
+//   medio: { resposta: 4, resolucao: 24 },
+//   baixo: { resposta: 8, resolucao: 72 }
+// };
 const DIAS_SEMANA = [
-  {id:1,label:'Segunda'},{id:2,label:'Terça'},{id:3,label:'Quarta'},
+//   {id:1,label:'Segunda'},{id:2,label:'Terça'},{id:3,label:'Quarta'},
   {id:4,label:'Quinta'},{id:5,label:'Sexta'},{id:6,label:'Sábado'},{id:0,label:'Domingo'}
 ];
 
@@ -7007,19 +7017,19 @@ let HORARIO_CONFIG = {
   0:{ativo:false,inicio:'08:00',fim:'12:00'}
 };
 
-let CONTA_CONFIG = {
-  empresa: { nome:'', responsavel:'', email:'', telefone:'', site:'', segmento:'', colaboradores:'' },
-  politica: { permitirCadastro:true, anexoObrigatorio:false, avaliacaoObrigatoria:false, notificarAtraso:true, limiteChamados:0 },
-  notificacoes: { novoChamado:true, resposta:true, status:true, encerramento:true, escalonamento:true },
-  aparencia: { nomeSistema:'EliTicket', corDestaque:'#5b8def' }
-};
+// [declaração movida para o topo — início]
+//   empresa: { nome:'', responsavel:'', email:'', telefone:'', site:'', segmento:'', colaboradores:'' },
+//   politica: { permitirCadastro:true, anexoObrigatorio:false, avaliacaoObrigatoria:false, notificarAtraso:true, limiteChamados:0 },
+//   notificacoes: { novoChamado:true, resposta:true, status:true, encerramento:true, escalonamento:true },
+//   aparencia: { nomeSistema:'EliTicket', corDestaque:'#5b8def' }
+// }; [declaração movida para o topo — fim]
 
 async function loadConfig() {
   const { data } = await sb.from('configuracoes').select('*').eq('id',1).single();
   if (data) {
     if (data.sla) SLA_CONFIG = data.sla;
     if (data.horario) HORARIO_CONFIG = data.horario;
-    if (data.conta) CONTA_CONFIG = { ...CONTA_CONFIG, ...data.conta };
+//     if (data.conta) CONTA_CONFIG = { ...CONTA_CONFIG, ...data.conta };
     if (data.email?.phpUrl) EMAIL_PHP_URL = data.email.phpUrl;
   }
 }
@@ -7033,7 +7043,7 @@ function switchContaTab(tab, btn) {
 }
 
 function preencherFormConta() {
-  const e = CONTA_CONFIG.empresa || {};
+//   const e = CONTA_CONFIG.empresa || {};
   document.getElementById('conta-nome-empresa').value = e.nome || '';
   document.getElementById('conta-nome-responsavel').value = e.responsavel || '';
   document.getElementById('conta-email').value = e.email || '';
@@ -9072,4 +9082,5 @@ window.addEventListener('resize', () => {
 init();
 </script>
 </body>
-</html>
+</html>let CADASTROS = { empresas: [], areas: [], categorias: [] };
+
