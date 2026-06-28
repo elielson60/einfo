@@ -1736,6 +1736,57 @@ body.theme-light .toast.error   { border-color: rgba(239,68,68,0.5); }
 }
 @keyframes fadeInUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
 
+/* ══════════════════════════════════════════════════
+   FIX CRÍTICO: TELA DE LOGIN NO TEMA CLARO
+   O body.theme-light tem fundo escuro (#1e2a4a)
+   então o painel direito precisa de glassmorphism
+   ══════════════════════════════════════════════════ */
+body.theme-light .et-right-panel {
+  background: rgba(248, 250, 255, 0.97) !important;
+  backdrop-filter: blur(20px) !important;
+}
+body.theme-light .et-form-title { color: #0f172a !important; }
+body.theme-light .et-form-sub   { color: #475569 !important; }
+body.theme-light .et-label      { color: #334155 !important; }
+body.theme-light .et-tabs       { background: #e8ecf8 !important; }
+body.theme-light .et-tab        { color: #64748b !important; }
+body.theme-light .et-tab.active { color: #1d4ed8 !important; }
+body.theme-light .et-tab-slider { background: #ffffff !important; }
+body.theme-light .et-input {
+  background: #ffffff !important;
+  border-color: #c8d4ec !important;
+  color: #0f172a !important;
+}
+body.theme-light .et-input:focus {
+  border-color: #4361ee !important;
+  box-shadow: 0 0 0 3px rgba(67,97,238,0.15) !important;
+}
+body.theme-light .et-input::placeholder { color: #94a3b8 !important; }
+body.theme-light .et-input-icon { color: #94a3b8 !important; }
+body.theme-light .et-form-footer {
+  color: #94a3b8 !important;
+  border-top-color: #e2e8f0 !important;
+}
+body.theme-light .et-link-btn { color: #4361ee !important; }
+body.theme-light .et-error {
+  color: #b91c1c !important;
+  background: #fee2e2 !important;
+  border-color: #fca5a5 !important;
+}
+
+/* Fix: inputs globais NÃO devem ter !important que quebre o login */
+/* Remover o override agressivo de inputs no tema claro */
+body.theme-light .et-input,
+body.theme-light #l-email,
+body.theme-light #l-senha,
+body.theme-light #r-nome,
+body.theme-light #r-email,
+body.theme-light #r-senha {
+  background: #ffffff !important;
+  border: 1.5px solid #c8d4ec !important;
+  color: #0f172a !important;
+}
+
 /* Transição suave entre temas */
 *,body{transition:background-color .25s ease,border-color .25s ease,color .15s ease,box-shadow .25s ease;}
 /* Exceções que NÃO devem ter transição (animations, transforms) */
