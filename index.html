@@ -739,11 +739,19 @@ img { max-width: 100%; height: auto; }
   .atd-kpis  { grid-template-columns:repeat(2,1fr) !important; }
   .stats-row { grid-template-columns:repeat(2,1fr); gap:8px; }
 
-  /* KPI cards */
+  /* KPI cards admin */
   .dk-kpi { padding:12px 10px; }
   .dk-kpi-n { font-size:20px; }
   .dk-kpi-icon { font-size:16px; }
   .stat-n { font-size:20px; }
+  /* KPI chamados */
+  .ch-kpis {
+    grid-template-columns: repeat(2,1fr) !important;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+  .ch-kpi { padding: 12px !important; }
+  .ch-kpi-n { font-size: 22px !important; }
 
   /* Charts */
   .dk-chart-wrap { padding:14px; }
@@ -810,14 +818,23 @@ img { max-width: 100%; height: auto; }
   .mu-tab { flex:1; text-align:center; }
   #page-meus-chamados .ch-search-wrap { max-width:100% !important; width:100%; }
   #page-meus-chamados .ch-search { width:100%; }
-  #tbl-meus .ch-item {
-    border-radius:14px;
-    margin-bottom:8px;
-    border:1px solid rgba(255,255,255,.06);
-    background:rgba(255,255,255,.02);
-    animation:itemSlideIn .35s ease both;
+  /* ch-item mobile — grid simplificado */
+  .ch-item, #tbl-meus .ch-item, #tbl-chamados .ch-item {
+    display: grid !important;
+    grid-template-columns: 40px 1fr auto auto !important;
+    grid-template-rows: auto !important;
+    padding: 12px 12px !important;
+    gap: 8px !important;
+    border-radius: 0 !important;
+    margin-bottom: 0 !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+    background: transparent !important;
+    animation: itemSlideIn .35s ease both !important;
   }
-  #tbl-meus .ch-item:last-child { border-bottom:1px solid rgba(255,255,255,.06); }
+  .ch-item:last-child, #tbl-meus .ch-item:last-child { border-bottom: none !important; }
+  /* Esconder colunas extras no mobile */
+  .ch-cat-col, .ch-sla-col, .ch-prio-col, .ch-ticket { display: none !important; }
   @keyframes itemSlideIn { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
   .mu-banner { flex-direction:column; align-items:flex-start; gap:8px; }
 }
@@ -1785,12 +1802,101 @@ label { font-size: 11px !important; font-weight: 700 !important; color: var(--mu
 .campo-area-item:last-child, .campo-cat-item:last-child { border-bottom: none !important; }
 .campo-tab-content { }
 
-/* ── FAB RESPONSIVE ── */
+/* ── RESPONSIVE — MOBILE ── */
 @media (max-width: 768px) {
+
+  /* Ch-item: só avatar + info + status + ação */
   .ch-item {
-    grid-template-columns: 38px 1fr 80px 36px !important;
+    grid-template-columns: 40px 1fr auto auto !important;
+    padding: 10px 12px !important;
+    gap: 8px !important;
   }
   .ch-cat-col, .ch-sla-col, .ch-prio-col { display: none !important; }
+  .ch-ticket { display: none !important; }
+
+  /* KPI strip: 2 colunas no mobile */
+  .ch-kpis {
+    grid-template-columns: repeat(2,1fr) !important;
+    gap: 8px !important;
+  }
+  .dk-row-4 {
+    grid-template-columns: repeat(2,1fr) !important;
+    gap: 8px !important;
+  }
+  .dk-row-2-1, .dk-row-2 {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Admin grid: 1 coluna */
+  .admin-grid { grid-template-columns: 1fr !important; }
+  .atd-grid   { grid-template-columns: 1fr !important; }
+  .grid2, .et-grid2 { grid-template-columns: 1fr !important; }
+
+  /* Formulário */
+  .prio-grid { grid-template-columns: repeat(2,1fr) !important; }
+
+  /* Filtros: scroll horizontal */
+  .ch-filter-chips {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    padding-bottom: 4px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Modal: tela cheia */
+  .modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 16px 16px 0 0 !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+  .modal-overlay {
+    align-items: flex-end !important;
+  }
+
+  /* Login: uma coluna */
+  .et-login-split { flex-direction: column !important; }
+  .et-left-panel  { display: none !important; }
+  .et-right-panel { width: 100% !important; min-height: 100vh !important; }
+
+  /* Topbar compacta */
+  .topbar { padding: 0 10px !important; }
+
+  /* Sidebar: drawer */
+  .app-sidebar {
+    position: fixed !important;
+    top: 0 !important; left: 0 !important; bottom: 0 !important;
+    z-index: 999 !important;
+    transform: translateX(-100%) !important;
+    transition: transform .25s ease !important;
+    width: 240px !important;
+    height: 100vh !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.5) !important;
+  }
+  .app-sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  /* Admin content: padding reduzido */
+  .admin-content { padding: 12px !important; }
+
+  /* Det modal: tela cheia */
+  .det-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+  }
+
+  /* FAB */
+  .fab-novo-chamado { display: flex !important; }
 }
 </style>
 </head>
@@ -8184,5 +8290,4 @@ window.addEventListener('resize', () => {
 init();
 </script>
 </body>
-</html>let CADASTROS = { empresas: [], areas: [], categorias: [] };
-
+</html>
