@@ -6545,11 +6545,29 @@ function findChamadoById(id) {
   return (allChamados.find(c=>c.id===id)) || (allMeusChamados.find(c=>c.id===id));
 }
 
-function openModalDetalhe(id) {
-  const c = findChamadoById(id);
+async function openModalDetalhe(id) {
+  // Busca dados frescos do Supabase para garantir comentários atualizados
+  let c = findChamadoById(id);
   if (!c) return;
+
+  // Mostrar modal imediatamente com cache (UX rápido)
   currentDetalhe = c;
+  document.getElementById('modal-detalhe').classList.add('open');
   initDetalheFeatures();
+
+  // Buscar versão atualizada do banco em background
+  try {
+    const { data: fresh, error } = await sb.from('chamados').select('*').eq('id', id).single();
+    if (!error && fresh) {
+      // Atualizar cache local
+      const idx1 = allChamados.findIndex(x => x.id === id);
+      if (idx1 !== -1) allChamados[idx1] = fresh;
+      const idx2 = allMeusChamados.findIndex(x => x.id === id);
+      if (idx2 !== -1) allMeusChamados[idx2] = fresh;
+      c = fresh;
+      currentDetalhe = fresh;
+    }
+  } catch(e) { /* usa cache em caso de erro */ }
   const prioL = {critico:'🔴 Crítico',alto:'🟠 Alto',medio:'🔵 Médio',baixo:'🟢 Baixo'};
   const dataAbertura = new Date(c.criado_em).toLocaleString('pt-BR');
 
@@ -6628,9 +6646,9 @@ function openModalDetalhe(id) {
   }
   anexosDiv.innerHTML = anexosHtml;
 
+  // Renderizar comentários com dados frescos do banco
   renderComentarios(c);
   document.getElementById('det-novo-comentario').value = '';
-  document.getElementById('modal-detalhe').classList.add('open');
 }
 
 // ── MENU "MAIS" (estilo TomTicket) ──
