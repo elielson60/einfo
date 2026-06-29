@@ -4341,10 +4341,23 @@ async function enviarChamado() {
   btn.innerHTML = '<span class="spin"></span> Abrindo...'; btn.disabled = true;
 
   // cat já declarado na validação acima
-  // Número de protocolo sequencial
-  const { data: seqData } = await sb.from('chamados').select('protocolo').order('protocolo',{ascending:false}).limit(1);
-  const ultimoProtocolo = seqData && seqData.length && seqData[0].protocolo ? seqData[0].protocolo : 0;
-  const novoProtocolo = ultimoProtocolo + 1;
+  // Número de protocolo sequencial — lê o maior ticket_num existente
+  const { data: seqData } = await sb.from('chamados')
+    .select('ticket_num')
+    .order('criado_em', {ascending: false})
+    .limit(50);  // pega os 50 mais recentes para garantir
+
+  let novoProtocolo = 1;
+  if (seqData && seqData.length) {
+    // Extrair o maior número de ET-XXXXX
+    const numeros = seqData
+      .map(c => {
+        const match = (c.ticket_num || '').match(/ET-0*(\d+)/);
+        return match ? parseInt(match[1]) : 0;
+      })
+      .filter(n => n > 0);
+    if (numeros.length) novoProtocolo = Math.max(...numeros) + 1;
+  }
   const ticketNum = 'ET-' + String(novoProtocolo).padStart(5, '0');
 
 
@@ -4356,8 +4369,13 @@ async function enviarChamado() {
   const anexoUrls = await uploadAnexos(ticketNum);
 
   const { error } = await sb.from('chamados').insert({
-    ticket_num: ticketNum, titulo, descricao: desc,
-    categoria: cat, prioridade: selectedPrio, status: 'aberto',
+    ticket_num: ticketNum,
+    protocolo: novoProtocolo,       // campo numérico para ordenação correta
+    titulo,
+    descricao: desc,
+    categoria: cat,
+    prioridade: selectedPrio,
+    status: 'aberto',
     usuario_id: currentUser.id,
     nome_solicitante: currentPerfil?.nome || 'Não identificado',
     empresa: currentPerfil?.empresa || 'Não informado',
@@ -4382,14 +4400,23 @@ async function enviarChamado() {
   // notificar admins sobre novo chamado
   // Notifica somente atendentes do departamento (se política ativa)
   if ((CONTA_CONFIG.notificacoes||{}).novoChamado !== false) {
+    // Buscar atendentes, gerentes e admins para notificar
     const { data: staffNotif } = await sb.from('perfis')
-      .select('email,nome,departamentos')
-      .eq('role','atendente')
+      .select('email,nome,departamentos,role')
+      .in('role', ['atendente','gerente','admin'])
       .eq('ativo', true);
+
     (staffNotif||[]).forEach(a => {
-      if ((a.departamentos || []).includes(area)) {
+      const deps = a.departamentos || [];
+      // Admins e gerentes sem departamento veem tudo → notificar sempre
+      // Atendentes: só se o departamento bate
+      const deveNotificar = (a.role === 'admin' || a.role === 'gerente')
+        ? true
+        : (!deps.length || deps.includes(area));
+
+      if (deveNotificar && a.email) {
         enviarEmailNotificacao(a.email, a.nome, ticketNum, titulo,
-          `🎫 Novo chamado aberto para o departamento ${area}.\n\nSolicitante: ${currentPerfil.nome} (${currentPerfil.empresa})\nPrioridade: ${selectedPrio}\nCategoria: ${cat || '—'}\n\nAcesse o painel para atender.`);
+          `🎫 Novo chamado aberto — ${ticketNum}\n\nDepartamento: ${area}\nSolicitante: ${currentPerfil.nome} (${currentPerfil.empresa})\nPrioridade: ${selectedPrio}\nCategoria: ${cat || '—'}\n\nAcesse o painel para atender.`);
       }
     });
   }
@@ -5158,24 +5185,47 @@ async function loadDashAtendentes() {
   }).join('') + '</div>';
 }
 
-async function loadAdminData() { await loadChamados(); }async function loadAdminData() { await loadChamados(); }
+async function loadAdminData() { await loadChamados(); }
 
 function filtrarChamadosPorAtendente(list) {
   if (currentPerfil?.role !== 'atendente') return list;
   const deps = currentPerfil.departamentos || [];
   const cats = currentPerfil.categorias || [];
+
+  // Se atendente sem departamento definido → vê todos
+  if (!deps.length && !cats.length) return list;
+
   return list.filter(c => {
-    const okDep = !deps.length || deps.includes(c.departamento);
-    const okCat = !cats.length || cats.includes(c.categoria);
+    const depChamado = c.departamento || '';
+    // Chamados sem departamento definido ou "não informado" → visível para todos atendentes
+    const semDep = !depChamado || depChamado === 'Não informado' || depChamado === 'Não definido';
+    const okDep = semDep || !deps.length || deps.includes(depChamado);
+    const okCat = !cats.length || !c.categoria || cats.includes(c.categoria);
     return okDep && okCat;
   });
 }
 
 async function loadChamados() {
-  const { data } = await sb.from('chamados').select('*').order('criado_em',{ascending:false});
+  const { data, error } = await sb.from('chamados')
+    .select('*')
+    .order('criado_em', {ascending: false});
+
+  if (error) {
+    console.error('Erro ao carregar chamados:', error);
+    showToast('Erro ao carregar chamados: ' + (error.message||'verifique a conexão'), 'err');
+    return;
+  }
+
   allChamados = filtrarChamadosPorAtendente(data || []);
   renderChamados(allChamados);
   updateStats(allChamados);
+
+  // Atualizar chips de filtro para refletir statusMap atual
+  const filterAtivo = filterStatus;
+  if (filterAtivo && filterAtivo !== 'todos') {
+    const filtered = allChamados.filter(c => c.status === filterAtivo);
+    renderChamados(filtered);
+  }
 }
 
 function updateStats(list) {
@@ -5844,14 +5894,31 @@ function renderCadastroListaTabela(secao) {
     container.innerHTML = `<div class="tbl-wrap" style="padding:24px;text-align:center;"><p style="color:var(--muted);font-size:13px;">Nenhum item cadastrado ainda.</p></div>`;
     return;
   }
+  const secaoLabel = {areas:'departamento',empresas:'organização',categorias:'categoria'}[secao] || 'item';
   container.innerHTML = `<div class="tbl-wrap"><table>
-    <thead><tr><th>Nome</th><th>Ação</th></tr></thead>
+    <thead><tr><th>Nome</th><th style="text-align:right;">Ações</th></tr></thead>
     <tbody>${items.map(i=>`
       <tr>
-        <td>${i.nome}</td>
-        <td><button class="btn btn-ghost btn-sm" onclick="abrirDetalheItem('${secao}','${i.id}')">✎ Editar</button></td>
+        <td style="font-weight:600;">${i.nome}</td>
+        <td style="text-align:right;display:flex;gap:6px;justify-content:flex-end;">
+          <button class="btn btn-ghost btn-sm" onclick="abrirDetalheItem('${secao}','${i.id}')">✎ Editar</button>
+          <button class="btn btn-ghost btn-sm" style="color:#f87171;border-color:rgba(239,68,68,.35);"
+            onclick="excluirItemCadastroDir('${secao}','${i.id}','${i.nome}')">🗑️ Excluir</button>
+        </td>
       </tr>`).join('')}
     </tbody></table></div>`;
+}
+
+// Excluir direto da tabela (sem precisar abrir detalhe)
+async function excluirItemCadastroDir(secao, id, nome) {
+  const secaoLabel = {areas:'departamento',empresas:'organização',categorias:'categoria'}[secao] || 'item';
+  if (!confirm(`Excluir o ${secaoLabel} "${nome}"?\n\nEsta ação não pode ser desfeita.`)) return;
+  const { error } = await sb.from(secao).delete().eq('id', id);
+  if (error) { showToast('Erro ao excluir: ' + (error.message||'tente novamente'),'err'); return; }
+  await loadCadastrosLists();
+  await popularSelectsFormulario();
+  renderCadastroListaTabela(secao);
+  showToast(`${secaoLabel.charAt(0).toUpperCase()+secaoLabel.slice(1)} excluído com sucesso!`,'ok');
 }
 
 function renderStatusListaTabela() {
@@ -6690,26 +6757,48 @@ async function confirmarEscalonar() {
   const chamado = currentDetalhe || allChamados.find(c => c.id === id);
   if (!chamado || !atendente) return;
 
-  const detalheLog = `Escalonado de ${currentPerfil?.nome || 'atendente'} para ${atendente.nome}.` + (motivo ? ` Motivo: ${motivo}` : '');
-  await registrarLog(chamado, 'escalonamento', detalheLog);
+  // Registrar histórico de escalonamento como comentário visível no timeline
+  const atualNome = currentPerfil?.nome || 'Atendente';
+  const textoHistorico = `🔀 Chamado transferido de **${atualNome}** para **${atendente.nome}**${motivo ? `\nMotivo: ${motivo}` : ''}.`;
+  
+  const eventoEsc = {
+    autor: currentPerfil?.nome || 'Sistema',
+    autor_id: currentPerfil?.id,
+    role: currentPerfil?.role,
+    tipo: 'escalonamento',          // tipo especial — aparece no timeline com estilo próprio
+    acao: 'escalonamento',
+    texto: textoHistorico,
+    atendente_anterior: atualNome,
+    atendente_novo: atendente.nome,
+    atendente_novo_id: atendenteId,
+    criado_em: new Date().toISOString()
+  };
 
-  // Atualiza o departamento do chamado para o(s) do novo atendente, se aplicável, mantendo histórico
-  await sb.from('chamados').update({
-    comentarios: chamado.comentarios,
+  const novosComentarios = [...(chamado.comentarios || []), eventoEsc];
+
+  // Atualiza chamado: registra histórico + departamento do novo atendente
+  const novoDept = (atendente.departamentos || [])[0] || chamado.departamento;
+  const { error } = await sb.from('chamados').update({
+    comentarios: novosComentarios,
+    departamento: novoDept,
     atualizado_em: new Date().toISOString()
   }).eq('id', id);
 
-  document.getElementById('modal-escalonar').classList.remove('open');
-  showToast(`Chamado escalonado para ${atendente.nome}!`, 'ok');
+  if (error) { showToast('Erro ao escalonar: ' + (error.message||'tente novamente'), 'err'); return; }
 
-  // Notifica o novo atendente por e-mail
+  chamado.comentarios = novosComentarios;
+  chamado.departamento = novoDept;
+
+  document.getElementById('modal-escalonar').classList.remove('open');
+  showToast(`✅ Chamado escalonado para ${atendente.nome}!`, 'ok');
+
+  // Notificar por e-mail
   if (atendente.email) {
     enviarEmailNotificacao(atendente.email, atendente.nome, chamado.ticket_num, chamado.titulo,
-      `🔀 Um chamado foi escalonado para você.\n\nEscalonado por: ${currentPerfil?.nome || 'um colega'}${motivo ? '\nMotivo: ' + motivo : ''}\n\nAcesse o painel para atender.`);
-    // Notificar o solicitante que o chamado foi escalonado
-    await notificarSolicitante(chamado,
-      `🔀 Seu chamado foi transferido para outro atendente.\n\nNovo responsável: ${atendente.nome}\n\nO atendimento continuará normalmente.`);
+      `🔀 Um chamado foi escalonado para você.\n\nTransferido por: ${atualNome}${motivo ? '\nMotivo: ' + motivo : ''}\n\nProtocolo: ${chamado.ticket_num}\nAssunto: ${chamado.titulo}\n\nAcesse o painel para atender.`);
   }
+  await notificarSolicitante(chamado,
+    `🔀 Seu chamado foi transferido para outro atendente.\n\nNovo responsável: ${atendente.nome}\n\nO atendimento continuará normalmente.`);
 
   closeModalDetalhe();
   loadChamados();
@@ -6805,27 +6894,20 @@ function abrirModalLog(chamado) {
   document.getElementById('modal-log').classList.add('open');
 }
 
-function renderComentarios(listaCompleta) {
-  const div = document.getElementById('det-comentarios');
-  const lista = (listaCompleta || []).filter(c => c.tipo !== 'log'); // logs de sistema não aparecem na conversa
-  if (!lista.length) { div.innerHTML = '<p style="font-size:12px;color:var(--dim);text-align:center;padding:14px;">Nenhum comentário ainda. Seja o primeiro a responder.</p>'; return; }
-  div.innerHTML = lista.map(c => {
-    const isStaff = c.autor === 'admin';
-    const nomeExibido = isStaff ? (c.nome || 'Suporte TI') : (c.nome || 'Usuário');
-    const ini = getInitials(nomeExibido);
-    const avatarBg = isStaff ? 'linear-gradient(135deg,#5b8def,#7c6cf5)' : `linear-gradient(135deg,${avatarColor(nomeExibido)},${avatarColor(nomeExibido)}99)`;
-    return `<div class="det-comment ${isStaff?'staff':''}">
-      <div class="det-comment-avatar" style="background:${avatarBg};">${ini}</div>
-      <div class="det-comment-body">
-        <div class="det-comment-head">
-          <span class="det-comment-author">${isStaff?'🛠️ ':''}${nomeExibido}${isStaff?' <span style="font-size:9px;color:#8ab4ff;font-weight:600;">· Suporte</span>':''}</span>
-          <span class="det-comment-date">${new Date(c.data).toLocaleString('pt-BR')}</span>
-        </div>
-        <div class="det-comment-text">${c.texto}</div>
-      </div>
-    </div>`;
-  }).join('');
-  div.scrollTop = div.scrollHeight;
+function renderComentarios(chamadoOuLista) {
+  const container = document.getElementById('det-comentarios');
+  if (!container) return;
+  // Aceita tanto um objeto chamado quanto uma lista direta
+  const lista = Array.isArray(chamadoOuLista)
+    ? chamadoOuLista
+    : (chamadoOuLista?.comentarios || []);
+  const isStaff = currentPerfil && ['admin','gerente','atendente'].includes(currentPerfil.role);
+  if (!lista.length) {
+    container.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:12px;padding:20px;">Nenhuma interação ainda.</div>';
+    return;
+  }
+  container.innerHTML = lista.map(com => buildComentarioHtml(com, isStaff)).join('');
+  container.scrollTop = container.scrollHeight;
 }
 
 async function addComentario() {
@@ -6874,18 +6956,7 @@ async function addComentario() {
   showToast(tipo==='nota_interna'?'🔒 Nota interna adicionada':'✅ Resposta enviada!', 'success');
 }
 
-function renderComentarios(c) {
-  const container = document.getElementById('det-comentarios');
-  if (!container) return;
-  const comentarios = (c.comentarios||[]).filter(com=>com.tipo!=='log');
-  const isStaff = currentPerfil && ['admin','gerente','atendente'].includes(currentPerfil.role);
-  if (!comentarios.length) {
-    container.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:12px;padding:20px;">Nenhuma interação ainda.</div>';
-    return;
-  }
-  container.innerHTML = comentarios.map(com => buildComentarioHtml(com, isStaff)).join('');
-  container.scrollTop = container.scrollHeight;
-}
+// renderComentarios unificada acima
 
 
 async function loadCadastrosLists() {
@@ -7009,6 +7080,33 @@ function renderReplyFilesPreview() {
 
 // ── RENDERIZAR COMENTÁRIO COM NOTA INTERNA ─────────────────────
 function buildComentarioHtml(com, isStaff) {
+  // Evento de escalonamento — exibe como linha do tempo especial
+  if (com.tipo === 'escalonamento') {
+    const isLight = document.body.classList.contains('theme-light');
+    const dt = new Date(com.criado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    return `<div style="display:flex;align-items:center;gap:10px;margin:10px 0;padding:8px 14px;background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.22);border-radius:10px;">
+      <span style="font-size:16px;">🔀</span>
+      <div style="flex:1;">
+        <div style="font-size:12px;font-weight:700;color:#c4b5fd;">Chamado transferido</div>
+        <div style="font-size:11px;color:var(--muted);">
+          <b style="color:var(--text);">${com.atendente_anterior||'—'}</b> → <b style="color:var(--text);">${com.atendente_novo||'—'}</b>
+          ${com.texto && com.texto.includes('Motivo:') ? `<br><span style="color:var(--muted);">${com.texto.split('Motivo:')[1]?.trim()||''}</span>` : ''}
+        </div>
+      </div>
+      <span style="font-size:10px;color:var(--muted);white-space:nowrap;">${dt}</span>
+    </div>`;
+  }
+
+  // Evento de log do sistema — exibe como linha fina
+  if (com.tipo === 'log') {
+    const dt = new Date(com.criado_em||com.data).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    return `<div style="display:flex;align-items:center;gap:8px;margin:6px 0;padding:5px 10px;background:rgba(255,255,255,0.02);border-radius:6px;">
+      <span style="font-size:11px;color:var(--dim);">•</span>
+      <span style="font-size:11px;color:var(--dim);flex:1;">${com.texto||com.detalhe||''}</span>
+      <span style="font-size:10px;color:var(--dim);white-space:nowrap;">${dt}</span>
+    </div>`;
+  }
+
   const isNota = com.tipo === 'nota_interna';
   if (isNota && !isStaff) return ''; // ocultar de não-staff
   const isLight = document.body.classList.contains('theme-light');
