@@ -2246,6 +2246,9 @@ label { font-size: 11px !important; font-weight: 700 !important; color: var(--mu
           </div>
         </div>
 
+        <!-- BASE DE CONHECIMENTO (controlada por política) -->
+        <div id="bc-link-wrap" style="display:none;margin-bottom:12px;"></div>
+
         <div class="card">
           <div class="card-lbl">Novo Chamado</div>
           <div class="field">
@@ -4011,6 +4014,15 @@ async function loadPerfil(user) {
   updateTopbar(data);
   await popularSelectsFormulario();
   verificarMuralAvisos();
+
+  // pol-push-resposta: solicitar permissão de notificação após login
+  setTimeout(async () => {
+    const pol = CONTA_CONFIG.politica || {};
+    if (pol['pol-push-resposta'] && 'Notification' in window && Notification.permission === 'default') {
+      try { await Notification.requestPermission(); } catch(e) {}
+    }
+  }, 3000);
+
   if (data.role === 'admin' || data.role === 'atendente' || data.role === 'gerente') {
     showPage('admin');
     configurarSidebarPorRole(data);
@@ -6999,6 +7011,18 @@ async function addComentario() {
       await notificarAtendentes(currentDetalhe, `💬 ${currentPerfil?.nome||'Usuário'} respondeu:\n"${resumo}"`, 'notif-resposta');
     }
   }
+
+  // pol-push-resposta: notificação push nativa para o usuário logado
+  if ((CONTA_CONFIG.politica||{})['pol-push-resposta'] &&
+      'Notification' in window && Notification.permission === 'granted' && isStaff) {
+    // Staff acabou de responder → push para confirmar envio
+    new Notification('EliTicket — Resposta enviada', {
+      body: `#${currentDetalhe.ticket_num}: ${texto.substring(0,80)}`,
+      icon: 'https://img.icons8.com/fluency/96/technical-support.png',
+      tag: `reply-${currentDetalhe.id}`
+    });
+  }
+
   showToast(tipo==='nota_interna'?'🔒 Nota interna adicionada':'✅ Resposta enviada!', 'success');
 }
 
@@ -7154,7 +7178,13 @@ function buildComentarioHtml(com, isStaff) {
   }
 
   const isNota = com.tipo === 'nota_interna';
-  if (isNota && !isStaff) return ''; // ocultar de não-staff
+  if (isNota && !isStaff) return ''; // ocultar notas de não-staff
+
+  // pol-detalhes-status-cliente: se desabilitado, cliente não vê logs de sistema
+  if (com.tipo === 'log' && !isStaff) {
+    const pol = CONTA_CONFIG.politica || {};
+    if (!pol['pol-detalhes-status-cliente']) return '';
+  }
   const isLight = document.body.classList.contains('theme-light');
   const isAutor = com.autor_id === currentPerfil?.id;
   const side = isAutor ? 'flex-end' : 'flex-start';
@@ -7822,6 +7852,24 @@ async function popularSelectsFormulario() {
   }
   if (!ATENDENTES_LIST.length) await loadAtendentesList();
 
+  // pol-exibir-base-conhecimento: mostrar/ocultar link de BC no formulário
+  const pol = CONTA_CONFIG.politica || {};
+  const bcWrap = document.getElementById('bc-link-wrap');
+  if (bcWrap) {
+    if (pol['pol-exibir-base-conhecimento']) {
+      const bcUrl = CONTA_CONFIG?.conta?.url_base_conhecimento || '#';
+      bcWrap.innerHTML = `<div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.22);border-radius:10px;padding:10px 14px;font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:8px;">
+        <span style="font-size:16px;">📚</span>
+        <span>Antes de abrir um chamado, consulte nossa 
+        <a href="${bcUrl}" target="_blank" style="color:#818cf8;font-weight:700;text-decoration:none;">Base de Conhecimento</a> 
+        — sua dúvida pode já estar respondida!</span>
+      </div>`;
+      bcWrap.style.display = 'block';
+    } else {
+      bcWrap.style.display = 'none';
+    }
+  }
+
   const map = { 'r-empresa': 'empresas', 'c-area': 'areas' };
   Object.entries(map).forEach(([selectId, tabela]) => {
     const sel = document.getElementById(selectId);
@@ -8430,6 +8478,42 @@ function toggleSidebar(force) {
 window.addEventListener('resize', () => {
   if (window.innerWidth > 768) toggleSidebar(false);
 });
+
+// ── POLLING DE NOVOS COMENTÁRIOS PARA PUSH (pol-push-resposta) ──────────
+let _pushLastCheck = {};
+async function checkPushNotificacoes() {
+  const pol = CONTA_CONFIG.politica || {};
+  if (!pol['pol-push-resposta']) return;
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (!currentPerfil || isStaffRole(currentPerfil.role)) return; // só para clientes
+
+  // Buscar chamados do usuário com comentários recentes
+  const { data: chamados } = await sb.from('chamados')
+    .select('id,ticket_num,titulo,comentarios,atualizado_em')
+    .eq('usuario_id', currentUser?.id)
+    .neq('status','resolvido')
+    .order('atualizado_em',{ascending:false})
+    .limit(10);
+
+  (chamados||[]).forEach(c => {
+    const lastCheck = _pushLastCheck[c.id] || new Date(0).toISOString();
+    const novos = (c.comentarios||[]).filter(com =>
+      com.tipo === 'staff' &&
+      com.criado_em > lastCheck
+    );
+    if (novos.length) {
+      const ult = novos[novos.length-1];
+      new Notification(`EliTicket — Nova resposta em #${c.ticket_num}`, {
+        body: (ult.texto||'').substring(0,100),
+        icon: 'https://img.icons8.com/fluency/96/technical-support.png',
+        tag: `newreply-${c.id}-${ult.criado_em}`
+      });
+    }
+    _pushLastCheck[c.id] = new Date().toISOString();
+  });
+}
+// Verificar a cada 60 segundos
+setInterval(checkPushNotificacoes, 60000);
 
 init();
 </script>
