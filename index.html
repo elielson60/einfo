@@ -6769,7 +6769,7 @@ async function abrirModalEscalonar(chamado) {
   try {
     const { data: staff } = await sb.from('perfis')
       .select('id,nome,role,departamentos,ativo')
-      .in('role', ['atendente','gerente','admin'])
+      .eq('role', 'atendente')
       .eq('ativo', true)
       .order('nome');
 
@@ -6783,8 +6783,7 @@ async function abrirModalEscalonar(chamado) {
     sel.innerHTML = '<option value="">Selecionar atendente...</option>' +
       disponiveis.map(a => {
         const deps = a.departamentos?.length ? ` · ${a.departamentos.join(', ')}` : '';
-        const roleLabel = a.role !== 'atendente' ? ` [${a.role}]` : '';
-        return `<option value="${a.id}">${a.nome}${deps}${roleLabel}</option>`;
+        return `<option value="${a.id}">${a.nome}${deps}</option>`;
       }).join('');
 
     // Atualizar cache local também
@@ -6827,17 +6826,14 @@ async function confirmarEscalonar() {
   const novosComentarios = [...(chamado.comentarios || []), eventoEsc];
 
   // Atualiza chamado: registra histórico + departamento do novo atendente
-  const novoDept = (atendente.departamentos || [])[0] || chamado.departamento;
   const { error } = await sb.from('chamados').update({
     comentarios: novosComentarios,
-    departamento: novoDept,
     atualizado_em: new Date().toISOString()
   }).eq('id', id);
 
   if (error) { showToast('Erro ao escalonar: ' + (error.message||'tente novamente'), 'err'); return; }
 
   chamado.comentarios = novosComentarios;
-  chamado.departamento = novoDept;
 
   document.getElementById('modal-escalonar').classList.remove('open');
   showToast(`✅ Chamado escalonado para ${atendente.nome}!`, 'ok');
