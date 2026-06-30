@@ -4593,7 +4593,13 @@ function adminSubNav(sub, btn) {
   }
 
   // Trigger loaders for specific sub-pages
-  if (sub === 'atendentes') renderAtendentesDeptos();
+  if (sub === 'atendentes') {
+    if (currentPerfil?.role !== 'admin') {
+      showToast('Apenas o administrador pode gerenciar atendentes.','err');
+      return;
+    }
+    renderAtendentesDeptos();
+  }
   if (sub === 'avisos') { loadAvisosAdmin(); document.getElementById('avisos-list-view').style.display='block'; document.getElementById('avisos-detail-view').style.display='none'; }
   if (sub === 'status') { loadStatusList().then(()=>{ renderStatusListaTabela(); document.getElementById('status-list-view').style.display='block'; document.getElementById('status-detail-view').style.display='none'; }); }
   if (sub === 'sla') preencherFormConfig();
@@ -5710,20 +5716,57 @@ function configurarSidebarPorRole(perfil) {
 
   // Usuários: só admin
   if (sbUsuarios) sbUsuarios.style.display = isAdmin ? 'flex' : 'none';
-  // Menu Administração: admin e gerente (não atendente)
+
+  // Menu Administração na sidebar:
+  // Admin e gerente → veem o item "Administração"
+  // Atendente → NÃO vê o menu de Administração
   if (sbConfig) sbConfig.style.display = (isAdmin || isGerente) ? 'flex' : 'none';
+
   // Sidebar geral
   if (mainSb) mainSb.style.display = 'flex';
   if (sbAdminMenu) sbAdminMenu.style.display = 'none';
   if (sbConfigArrow) sbConfigArrow.textContent = '▶';
 
-  // Remover "Configurações da Conta" e "Usuários" do menu admin para gerente
+  // Controlar visibilidade dos itens do sub-menu por role
   document.querySelectorAll('#sb-admin-menu .sb-btn').forEach(btn => {
     const txt = btn.textContent.trim();
-    if (isGerente && (txt.includes('Configurações da Conta'))) {
-      btn.style.display = 'none';
-    } else {
-      btn.style.display = '';
+    const onclick = btn.getAttribute('onclick') || '';
+
+    // Itens exclusivos do admin (não aparecem para gerente nem atendente)
+    const soAdmin = [
+      'Configurações da Conta',   // contém config de email, PHP mailer, etc.
+      'Atendentes',               // criar/editar atendentes
+      'Usuários',                 // gerenciar usuários
+    ];
+
+    // Itens que gerente pode ver mas atendente não
+    const soAdminGerente = [
+      'Organizações',
+      'SLA',
+      'Horários',
+      'Status',
+      'Avisos',
+    ];
+
+    if (isAdmin) {
+      btn.style.display = ''; // admin vê tudo
+
+    } else if (isGerente) {
+      // Gerente não vê: Configurações da Conta, Atendentes, Usuários
+      if (soAdmin.some(s => txt.includes(s))) {
+        btn.style.display = 'none';
+      } else {
+        btn.style.display = '';
+      }
+
+    } else if (isAtend) {
+      // Atendente vê apenas: Categorias, Campos Personalizados, Departamentos
+      const podeVer = ['Categorias', 'Campos Personalizados', 'Departamentos'];
+      if (podeVer.some(s => txt.includes(s))) {
+        btn.style.display = '';
+      } else {
+        btn.style.display = 'none';
+      }
     }
   });
 
