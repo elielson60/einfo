@@ -6753,15 +6753,47 @@ function closeModalDetalhe() {
 
 // ── ESCALONAR PARA OUTRO ATENDENTE ───────────────────
 async function abrirModalEscalonar(chamado) {
-  if (!ATENDENTES_LIST.length) await loadAtendentesList();
-  const sel = document.getElementById('esc-atendente-select');
-  sel.innerHTML = '<option value="">Selecionar...</option>' +
-    ATENDENTES_LIST.filter(a => a.id !== currentPerfil?.id)
-      .map(a => `<option value="${a.id}">${a.nome}${a.departamentos?.length ? ' · '+a.departamentos.join(', ') : ''}</option>`).join('');
+  // Fechar menu "Mais" antes
+  document.getElementById('det-mais-menu')?.classList.remove('open');
+
+  // Abrir modal imediatamente com loading
   document.getElementById('esc-chamado-id').value = chamado.id;
   document.getElementById('esc-motivo').value = '';
   document.getElementById('esc-err').style.display = 'none';
+
+  const sel = document.getElementById('esc-atendente-select');
+  sel.innerHTML = '<option value="">Carregando atendentes...</option>';
   document.getElementById('modal-escalonar').classList.add('open');
+
+  // Buscar staff disponível direto do banco (mais confiável que o cache)
+  try {
+    const { data: staff } = await sb.from('perfis')
+      .select('id,nome,role,departamentos,ativo')
+      .in('role', ['atendente','gerente','admin'])
+      .eq('ativo', true)
+      .order('nome');
+
+    const disponiveis = (staff || []).filter(a => a.id !== currentPerfil?.id);
+
+    if (!disponiveis.length) {
+      sel.innerHTML = '<option value="">Nenhum atendente disponível</option>';
+      return;
+    }
+
+    sel.innerHTML = '<option value="">Selecionar atendente...</option>' +
+      disponiveis.map(a => {
+        const deps = a.departamentos?.length ? ` · ${a.departamentos.join(', ')}` : '';
+        const roleLabel = a.role !== 'atendente' ? ` [${a.role}]` : '';
+        return `<option value="${a.id}">${a.nome}${deps}${roleLabel}</option>`;
+      }).join('');
+
+    // Atualizar cache local também
+    ATENDENTES_LIST = staff || [];
+
+  } catch(e) {
+    sel.innerHTML = '<option value="">Erro ao carregar — tente novamente</option>';
+    console.error('Erro ao carregar atendentes:', e);
+  }
 }
 
 async function confirmarEscalonar() {
