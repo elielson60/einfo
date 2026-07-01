@@ -1898,6 +1898,21 @@ label { font-size: 11px !important; font-weight: 700 !important; color: var(--mu
   /* FAB */
   .fab-novo-chamado { display: flex !important; }
 }
+
+/* ── PROTEÇÃO DE ACESSO POR ROLE ── */
+/* Atendente: ocultar completamente seções restritas */
+body[data-role="atendente"] #cfgtab-conta,
+body[data-role="atendente"] #cfgtab-atendentes,
+body[data-role="gerente"]   #cfgtab-conta,
+body[data-role="gerente"]   #cfgtab-atendentes {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+body[data-role="atendente"] #sb-config,
+body[data-role="atendente"] #sb-admin-menu {
+  display: none !important;
+}
 </style>
 </head>
 <body>
@@ -4024,6 +4039,8 @@ async function loadPerfil(user) {
   }, 3000);
 
   if (data.role === 'admin' || data.role === 'atendente' || data.role === 'gerente') {
+    // Setar data-role no body para CSS de proteção de acesso
+    document.body.setAttribute('data-role', data.role);
     showPage('admin');
     configurarSidebarPorRole(data);
     loadAdminData();
@@ -6377,6 +6394,15 @@ async function loadConfig() {
 //     if (data.conta) CONTA_CONFIG = { ...CONTA_CONFIG, ...data.conta };
     if (data.email?.phpUrl) EMAIL_PHP_URL = data.email.phpUrl;
   }
+}
+
+async function preencherFormConta() {
+  // Apenas admin pode acessar configurações da conta
+  if (currentPerfil?.role !== 'admin') {
+    showToast('Apenas o administrador pode acessar as configurações da conta.', 'err');
+    return;
+  }
+  await loadContaConfig();
 }
 
 function switchContaTab(tab, btn) {
