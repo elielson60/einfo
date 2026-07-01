@@ -2419,11 +2419,8 @@ body[data-role="atendente"] #sb-admin-menu {
     </div>
     <div class="admin-content">
 
-      <!-- Faixa SLA / aviso -->
-      <div class="mu-banner" id="mu-banner" style="display:none;">
-        <span>📊 Consulta dos SLAs de atendimento</span>
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mu-banner').style.display='none'">Ok, entendi</button>
-      </div>
+      <!-- Mural de comunicados / avisos (preenchido por verificarMuralAvisos) -->
+      <div class="mu-banner" id="mu-banner" style="display:none;"></div>
 
       <!-- Header -->
       <div class="ch-header" style="margin-bottom:18px;">
@@ -4038,7 +4035,7 @@ async function loadPerfil(user) {
   document.getElementById('main-topbar').style.display = 'flex';
   updateTopbar(data);
   await popularSelectsFormulario();
-  verificarMuralAvisos();
+  await verificarMuralAvisos(); // avisos precisam do await pois faz query async
 
   // pol-push-resposta: solicitar permissão de notificação após login
   setTimeout(async () => {
@@ -5563,6 +5560,8 @@ async function loadMeusChamados() {
   const { data } = await query.order('criado_em', { ascending: false });
   allMeusChamados = data || [];
   aplicarFiltroMeus();
+  // Exibir avisos ativos no painel do usuário
+  await verificarMuralAvisos();
 }
 
 function switchMuTab(tab) {
@@ -8219,22 +8218,62 @@ async function excluirAviso(id) {
 
 // Verifica e exibe avisos ativos no login
 async function verificarMuralAvisos() {
-  const hoje = new Date().toISOString().slice(0,10);
-  const { data } = await sb.from('avisos').select('*').eq('ativo', true);
-  const ativos = (data || []).filter(a => {
-    if (a.data_inicio && hoje < a.data_inicio) return false;
-    if (a.data_fim && hoje > a.data_fim) return false;
-    return true;
-  });
   const banner = document.getElementById('mu-banner');
-  if (!ativos.length) { if (banner) banner.style.display = 'none'; return; }
+  if (!banner) return;
 
-  if (banner) {
-    const primeiro = ativos[0];
-    banner.innerHTML = `
-      <span>📢 <strong>${primeiro.titulo}</strong> — ${primeiro.mensagem}</span>
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mu-banner').style.display='none'">Ok, entendi</button>`;
+  try {
+    const hoje = new Date().toISOString().slice(0,10);
+    const { data, error } = await sb.from('avisos').select('*').eq('ativo', true).order('criado_em', {ascending:false});
+
+    if (error) { console.error('Erro ao carregar avisos:', error); return; }
+
+    const ativos = (data || []).filter(a => {
+      if (a.data_inicio && hoje < a.data_inicio) return false;
+      if (a.data_fim   && hoje > a.data_fim)   return false;
+      return true;
+    });
+
+    if (!ativos.length) {
+      banner.style.display = 'none';
+      return;
+    }
+
+    // Exibir todos os avisos ativos em sequência
+    if (ativos.length === 1) {
+      const a = ativos[0];
+      banner.innerHTML = `
+        <span style="flex:1;">
+          📢 <strong style="color:var(--text);">${a.titulo}</strong>
+          <span style="color:var(--muted);"> — ${a.mensagem}</span>
+          ${a.data_fim ? `<span style="font-size:10px;color:var(--dim);margin-left:8px;">até ${new Date(a.data_fim+'T00:00:00').toLocaleDateString('pt-BR')}</span>` : ''}
+        </span>
+        <button class="btn btn-ghost btn-sm" onclick="this.closest('.mu-banner').style.display='none'">✕ Fechar</button>`;
+    } else {
+      // Múltiplos avisos: mostrar contador e navegação
+      let idxAtual = 0;
+      const renderAviso = (i) => {
+        const a = ativos[i];
+        banner.innerHTML = `
+          <span style="flex:1;">
+            📢 <strong style="color:var(--text);">${a.titulo}</strong>
+            <span style="color:var(--muted);"> — ${a.mensagem}</span>
+            <span style="font-size:10px;color:var(--dim);margin-left:8px;">(${i+1}/${ativos.length})</span>
+          </span>
+          <div style="display:flex;gap:6px;align-items:center;">
+            ${i > 0 ? `<button class="btn btn-ghost btn-sm" onclick="muralNav(${i-1},${ativos.length})">‹</button>` : ''}
+            ${i < ativos.length-1 ? `<button class="btn btn-ghost btn-sm" onclick="muralNav(${i+1},${ativos.length})">›</button>` : ''}
+            <button class="btn btn-ghost btn-sm" onclick="this.closest('.mu-banner').style.display='none'">✕</button>
+          </div>`;
+      };
+      window._muralAvisos = ativos;
+      window.muralNav = (i) => { renderAviso(i); };
+      renderAviso(0);
+    }
+
     banner.style.display = 'flex';
+
+  } catch(e) {
+    console.error('verificarMuralAvisos erro:', e);
   }
 }
 
