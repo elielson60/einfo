@@ -3279,7 +3279,17 @@ body[data-role="atendente"] #sb-admin-menu {
             <div class="atd-tab" id="atd-tab-info">
               <div class="field">
                 <label>Nome</label>
-                <input type="text" id="atd-edit-nome" disabled style="opacity:.6;"/>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                  <input type="text" id="atd-edit-nome" disabled style="opacity:.6;flex:1;min-width:200px;"/>
+                  <button class="btn btn-ghost btn-sm" onclick="alterarNomeAtendente()">✏️ Alterar Nome</button>
+                </div>
+                <div id="atd-nome-form" style="display:none;margin-top:8px;">
+                  <input type="text" id="atd-novo-nome" placeholder="Novo nome completo..." style="margin-bottom:6px;"/>
+                  <div style="display:flex;gap:6px;">
+                    <button class="btn btn-primary btn-sm" onclick="salvarNomeAtendente()">Confirmar</button>
+                    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('atd-nome-form').style.display='none'">Cancelar</button>
+                  </div>
+                </div>
               </div>
               <div class="field">
                 <label>E-mail</label>
@@ -6188,6 +6198,33 @@ async function salvarEmailAtendente() {
   showToast('E-mail atualizado!','ok');
   const u = allAtendentes.find(x=>x.id===currentAtdId);
   if (u) u.email = novoEmail;
+}
+
+function alterarNomeAtendente() {
+  const form = document.getElementById('atd-nome-form');
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  document.getElementById('atd-novo-nome').value = '';
+}
+
+async function salvarNomeAtendente() {
+  const novoNome = document.getElementById('atd-novo-nome').value.trim();
+  if (!novoNome) { showToast('Informe o novo nome.','err'); return; }
+  if (novoNome.length < 3) { showToast('Nome muito curto.','err'); return; }
+
+  const { error } = await sb.from('perfis').update({ nome: novoNome }).eq('id', currentAtdId);
+  if (error) { showToast('Erro ao alterar nome: ' + error.message,'err'); return; }
+
+  // Atualizar UI
+  document.getElementById('atd-edit-nome').value = novoNome;
+  document.getElementById('atd-detail-nome').textContent = novoNome;
+  document.getElementById('atd-detail-avatar').textContent = getInitials(novoNome);
+  document.getElementById('atd-nome-form').style.display = 'none';
+
+  // Atualizar cache local
+  const u = allAtendentes.find(x => x.id === currentAtdId);
+  if (u) u.nome = novoNome;
+
+  showToast('Nome atualizado com sucesso!','ok');
 }
 
 async function redefinirSenhaAtendente() {
