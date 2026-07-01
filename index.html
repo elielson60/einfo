@@ -6800,6 +6800,135 @@ async function registrarLog(chamado, acao, detalhe) {
   return novosComentarios;
 }
 
+
+// ── IMPRIMIR CHAMADO ────────────────────────────────────────────
+function imprimirChamado() {
+  if (!currentDetalhe) return;
+  const c = currentDetalhe;
+
+  const prioLabel = { critico:'🔴 Crítico', alto:'🟠 Alto', medio:'🔵 Médio', baixo:'🟢 Baixo' };
+  const statusLabel = { aberto:'Aberto', andamento:'Em andamento', resolvido:'Resolvido',
+    aguardando:'Aguardando usuário', cancelado:'Cancelado', fechado:'Fechado' };
+
+  const formatDate = (iso) => {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit',
+      year:'numeric', hour:'2-digit', minute:'2-digit' });
+  };
+
+  // Montar histórico de comentários para impressão
+  const comentarios = (c.comentarios || [])
+    .filter(com => com.tipo !== 'nota_interna') // ocultar notas internas na impressão
+    .map(com => {
+      const dt  = formatDate(com.criado_em || com.data);
+      const autor = com.autor || 'Usuário';
+      const isStaff = ['admin','gerente','atendente'].includes(com.role);
+      const isEsc   = com.tipo === 'escalonamento';
+      const isLog   = com.tipo === 'log';
+      if (isLog) return `<div class="os-comment" style="background:#f5f5f5;padding:4px 8px;">
+        <b>📋 Sistema</b> — ${dt}<br>${com.texto || com.detalhe || ''}
+      </div>`;
+      if (isEsc) return `<div class="os-comment" style="background:#f0f0ff;padding:4px 8px;">
+        <b>🔀 Transferido</b> — ${dt}<br>De <b>${com.atendente_anterior||'—'}</b> para <b>${com.atendente_novo||'—'}</b>
+        ${com.texto && com.texto.includes('Motivo:') ? '<br>Motivo: '+com.texto.split('Motivo:')[1]?.trim() : ''}
+      </div>`;
+      return `<div class="os-comment">
+        <b>${isStaff ? '🛠️ ' : '👤 '}${autor}</b> — ${dt}
+        <div style="margin-top:3px;white-space:pre-wrap;">${(com.texto||'').replace(/</g,'&lt;')}</div>
+        ${com.anexos?.length ? `<div style="margin-top:4px;font-size:11px;color:#555;">📎 ${com.anexos.length} anexo(s)</div>` : ''}
+      </div>`;
+    }).join('');
+
+  // Montar anexos do chamado
+  const anexosHtml = (c.anexos||[]).length
+    ? `<div style="margin-top:4px;">${c.anexos.map(url => {
+        const ext = url.split('.').pop().toLowerCase().split('?')[0];
+        const isImg = ['jpg','jpeg','png','gif','webp'].includes(ext);
+        if (isImg) return `<img src="${url}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;margin:2px;border:1px solid #ccc;">`;
+        const name = decodeURIComponent(url.split('/').pop().split('?')[0]).replace(/^\d+-[a-z0-9]+\./, '');
+        return `<a href="${url}" style="font-size:11px;color:#333;margin-right:10px;">📎 ${name}</a>`;
+      }).join('')}</div>`
+    : '<span style="color:#999;">Nenhum</span>';
+
+  // Montar campos personalizados
+  const camposHtml = c.campos_personalizados && Object.keys(c.campos_personalizados).length
+    ? Object.entries(c.campos_personalizados)
+        .map(([k,v]) => `<div><b>${k}:</b> ${v}</div>`).join('')
+    : '';
+
+  const printArea = document.getElementById('print-area');
+  printArea.innerHTML = `
+    <div class="os-header">
+      <div>
+        <h1>EliTicket — Ordem de Serviço</h1>
+        <div style="font-size:12px;color:#555;margin-top:4px;">
+          Impresso em ${formatDate(new Date().toISOString())}
+        </div>
+      </div>
+      <div class="os-num">
+        <div style="font-size:20px;font-weight:900;">${c.ticket_num || '—'}</div>
+        <div style="font-size:11px;color:#555;margin-top:2px;">Protocolo</div>
+      </div>
+    </div>
+
+    <div class="os-section">
+      <div class="os-title">Informações do Chamado</div>
+      <div class="os-grid">
+        <div><b>Solicitante:</b> ${c.nome_solicitante||'—'}</div>
+        <div><b>Empresa:</b> ${c.empresa||'—'}</div>
+        <div><b>Departamento:</b> ${c.departamento||'—'}</div>
+        <div><b>Categoria:</b> ${c.categoria||'—'}</div>
+        <div><b>Prioridade:</b> ${prioLabel[c.prioridade]||c.prioridade||'—'}</div>
+        <div><b>Status:</b> ${statusLabel[c.status]||c.status||'—'}</div>
+        <div><b>Abertura:</b> ${formatDate(c.criado_em)}</div>
+        <div><b>Última atualização:</b> ${formatDate(c.atualizado_em)}</div>
+        ${c.ramal ? `<div><b>Ramal:</b> ${c.ramal}</div>` : ''}
+        ${c.email_copia ? `<div><b>E-mail cópia:</b> ${c.email_copia}</div>` : ''}
+      </div>
+      ${camposHtml ? `<div style="margin-top:8px;">${camposHtml}</div>` : ''}
+    </div>
+
+    <div class="os-section">
+      <div class="os-title">Assunto</div>
+      <div style="font-size:14px;font-weight:700;">${c.titulo||'—'}</div>
+    </div>
+
+    <div class="os-section">
+      <div class="os-title">Descrição</div>
+      <div class="os-box">${(c.descricao||'Não informado').replace(/</g,'&lt;')}</div>
+    </div>
+
+    ${(c.anexos||[]).length ? `
+    <div class="os-section">
+      <div class="os-title">Anexos do Chamado</div>
+      ${anexosHtml}
+    </div>` : ''}
+
+    ${comentarios ? `
+    <div class="os-section">
+      <div class="os-title">Histórico de Atendimento</div>
+      ${comentarios}
+    </div>` : ''}
+
+    <div class="os-sign">
+      <div>Assinatura do Solicitante<br><span style="font-size:11px;color:#777;">${c.nome_solicitante||''}</span></div>
+      <div>Assinatura do Técnico<br><span style="font-size:11px;color:#777;">${currentPerfil?.nome||''}</span></div>
+    </div>
+
+    <div class="os-footer">
+      EliTicket — Sistema de Gestão de Chamados — E-INFO Consultoria<br>
+      Documento gerado em ${formatDate(new Date().toISOString())}
+    </div>
+  `;
+
+  // Exibir e imprimir
+  printArea.style.display = 'block';
+  setTimeout(() => {
+    window.print();
+    // Ocultar novamente após impressão
+    setTimeout(() => { printArea.style.display = 'none'; }, 500);
+  }, 150);
+}
 async function acaoDetalhe(tipo) {
   document.getElementById('det-mais-menu').classList.remove('open');
   if (!currentDetalhe) return;
