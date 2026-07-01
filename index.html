@@ -89,7 +89,7 @@
 .tb-role{font-size:10px;color:rgba(160,160,200,.6);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;}
 .tb-logo{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0;}
 .tb-name{font-size:14px;font-weight:500;}
-.tb-user{display:flex;align-items:center;gap:10px;}
+.tb-user{display:flex;align-items:center;gap:10px;margin-left:auto;}
 .tb-avatar{width:30px;height:30px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--accent);}
 .tb-info{display:flex;flex-direction:column;line-height:1.2;}
 .tb-uname{font-size:12px;font-weight:500;}
@@ -937,6 +937,10 @@ body {
   border-bottom: 1px solid var(--border) !important;
   box-shadow: 0 1px 0 rgba(255,255,255,0.04) !important;
   height: 56px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 16px 0 12px !important;
 }
 .tb-brand svg text { fill: var(--text) !important; }
 .tb-brand .tagline { fill: var(--muted) !important; }
