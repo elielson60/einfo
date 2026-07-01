@@ -4275,6 +4275,13 @@ function showPage(p) {
   if (target) {
     target.classList.add('active');
   }
+  // Ao exibir a page de chamado, garantir que tela de sucesso está oculta
+  if (p === 'chamado') {
+    const successEl = document.getElementById('chamado-success');
+    const formEl    = document.getElementById('chamado-form');
+    if (successEl) successEl.style.display = 'none';
+    if (formEl)    formEl.style.display    = 'block';
+  }
   // Garante que topbar aparece/some corretamente
   const topbar = document.getElementById('main-topbar');
   if (topbar) {
