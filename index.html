@@ -6757,15 +6757,17 @@ async function openModalDetalhe(id) {
 
   const anexosDiv = document.getElementById('det-anexos');
   let anexosHtml = '';
+  // Anexos do chamado (upload inicial)
   if (c.anexos && c.anexos.length) {
-    anexosHtml += '<div style="font-size:12px;color:var(--muted);margin-bottom:6px;">📎 Anexos</div>' +
-      c.anexos.map(url=>`<a href="${url}" target="_blank"><img src="${url}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;margin-right:6px;border:1px solid var(--border);"/></a>`).join('');
+    anexosHtml += renderAnexosHtml(c.anexos);
   }
+  // Campos personalizados
   if (c.campos_personalizados && Object.keys(c.campos_personalizados).length) {
-    anexosHtml += `<div style="margin-top:${c.anexos&&c.anexos.length?'12px':'0'};font-size:12px;color:var(--muted);margin-bottom:6px;">🧩 Informações adicionais</div>` +
-      Object.entries(c.campos_personalizados).map(([k,v])=>`<div style="font-size:13px;margin-bottom:3px;"><strong style="color:var(--text)">${k}:</strong> ${v}</div>`).join('');
+    anexosHtml += `<div style="margin-top:${c.anexos&&c.anexos.length?'12px':'0'};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:8px;">🧩 Informações adicionais</div>` +
+      Object.entries(c.campos_personalizados).map(([k,v])=>`<div style="font-size:13px;margin-bottom:4px;"><strong style="color:var(--text)">${k}:</strong> <span style="color:var(--muted)">${v}</span></div>`).join('');
   }
-  anexosDiv.innerHTML = anexosHtml;
+  if (!anexosHtml) anexosDiv.style.display = 'none';
+  else { anexosDiv.style.display = 'block'; anexosDiv.innerHTML = anexosHtml; }
 
   // Renderizar comentários com dados frescos do banco
   renderComentarios(c);
@@ -7077,6 +7079,69 @@ function renderComentarios(chamadoOuLista) {
   container.scrollTop = container.scrollHeight;
 }
 
+
+// ── RENDERIZAR ANEXOS (universal — imagem, PDF, doc, etc) ───────────
+function renderAnexosHtml(anexos) {
+  if (!anexos || !anexos.length) return '';
+
+  const fileIcon = (url) => {
+    const ext = (url.split('?')[0].split('.').pop() || '').toLowerCase();
+    if (['jpg','jpeg','png','gif','webp','bmp','svg'].includes(ext)) return 'img';
+    if (ext === 'pdf')  return '📄';
+    if (['doc','docx'].includes(ext)) return '📝';
+    if (['xls','xlsx'].includes(ext)) return '📊';
+    if (['ppt','pptx'].includes(ext)) return '📋';
+    if (['zip','rar','7z'].includes(ext)) return '🗜️';
+    return '📎';
+  };
+
+  const fileName = (url) => {
+    try {
+      const parts = decodeURIComponent(url.split('?')[0]).split('/');
+      const raw = parts[parts.length - 1] || 'Arquivo';
+      // Remove o prefixo timestamp-random se existir
+      return raw.replace(/^\d+-[a-z0-9]+\./, '');
+    } catch { return 'Arquivo'; }
+  };
+
+  const items = anexos.map(url => {
+    const icon = fileIcon(url);
+    const name = fileName(url);
+
+    if (icon === 'img') {
+      // Exibir thumbnail clicável
+      return `<a href="${url}" target="_blank" rel="noopener" title="${name}"
+        style="display:inline-block;margin:0 6px 6px 0;flex-shrink:0;">
+        <img src="${url}" alt="${name}"
+          style="width:72px;height:72px;object-fit:cover;border-radius:8px;
+                 border:1px solid var(--border);display:block;
+                 transition:.15s;cursor:pointer;"
+          onerror="this.parentElement.innerHTML=\`<div style='width:72px;height:72px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:24px;background:rgba(255,255,255,0.04);'>📎</div>\`"
+          onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'"/>
+      </a>`;
+    } else {
+      // Exibir card de arquivo com ícone
+      return `<a href="${url}" target="_blank" rel="noopener" title="Baixar ${name}"
+        style="display:inline-flex;align-items:center;gap:7px;
+               padding:7px 12px;border-radius:8px;margin:0 6px 6px 0;
+               border:1px solid var(--border);background:rgba(255,255,255,0.04);
+               text-decoration:none;font-size:12px;color:var(--muted);
+               transition:.15s;cursor:pointer;max-width:200px;"
+        onmouseover="this.style.background='rgba(99,102,241,0.10)';this.style.borderColor='rgba(99,102,241,0.35)';this.style.color='#818cf8'"
+        onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+        <span style="font-size:18px;flex-shrink:0;">${icon}</span>
+        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</span>
+        <span style="font-size:14px;flex-shrink:0;margin-left:auto;">↓</span>
+      </a>`;
+    }
+  }).join('');
+
+  return `<div style="margin-bottom:8px;">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+                color:var(--dim);margin-bottom:8px;">📎 Anexos (${anexos.length})</div>
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-start;">${items}</div>
+  </div>`;
+}
 async function addComentario() {
   const input = document.getElementById('det-novo-comentario');
   const texto = input.value.trim();
@@ -7085,13 +7150,29 @@ async function addComentario() {
   const isStaff = currentPerfil && ['admin','gerente','atendente'].includes(currentPerfil.role);
   const tipo = isNotaInterna && isStaff ? 'nota_interna' : (isStaff ? 'staff' : 'usuario');
 
+  // Upload dos arquivos anexados ao comentário
+  let anexosComentario = [];
+  if (replyFiles.length) {
+    const ticketNum = currentDetalhe.ticket_num || currentDetalhe.id;
+    for (const file of replyFiles) {
+      const ext = file.name.split('.').pop();
+      const path = `${ticketNum}/reply-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { data: upData, error: upErr } = await sb.storage.from('chamados-anexos').upload(path, file, { contentType: file.type });
+      if (!upErr) {
+        const { data: urlData } = sb.storage.from('chamados-anexos').getPublicUrl(path);
+        anexosComentario.push(urlData.publicUrl);
+      }
+    }
+  }
+
   const novo = {
     autor: currentPerfil?.nome || '—',
     autor_id: currentPerfil?.id,
     role: currentPerfil?.role,
     texto,
     tipo,
-    criado_em: new Date().toISOString()
+    criado_em: new Date().toISOString(),
+    ...(anexosComentario.length ? { anexos: anexosComentario } : {})
   };
 
   const lista = [...(currentDetalhe.comentarios || []), novo];
@@ -7315,7 +7396,7 @@ function buildComentarioHtml(com, isStaff) {
         <span style="font-size:10px;color:var(--muted);">${dt}</span>
       </div>
       <div style="font-size:13px;color:var(--text);white-space:pre-wrap;line-height:1.6;">${(com.texto||'').replace(/</g,'&lt;')}</div>
-      ${com.anexos?.length ? `<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">${com.anexos.map(a=>`<a href="${a.url}" target="_blank" style="font-size:11px;color:var(--accent);text-decoration:none;background:var(--accent-s);border:1px solid var(--accent-b);border-radius:6px;padding:2px 8px;">📎 ${a.nome||'Arquivo'}</a>`).join('')}</div>` : ''}
+      ${com.anexos?.length ? renderAnexosHtml(com.anexos) : ''}
     </div>
   </div>`;
 }
