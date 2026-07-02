@@ -4061,19 +4061,24 @@ async function loadPerfil(user) {
 }
 
 function getAvaliacaoPendente() {
-  return allMeusChamados.find(c => c.status === 'resolvido' && !c.avaliacao) || null;
+  // Verifica no cache local — allMeusChamados deve estar atualizado
+  // Status 'resolvido' sem avaliação = pendente
+  return allMeusChamados.find(c =>
+    (c.status === 'resolvido' || c.status === 'fechado') && !c.avaliacao
+  ) || null;
 }
 
-function irParaNovoChamado() {
+async function irParaNovoChamado() {
   const pol = CONTA_CONFIG.politica || {};
 
   // Política: "Apenas permitir abertura de chamados se não houver avaliações pendentes"
   if (pol['pol-bloquear-aval-pendente'] && !isStaffRole(currentPerfil?.role)) {
+    // Recarregar chamados para garantir dados atualizados antes de verificar
+    await loadMeusChamados();
     const pendente = getAvaliacaoPendente();
     if (pendente) {
-      showToast('Avalie seu chamado anterior antes de abrir um novo.', 'err');
-      // Abre o modal de avaliação diretamente
-      setTimeout(() => openModalAval(pendente.id), 400);
+      showToast('⚠️ Avalie o chamado #' + pendente.ticket_num + ' antes de abrir um novo.', 'err');
+      setTimeout(() => openModalAval(pendente.id), 600);
       return;
     }
   }
@@ -4399,14 +4404,24 @@ async function enviarChamado() {
 
   let novoProtocolo = 1;
   if (seqData && seqData.length) {
-    // Extrair o maior número de ET-XXXXX
+    // Extrair o maior número de ET-XXXXX entre os 50 mais recentes
     const numeros = seqData
       .map(c => {
         const match = (c.ticket_num || '').match(/ET-0*(\d+)/);
         return match ? parseInt(match[1]) : 0;
       })
       .filter(n => n > 0);
-    if (numeros.length) novoProtocolo = Math.max(...numeros) + 1;
+    if (numeros.length) {
+      novoProtocolo = Math.max(...numeros) + 1;
+    } else {
+      // Fallback: contar total de chamados no banco + 1
+      const { count } = await sb.from('chamados').select('*', { count: 'exact', head: true });
+      novoProtocolo = (count || 0) + 1;
+    }
+  } else {
+    // Banco vazio: fallback por contagem
+    const { count } = await sb.from('chamados').select('*', { count: 'exact', head: true });
+    novoProtocolo = (count || 0) + 1;
   }
   const ticketNum = 'ET-' + String(novoProtocolo).padStart(5, '0');
 
@@ -6944,6 +6959,8 @@ async function acaoDetalhe(tipo) {
   if (!currentDetalhe) return;
   const c = currentDetalhe;
   const id = c.id;
+  const pol = CONTA_CONFIG.politica || {};        // ← FALTAVA ISSO
+  const isStaff = isStaffRole(currentPerfil?.role);
 
   if (tipo === 'encerrar') {
     // Ação FINAL e definitiva — diferente de "status", fecha o chamado de vez
