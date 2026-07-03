@@ -3652,6 +3652,28 @@ body[data-role="atendente"] #sb-admin-menu {
     <div class="modal-title">⭐ Avaliar atendimento</div>
     <input type="hidden" id="aval-ticket-id"/>
 
+    <!-- Card de identificação do chamado -->
+    <div id="aval-chamado-info" style="
+      background:rgba(99,102,241,0.08);
+      border:1px solid rgba(99,102,241,0.22);
+      border-radius:10px;
+      padding:12px 14px;
+      margin-bottom:18px;
+      display:none;
+    ">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px;">🎫</span>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+            <span id="aval-ticket-num" style="font-family:'JetBrains Mono','Fira Code',monospace;font-size:11px;font-weight:700;color:#818cf8;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);padding:2px 8px;border-radius:5px;"></span>
+            <span id="aval-ticket-status" style="font-size:10px;font-weight:700;color:#6ee7b7;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);padding:2px 8px;border-radius:20px;"></span>
+          </div>
+          <div id="aval-ticket-titulo" style="font-size:13px;font-weight:700;color:var(--text);line-height:1.3;"></div>
+          <div id="aval-ticket-meta" style="font-size:11px;color:var(--muted);margin-top:2px;"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="field" style="margin-bottom:18px;">
       <label>Como você avalia o atendimento recebido?</label>
       <div class="star-row" id="star-row">
@@ -5747,7 +5769,7 @@ function renderMeusChamados(list) {
 let selectedStar = 0;
 let avalOpts = { resolvido: '', tempo: '' };
 
-function openModalAval(ticketId) {
+async function openModalAval(ticketId) {
   selectedStar = 0;
   avalOpts = { resolvido: '', tempo: '' };
   document.getElementById('aval-ticket-id').value = ticketId;
@@ -5756,6 +5778,48 @@ function openModalAval(ticketId) {
   document.querySelectorAll('.star').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.aval-btn').forEach(b=>b.classList.remove('sel'));
   document.getElementById('star-label').textContent = '';
+
+  // Preencher card de identificação do chamado
+  const infoCard = document.getElementById('aval-chamado-info');
+  let chamado = allMeusChamados.find(c => c.id === ticketId)
+    || allChamados.find(c => c.id === ticketId)
+    || null;
+
+  // Se não achar no cache, buscar do banco
+  if (!chamado) {
+    try {
+      const { data } = await sb.from('chamados')
+        .select('id,ticket_num,titulo,status,prioridade,departamento,empresa,criado_em')
+        .eq('id', ticketId).single();
+      if (data) chamado = data;
+    } catch(e) {}
+  }
+
+  if (chamado && infoCard) {
+    const statusLabel = {
+      resolvido: '✓ Resolvido', fechado: '✓ Encerrado',
+      aberto: 'Aberto', andamento: 'Em andamento'
+    };
+    const prioLabel = {
+      critico:'🔴 Crítico', alto:'🟠 Alto',
+      medio:'🔵 Médio', baixo:'🟢 Baixo'
+    };
+    const dataAbertura = chamado.criado_em
+      ? new Date(chamado.criado_em).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'})
+      : '—';
+
+    document.getElementById('aval-ticket-num').textContent   = chamado.ticket_num || '—';
+    document.getElementById('aval-ticket-titulo').textContent = chamado.titulo || '—';
+    document.getElementById('aval-ticket-status').textContent = statusLabel[chamado.status] || chamado.status || '—';
+    document.getElementById('aval-ticket-meta').textContent   =
+      [chamado.departamento, chamado.empresa, `Aberto em ${dataAbertura}`, prioLabel[chamado.prioridade]]
+      .filter(Boolean).join(' · ');
+
+    infoCard.style.display = 'block';
+  } else if (infoCard) {
+    infoCard.style.display = 'none';
+  }
+
   document.getElementById('modal-aval').classList.add('open');
 }
 
