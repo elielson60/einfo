@@ -1,4 +1,4 @@
-a<!-- EliTicket v2.1 - Build 2026-06-25 - MD5: a5f5df58e786e0826b69dd9ef09a71a3 -->
+<!-- EliTicket v2.1 - Build 2026-06-25 - MD5: a5f5df58e786e0826b69dd9ef09a71a3 -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -144,8 +144,8 @@ a<!-- EliTicket v2.1 - Build 2026-06-25 - MD5: a5f5df58e786e0826b69dd9ef09a71a3 
 .et-orb3{width:200px;height:200px;background:rgba(47,216,154,.1);bottom:40%;right:10%;}
 
 /* ── RIGHT PANEL ── */
-.et-right-panel{background:#f7f8fc;display:flex;align-items:center;justify-content:center;padding:40px 32px;}
-.et-form-wrap{width:100%;max-width:400px;}
+.et-right-panel{background:#f7f8fc;display:flex;align-items:flex-start;justify-content:center;padding:24px 32px;overflow-y:auto;}
+.et-form-wrap{width:100%;max-width:400px;padding-top:32px;}
 
 .et-form-header{margin-bottom:28px;}
 .et-form-logo{display:block;margin-bottom:28px;}
@@ -1553,9 +1553,13 @@ label { font-size: 11px !important; font-weight: 700 !important; color: var(--mu
   width: 460px !important; flex-shrink: 0 !important;
   background: var(--surface) !important;
   border-left: 1px solid var(--border) !important;
-  display: flex !important; align-items: center !important; justify-content: center !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  padding: 24px 32px !important;
+  overflow-y: auto !important;
 }
-.et-form-wrap { width: 100% !important; max-width: 380px !important; padding: 40px 32px !important; }
+.et-form-wrap { width: 100% !important; max-width: 380px !important; padding: 20px 32px !important; }
 .et-form-title { font-size: 22px !important; font-weight: 800 !important; color: var(--text) !important; margin-bottom: 6px !important; }
 .et-form-sub { font-size: 13px !important; color: var(--muted) !important; margin-bottom: 24px !important; }
 .et-tabs {
@@ -1868,7 +1872,12 @@ label { font-size: 11px !important; font-weight: 700 !important; color: var(--mu
   /* Login: uma coluna */
   .et-login-split { flex-direction: column !important; }
   .et-left-panel  { display: none !important; }
-  .et-right-panel { width: 100% !important; min-height: 100vh !important; }
+  .et-right-panel { 
+  width: 100% !important; 
+  min-height: 100vh !important;
+  align-items: flex-start !important;
+  padding: 20px 20px !important;
+}
 
   /* Topbar compacta */
   .topbar { padding: 0 10px !important; }
@@ -1956,7 +1965,7 @@ body[data-role="atendente"] #sb-admin-menu {
         <text x="118" y="38" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="32" font-weight="300" fill="#a78bfa"> Ticket</text>
         <text x="72" y="56" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="9" font-weight="500" fill="rgba(160,160,220,0.65)" letter-spacing="2.5">SUA PLATAFORMA DE ATENDIMENTO</text>
       </svg>
-    </div>>
+    </div>
   </div>
   <div class="tb-user" id="tb-user" style="display:none;">
 
@@ -2028,7 +2037,7 @@ body[data-role="atendente"] #sb-admin-menu {
             <text x="133" y="42" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="38" font-weight="300" fill="rgba(220,215,255,0.85)"> Ticket</text>
             <text x="80" y="62" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10.5" font-weight="500" fill="rgba(255,255,255,0.5)" letter-spacing="2.5">SUA PLATAFORMA DE ATENDIMENTO</text>
           </svg>
-        </div>>
+        </div>
 
         <!-- Tagline -->
         <div class="et-hero">
