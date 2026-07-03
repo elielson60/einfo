@@ -4083,25 +4083,48 @@ async function loadPerfil(user) {
 }
 
 function getAvaliacaoPendente() {
-  // Verifica no cache local — allMeusChamados deve estar atualizado
-  // Status 'resolvido' sem avaliação = pendente
+  // Verifica no cache local após loadMeusChamados() ter sido chamado
+  // O cache é atualizado diretamente do banco em loadMeusChamados
   return allMeusChamados.find(c =>
-    (c.status === 'resolvido' || c.status === 'fechado') && !c.avaliacao
+    (c.status === 'resolvido' || c.status === 'fechado') &&
+    !c.avaliacao &&
+    c.usuario_id === currentUser?.id  // garantir que é do usuário atual
   ) || null;
 }
 
 async function irParaNovoChamado() {
   const pol = CONTA_CONFIG.politica || {};
 
-  // Política: "Apenas permitir abertura de chamados se não houver avaliações pendentes"
-  if (pol['pol-bloquear-aval-pendente'] && !isStaffRole(currentPerfil?.role)) {
-    // Recarregar chamados para garantir dados atualizados antes de verificar
-    await loadMeusChamados();
-    const pendente = getAvaliacaoPendente();
-    if (pendente) {
-      showToast('⚠️ Avalie o chamado #' + pendente.ticket_num + ' antes de abrir um novo.', 'err');
-      setTimeout(() => openModalAval(pendente.id), 600);
-      return;
+  // Só verifica para usuários comuns (não staff)
+  if (!isStaffRole(currentPerfil?.role)) {
+    const temAvalEmail   = pol['pol-avaliacao-email'] !== false;
+    const temBloqueio    = pol['pol-bloquear-aval-pendente'] === true;
+
+    if (temAvalEmail || temBloqueio) {
+      // Buscar DIRETO DO BANCO — não depender do cache (que pode estar desatualizado)
+      const { data: chamadosPendentes } = await sb.from('chamados')
+        .select('id,ticket_num,titulo,status,avaliacao')
+        .eq('usuario_id', currentUser.id)
+        .in('status', ['resolvido','fechado'])
+        .is('avaliacao', null);
+
+      const pendente = chamadosPendentes && chamadosPendentes.length
+        ? chamadosPendentes[0]
+        : null;
+
+      if (pendente) {
+        if (temBloqueio) {
+          // Bloqueia E pede avaliação
+          showToast('⚠️ Avalie o chamado #' + pendente.ticket_num + ' antes de abrir um novo.', 'warn');
+          setTimeout(() => openModalAval(pendente.id), 600);
+          return; // impede abertura
+        } else if (temAvalEmail) {
+          // Notifica mas NÃO bloqueia — permite abrir novo chamado
+          showToast('⭐ Você tem uma avaliação pendente do chamado #' + pendente.ticket_num, 'info');
+          setTimeout(() => openModalAval(pendente.id), 600);
+          return;
+        }
+      }
     }
   }
 
