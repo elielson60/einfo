@@ -3580,6 +3580,19 @@ body[data-role="atendente"] #sb-admin-menu {
     </div>
 
     <!-- Info grid -->
+    <!-- Banner de avaliação pendente -->
+    <div id="det-aval-banner" style="display:none;align-items:center;gap:10px;
+      background:rgba(245,158,11,0.10);border:1.5px solid rgba(245,158,11,0.30);
+      border-radius:10px;padding:10px 14px;margin-bottom:12px;cursor:pointer;
+      transition:.15s;" onmouseover="this.style.background='rgba(245,158,11,0.18)'"
+      onmouseout="this.style.background='rgba(245,158,11,0.10)'">
+      <span style="font-size:20px;">⭐</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:#fcd34d;">Avalie este atendimento</div>
+        <div style="font-size:11px;color:var(--muted);">Sua avaliação nos ajuda a melhorar. Clique aqui para avaliar.</div>
+      </div>
+      <span style="font-size:18px;color:#fcd34d;">›</span>
+    </div>
     <div id="det-info" style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.8;"></div>
 
     <!-- Descrição -->
@@ -5570,10 +5583,14 @@ async function salvarStatus() {
 
 // ── TOAST ────────────────────────────────────
 function showToast(msg, type='ok') {
+  const icons = { ok:'✓ ', err:'✕ ', warn:'⚠ ', info:'ℹ ', success:'✓ ', error:'✕ ' };
   const t = document.getElementById('toast');
-  t.textContent = (type==='ok'?'✓ ':'✕ ') + msg;
+  t.textContent = (icons[type] || '') + msg;
   t.className = 'toast show ' + type;
-  setTimeout(()=>t.classList.remove('show'), 3000);
+  // info e warn ficam mais tempo na tela
+  const dur = (type === 'info' || type === 'warn') ? 4500 : 3000;
+  clearTimeout(t._hideTimer);
+  t._hideTimer = setTimeout(() => t.classList.remove('show'), dur);
 }
 
 // ── MEUS CHAMADOS ────────────────────────────
@@ -5601,6 +5618,20 @@ async function loadMeusChamados() {
   aplicarFiltroMeus();
   // Exibir avisos ativos no painel do usuário
   await verificarMuralAvisos();
+
+  // Verificar avaliação pendente automaticamente (com delay para não travar o carregamento)
+  if (!isStaffRole(currentPerfil?.role)) {
+    const pol = CONTA_CONFIG.politica || {};
+    if (pol['pol-avaliacao-email'] !== false) {
+      setTimeout(() => {
+        const pendente = getAvaliacaoPendente();
+        if (pendente) {
+          showToast(`⭐ Avalie o atendimento do chamado #${pendente.ticket_num}`, 'info');
+          setTimeout(() => openModalAval(pendente.id), 1200);
+        }
+      }, 800);
+    }
+  }
 }
 
 function switchMuTab(tab) {
@@ -6803,6 +6834,22 @@ async function openModalDetalhe(id) {
   }
   if (!anexosHtml) anexosDiv.style.display = 'none';
   else { anexosDiv.style.display = 'block'; anexosDiv.innerHTML = anexosHtml; }
+
+  // Se chamado resolvido/fechado e sem avaliação → mostrar banner para usuário
+  const pol2 = CONTA_CONFIG.politica || {};
+  if (!isStaffRole(currentPerfil?.role) &&
+      (c.status === 'resolvido' || c.status === 'fechado') &&
+      !c.avaliacao &&
+      pol2['pol-avaliacao-email'] !== false) {
+    const avalBanner = document.getElementById('det-aval-banner');
+    if (avalBanner) {
+      avalBanner.style.display = 'flex';
+      avalBanner.onclick = () => { closeModalDetalhe(); setTimeout(() => openModalAval(c.id), 200); };
+    }
+  } else {
+    const avalBanner = document.getElementById('det-aval-banner');
+    if (avalBanner) avalBanner.style.display = 'none';
+  }
 
   // Renderizar comentários com dados frescos do banco
   renderComentarios(c);
