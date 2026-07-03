@@ -2511,7 +2511,7 @@ body[data-role="atendente"] #sb-admin-menu {
         <button class="sb-btn" onclick="adminSubNav('conta',this)"><span class="sb-icon">🏛️</span> Configurações da Conta</button>
       </div>
       <span class="sb-section">Ações</span>
-      <button class="sb-btn" onclick="showPage('chamado');novoChamado();atualizarBotaoVoltar();"><span class="sb-icon">➕</span> Novo chamado</button>
+      <button class="sb-btn" onclick="irParaNovoChamado();"><span class="sb-icon">➕</span> Novo chamado</button>
     </div>
 
     <!-- ADMIN CONTENT -->
@@ -2708,7 +2708,7 @@ body[data-role="atendente"] #sb-admin-menu {
         <div class="ch-header">
           <div class="ch-header-left">
             <span class="ch-title">CHAMADOS</span>
-            <button class="ch-new-btn" onclick="showPage('chamado');novoChamado();atualizarBotaoVoltar();">
+            <button class="ch-new-btn" onclick="irParaNovoChamado();">
               <span class="ch-plus">+</span> Novo chamado
             </button>
           </div>
