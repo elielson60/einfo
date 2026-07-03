@@ -2408,8 +2408,8 @@ body[data-role="atendente"] #sb-admin-menu {
 
         <!-- Ações -->
         <div class="suc-actions">
-          <button class="btn btn-ghost" onclick="irParaNovoChamado()">+ Abrir outro chamado</button>
-          <button class="btn btn-primary suc-btn-meus" onclick="showPage('meus-chamados');loadMeusChamados();">
+          <button class="btn btn-ghost" onclick="document.getElementById('chamado-success').style.display='none';irParaNovoChamado()">+ Abrir outro chamado</button>
+          <button class="btn btn-primary suc-btn-meus" onclick="document.getElementById('chamado-success').style.display='none';showPage('meus-chamados');loadMeusChamados();">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
             Meus chamados
           </button>
@@ -4545,6 +4545,7 @@ async function enviarChamado() {
 }
 
 function novoChamado() {
+  document.getElementById('chamado-success').style.display = 'none';
   const pol = CONTA_CONFIG.politica || {};
   document.getElementById('chamado-form').style.display = 'block';
   document.getElementById('chamado-success').style.display = 'none';
