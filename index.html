@@ -4228,6 +4228,8 @@ async function loadPerfil(user) {
     await loadMeusChamados();
     showPage('meus-chamados');
   }
+  // Iniciar realtime após login
+  try { initRealtime(); } catch(e) { console.warn('Realtime indisponível:', e); }
 }
 
 function getAvaliacaoPendente() {
@@ -4370,12 +4372,27 @@ async function doLogin() {
   const err = document.getElementById('login-err');
   const btn = document.getElementById('btn-login');
   err.style.display = 'none';
-  btn.innerHTML = '<span class="spin"></span>';
+  if (!email || !senha) {
+    err.textContent = 'Preencha e-mail e senha.';
+    err.style.display = 'block';
+    return;
+  }
+  btn.innerHTML = '<span class="spin"></span> Entrando…';
   btn.disabled = true;
 
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+  let data, error;
+  try {
+    ({ data, error } = await sb.auth.signInWithPassword({ email, password: senha }));
+  } catch(e) {
+    err.textContent = 'Erro de conexão. Verifique sua internet e tente novamente.';
+    err.style.display = 'block';
+    btn.innerHTML = 'Entrar';
+    btn.disabled = false;
+    return;
+  }
+
   if (error) {
-    err.textContent = 'E-mail ou senha incorretos.';
+    err.textContent = error.message?.includes('Invalid') ? 'E-mail ou senha incorretos.' : (error.message || 'Erro ao entrar.');
     err.style.display = 'block';
     btn.innerHTML = 'Entrar';
     btn.disabled = false;
@@ -4557,6 +4574,10 @@ async function uploadAnexos(ticketNum) {
 
 // ── ENVIAR CHAMADO ───────────────────────────
 async function enviarChamado() {
+  const btn = document.getElementById('btn-chamado');
+  if (btn) { btn.innerHTML = '<span class="spin"></span> Enviando…'; btn.disabled = true; }
+
+  try {
   const titulo = document.getElementById('c-titulo').value.trim();
   const desc = document.getElementById('c-desc').value.trim();
   const area = document.getElementById('c-area').value;
@@ -4740,7 +4761,13 @@ async function enviarChamado() {
   } else if (btnPainel) {
     btnPainel.style.display = 'none';
   }
-  btn.innerHTML='Abrir chamado →'; btn.disabled=false;
+  } catch(e) {
+    console.error('Erro ao enviar chamado:', e);
+    showToast('Erro ao abrir chamado. Tente novamente.', 'err');
+  } finally {
+    const btnF = document.getElementById('btn-chamado');
+    if (btnF) { btnF.innerHTML = 'Abrir chamado →'; btnF.disabled = false; }
+  }
 }
 
 function novoChamado() {
@@ -5485,10 +5512,20 @@ function filtrarChamadosPorAtendente(list) {
   });
 }
 
-async function loadChamados() {
+let chamadosPage = 0;
+const CHAMADOS_PER_PAGE = 50;
+let chamadosTotalLoaded = false;
+
+async function loadChamados(reset = true) {
+  if (reset) { chamadosPage = 0; allChamados = []; chamadosTotalLoaded = false; }
+
+  const from = chamadosPage * CHAMADOS_PER_PAGE;
+  const to   = from + CHAMADOS_PER_PAGE - 1;
+
   const { data, error } = await sb.from('chamados')
     .select('*')
-    .order('criado_em', {ascending: false});
+    .order('criado_em', {ascending: false})
+    .range(from, to);
 
   if (error) {
     console.error('Erro ao carregar chamados:', error);
@@ -5496,16 +5533,32 @@ async function loadChamados() {
     return;
   }
 
-  allChamados = filtrarChamadosPorAtendente(data || []);
+  const novos = filtrarChamadosPorAtendente(data || []);
+  if (reset) {
+    allChamados = novos;
+  } else {
+    allChamados = [...allChamados, ...novos];
+  }
+
+  // Se veio menos que o limite, chegou no fim
+  if ((data||[]).length < CHAMADOS_PER_PAGE) chamadosTotalLoaded = true;
+
   renderChamados(allChamados);
   updateStats(allChamados);
 
-  // Atualizar chips de filtro para refletir statusMap atual
-  const filterAtivo = filterStatus;
-  if (filterAtivo && filterAtivo !== 'todos') {
-    const filtered = allChamados.filter(c => c.status === filterAtivo);
-    renderChamados(filtered);
+  // Botão "Carregar mais"
+  const btnMais = document.getElementById('btn-load-more');
+  if (btnMais) btnMais.style.display = chamadosTotalLoaded ? 'none' : 'block';
+
+  // Reaplica filtro ativo
+  if (filterStatus && filterStatus !== 'todos') {
+    renderChamados(allChamados.filter(c => c.status === filterStatus));
   }
+}
+
+async function loadMoreChamados() {
+  chamadosPage++;
+  await loadChamados(false);
 }
 
 function updateStats(list) {
@@ -9434,6 +9487,40 @@ async function resolverSla(departamento, categoria, prioridade) {
     ini_regra:         ini || null,
     res_regra:         res || null,
   };
+}
+
+// ── REALTIME SUPABASE — atualização automática ───────────────────
+function initRealtime() {
+  // Canal de chamados — atualiza lista quando há INSERT/UPDATE
+  sb.channel('chamados-realtime')
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'chamados' },
+      (payload) => {
+        if (isStaffRole(currentPerfil?.role)) {
+          // Staff: recarregar lista de chamados
+          loadChamados();
+        } else {
+          // Usuário: recarregar meus chamados
+          loadMeusChamados();
+        }
+      }
+    )
+    .subscribe();
+
+  // Canal de comentários — atualiza o modal aberto
+  sb.channel('comentarios-realtime')
+    .on('postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'chamados',
+        filter: currentDetalhe ? `id=eq.${currentDetalhe.id}` : undefined },
+      async (payload) => {
+        if (currentDetalhe && payload.new?.id === currentDetalhe.id) {
+          // Atualizar comentários do modal aberto
+          currentDetalhe = payload.new;
+          renderComentarios(payload.new);
+        }
+      }
+    )
+    .subscribe();
 }
 
 init();
