@@ -2766,44 +2766,170 @@ body[data-role="atendente"] #sb-admin-menu {
         </div>
 
         <div class="admin-sub-page" id="cfgtab-sla" style="display:none;">
-          <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Configure os prazos de resposta e resolução por prioridade.</p>
-        <div class="tbl-wrap" style="padding:20px;margin-bottom:16px;">
-          <div style="font-size:14px;font-weight:500;margin-bottom:4px;">⏰ SLA por prioridade</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Defina o tempo de primeira resposta e o tempo total para resolução, em horas, para cada nível de prioridade.</div>
+  <div style="margin-bottom:16px;">
+    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px;">⏱️ SLA — Acordo de Nível de Serviço</div>
+    <div style="font-size:12px;color:var(--muted);">Configure os prazos de inicialização (1ª resposta) e resolução por departamento, categoria e prioridade.</div>
+  </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:8px;">
-            <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;">Prioridade</div>
-            <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;">Resposta inicial (h)</div>
-            <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;">Resolução total (h)</div>
-          </div>
+  <!-- Abas Inicialização / Resolução -->
+  <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;">
+    <button class="campo-tab-btn active" id="sla-tab-ini" onclick="switchSlaTab('ini',this)">⚡ Inicialização</button>
+    <button class="campo-tab-btn" id="sla-tab-res" onclick="switchSlaTab('res',this)">✅ Resolução</button>
+    <div style="margin-left:auto;padding-bottom:6px;">
+      <button class="btn btn-primary btn-sm" onclick="abrirFormSla()"><i class="ti ti-plus"></i> Nova regra</button>
+    </div>
+  </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px;">
-            <div><span class="badge b-critico">🔴 Crítico</span></div>
-            <input type="number" min="0" id="cfg-critico-resposta"/>
-            <input type="number" min="0" id="cfg-critico-resolucao"/>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px;">
-            <div><span class="badge b-alto">🟠 Alto</span></div>
-            <input type="number" min="0" id="cfg-alto-resposta"/>
-            <input type="number" min="0" id="cfg-alto-resolucao"/>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px;">
-            <div><span class="badge b-medio">🔵 Médio</span></div>
-            <input type="number" min="0" id="cfg-medio-resposta"/>
-            <input type="number" min="0" id="cfg-medio-resolucao"/>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px;">
-            <div><span class="badge b-baixo">🟢 Baixo</span></div>
-            <input type="number" min="0" id="cfg-baixo-resposta"/>
-            <input type="number" min="0" id="cfg-baixo-resolucao"/>
+  <!-- Painel Inicialização -->
+  <div id="sla-panel-ini">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">
+      ⚡ <strong style="color:var(--text);">Inicialização</strong> — tempo máximo para o atendente dar a primeira resposta ao chamado.
+    </div>
+    <div id="sla-ini-list"></div>
+  </div>
+
+  <!-- Painel Resolução -->
+  <div id="sla-panel-res" style="display:none;">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">
+      ✅ <strong style="color:var(--text);">Resolução</strong> — tempo máximo para o chamado ser completamente resolvido.
+    </div>
+    <div id="sla-res-list"></div>
+  </div>
+
+  <!-- Formulário de regra SLA -->
+  <div id="sla-form-wrap" style="display:none;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:16px;">
+    <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:16px;" id="sla-form-title">➕ Nova regra de SLA</div>
+    <input type="hidden" id="sla-rule-id"/>
+    <input type="hidden" id="sla-rule-tipo"/>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;">
+      <div class="form-group">
+        <label>Tipo de SLA <span class="req">*</span></label>
+        <select id="sla-tipo">
+          <option value="inicializacao">⚡ Inicialização (1ª resposta)</option>
+          <option value="resolucao">✅ Resolução total</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Departamento</label>
+        <select id="sla-dept">
+          <option value="">Todos os departamentos</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Categoria</label>
+        <select id="sla-cat">
+          <option value="">Todas as categorias</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;">
+      <div class="form-group">
+        <label>Prioridade</label>
+        <select id="sla-prio">
+          <option value="">Todas as prioridades</option>
+          <option value="critico">🔴 Crítico</option>
+          <option value="alto">🟠 Alto</option>
+          <option value="medio">🔵 Médio</option>
+          <option value="baixo">🟢 Baixo</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Horas <span class="req">*</span></label>
+        <input type="number" id="sla-horas" min="0" placeholder="Ex: 4"/>
+      </div>
+      <div class="form-group">
+        <label>Minutos</label>
+        <input type="number" id="sla-minutos" min="0" max="59" placeholder="Ex: 30"/>
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="form-group" style="flex:1;">
+          <label>Tipo de chamado</label>
+          <div style="display:flex;gap:12px;margin-top:6px;">
+            <label class="chk-wrap"><input type="checkbox" id="sla-tp-externo" checked/><span class="chk-box"></span> Externos</label>
+            <label class="chk-wrap"><input type="checkbox" id="sla-tp-interno" checked/><span class="chk-box"></span> Internos</label>
+            <label class="chk-wrap"><input type="checkbox" id="sla-tp-escalonado" checked/><span class="chk-box"></span> Escalonados</label>
           </div>
         </div>
+      </div>
+    </div>
 
-          <div style="margin-top:16px;">
-            <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
-            <p id="config-msg" style="font-size:12px;color:var(--green);margin-top:10px;display:none;">✅ Configurações salvas com sucesso!</p>
-          </div>
-        </div><!-- /cfgtab-sla -->
+    <div style="margin-bottom:14px;">
+      <div class="form-group">
+        <label>Alertas por e-mail</label>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">
+          <label class="chk-wrap"><input type="checkbox" id="sla-alerta-critico"/><span class="chk-box"></span>
+            <span style="font-size:12px;">Enviar e-mail ao atingir nível crítico (50% a 70% do prazo)</span>
+          </label>
+          <label class="chk-wrap"><input type="checkbox" id="sla-alerta-urgente"/><span class="chk-box"></span>
+            <span style="font-size:12px;">Enviar e-mail ao atingir nível urgente (70% a 100% do prazo)</span>
+          </label>
+          <label class="chk-wrap"><input type="checkbox" id="sla-alerta-vencido"/><span class="chk-box"></span>
+            <span style="font-size:12px;">Enviar e-mail quando o prazo expirar</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:4px;">
+      <button class="btn btn-primary" onclick="salvarRegraSla()">💾 Salvar regra</button>
+      <button class="btn btn-ghost" onclick="fecharFormSla()">Cancelar</button>
+      <button class="btn btn-danger btn-sm" id="sla-btn-del" style="display:none;margin-left:auto;" onclick="excluirRegraSla()">🗑️ Excluir</button>
+    </div>
+    <p id="sla-form-err" style="font-size:12px;color:#f87171;margin-top:8px;display:none;"></p>
+  </div>
+
+  <!-- SLA padrão global (fallback) -->
+  <div style="margin-top:24px;">
+    <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);margin-bottom:12px;">SLA Padrão Global (fallback)</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Aplicado quando não há regra específica para o departamento/categoria.</div>
+    <div class="tbl-wrap" style="padding:16px;">
+      <div style="display:grid;grid-template-columns:140px 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:8px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);">Prioridade</div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);">Inic. (h)</div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);">Inic. (min)</div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);">Resol. (h)</div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);">Resol. (min)</div>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr 1fr 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px;">
+        <span class="badge b-critico">🔴 Crítico</span>
+        <input type="number" min="0" id="cfg-critico-resposta" placeholder="1"/>
+        <input type="number" min="0" max="59" id="cfg-critico-resposta-min" placeholder="0"/>
+        <input type="number" min="0" id="cfg-critico-resolucao" placeholder="4"/>
+        <input type="number" min="0" max="59" id="cfg-critico-resolucao-min" placeholder="0"/>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr 1fr 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px;">
+        <span class="badge b-alto">🟠 Alto</span>
+        <input type="number" min="0" id="cfg-alto-resposta" placeholder="2"/>
+        <input type="number" min="0" max="59" id="cfg-alto-resposta-min" placeholder="0"/>
+        <input type="number" min="0" id="cfg-alto-resolucao" placeholder="8"/>
+        <input type="number" min="0" max="59" id="cfg-alto-resolucao-min" placeholder="0"/>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr 1fr 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px;">
+        <span class="badge b-medio">🔵 Médio</span>
+        <input type="number" min="0" id="cfg-medio-resposta" placeholder="4"/>
+        <input type="number" min="0" max="59" id="cfg-medio-resposta-min" placeholder="0"/>
+        <input type="number" min="0" id="cfg-medio-resolucao" placeholder="24"/>
+        <input type="number" min="0" max="59" id="cfg-medio-resolucao-min" placeholder="0"/>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr 1fr 1fr 1fr;gap:10px;align-items:center;">
+        <span class="badge b-baixo">🟢 Baixo</span>
+        <input type="number" min="0" id="cfg-baixo-resposta" placeholder="8"/>
+        <input type="number" min="0" max="59" id="cfg-baixo-resposta-min" placeholder="0"/>
+        <input type="number" min="0" id="cfg-baixo-resolucao" placeholder="72"/>
+        <input type="number" min="0" max="59" id="cfg-baixo-resolucao-min" placeholder="0"/>
+      </div>
+      <div style="margin-top:14px;">
+        <button class="btn btn-primary btn-sm" onclick="salvarConfig()">💾 Salvar SLA global</button>
+        <p id="config-msg" style="font-size:12px;color:var(--green);margin-top:8px;display:none;">✅ Salvo com sucesso!</p>
+      </div>
+    </div>
+  </div>
+</div><!-- /cfgtab-sla -->
 
         <div class="admin-sub-page" id="cfgtab-horarios" style="display:none;">
           <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Configure os dias e horários de atendimento da sua equipe.</p>
@@ -9051,6 +9177,246 @@ async function checkPushNotificacoes() {
 }
 // Verificar a cada 60 segundos
 setInterval(checkPushNotificacoes, 60000);
+
+// ══════════════════════════════════════════════════════════════════
+// SLA — GERENCIAMENTO DE REGRAS POR DEPARTAMENTO/CATEGORIA
+// ══════════════════════════════════════════════════════════════════
+
+let slaRules = []; // cache das regras carregadas
+let slaTabAtual = 'ini'; // 'ini' ou 'res'
+
+function switchSlaTab(tab, el) {
+  slaTabAtual = tab;
+  document.querySelectorAll('#cfgtab-sla .campo-tab-btn').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('sla-panel-ini').style.display = tab === 'ini' ? 'block' : 'none';
+  document.getElementById('sla-panel-res').style.display = tab === 'res' ? 'block' : 'none';
+}
+
+async function loadSlaRules() {
+  const { data } = await sb.from('sla_regras').select('*').order('criado_em', {ascending:true});
+  slaRules = data || [];
+  renderSlaRules();
+  // Preencher selects de departamento e categoria no form
+  preencherSelectsSla();
+}
+
+function preencherSelectsSla() {
+  const deptSel = document.getElementById('sla-dept');
+  const catSel  = document.getElementById('sla-cat');
+  if (!deptSel || !catSel) return;
+
+  const depts = CADASTROS.areas || [];
+  const cats  = CADASTROS.categorias || [];
+
+  deptSel.innerHTML = '<option value="">Todos os departamentos</option>' +
+    depts.map(d => `<option value="${d.nome}">${d.nome}</option>`).join('');
+  catSel.innerHTML  = '<option value="">Todas as categorias</option>' +
+    cats.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+}
+
+function renderSlaRules() {
+  const ini = slaRules.filter(r => r.tipo === 'inicializacao');
+  const res = slaRules.filter(r => r.tipo === 'resolucao');
+
+  const renderLista = (lista, containerId) => {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!lista.length) {
+      el.innerHTML = `<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px;">
+        Nenhuma regra cadastrada. Clique em <strong>+ Nova regra</strong> para adicionar.
+      </div>`;
+      return;
+    }
+
+    const prioLabel = { critico:'🔴 Crítico', alto:'🟠 Alto', medio:'🔵 Médio', baixo:'🟢 Baixo' };
+    el.innerHTML = `<div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Departamento</th>
+            <th>Categoria</th>
+            <th>Prioridade</th>
+            <th>Prazo</th>
+            <th>Alertas</th>
+            <th style="text-align:right;">Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${lista.map(r => {
+            const prazo = r.horas > 0 ? `${r.horas}h` : '';
+            const mins  = r.minutos > 0 ? `${r.minutos}min` : '';
+            const alertas = [
+              r.alerta_critico ? '50-70%' : '',
+              r.alerta_urgente ? '70-100%' : '',
+              r.alerta_vencido ? 'Vencido' : ''
+            ].filter(Boolean);
+            return `<tr>
+              <td>${r.departamento || '<span style="color:var(--dim)">Todos</span>'}</td>
+              <td>${r.categoria || '<span style="color:var(--dim)">Todas</span>'}</td>
+              <td>${r.prioridade ? prioLabel[r.prioridade] : '<span style="color:var(--dim)">Todas</span>'}</td>
+              <td><strong style="color:var(--text);">${[prazo,mins].filter(Boolean).join(' ') || '—'}</strong></td>
+              <td style="font-size:11px;color:var(--muted);">${alertas.length ? alertas.join(' · ') : '—'}</td>
+              <td style="text-align:right;">
+                <button class="btn btn-ghost btn-sm" onclick="editarRegraSla('${r.id}')">✎ Editar</button>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  };
+
+  renderLista(ini, 'sla-ini-list');
+  renderLista(res, 'sla-res-list');
+}
+
+function abrirFormSla(tipo) {
+  // Limpar form
+  document.getElementById('sla-rule-id').value   = '';
+  document.getElementById('sla-tipo').value       = tipo || (slaTabAtual === 'ini' ? 'inicializacao' : 'resolucao');
+  document.getElementById('sla-dept').value       = '';
+  document.getElementById('sla-cat').value        = '';
+  document.getElementById('sla-prio').value       = '';
+  document.getElementById('sla-horas').value      = '';
+  document.getElementById('sla-minutos').value    = '';
+  document.getElementById('sla-alerta-critico').checked  = false;
+  document.getElementById('sla-alerta-urgente').checked  = false;
+  document.getElementById('sla-alerta-vencido').checked  = false;
+  document.getElementById('sla-tp-externo').checked      = true;
+  document.getElementById('sla-tp-interno').checked      = true;
+  document.getElementById('sla-tp-escalonado').checked   = true;
+  document.getElementById('sla-form-title').textContent  = '➕ Nova regra de SLA';
+  document.getElementById('sla-btn-del').style.display   = 'none';
+  document.getElementById('sla-form-err').style.display  = 'none';
+  document.getElementById('sla-form-wrap').style.display = 'block';
+  document.getElementById('sla-form-wrap').scrollIntoView({behavior:'smooth', block:'start'});
+  preencherSelectsSla();
+}
+
+function editarRegraSla(id) {
+  const r = slaRules.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('sla-rule-id').value          = r.id;
+  document.getElementById('sla-tipo').value             = r.tipo;
+  document.getElementById('sla-dept').value             = r.departamento || '';
+  document.getElementById('sla-cat').value              = r.categoria || '';
+  document.getElementById('sla-prio').value             = r.prioridade || '';
+  document.getElementById('sla-horas').value            = r.horas || '';
+  document.getElementById('sla-minutos').value          = r.minutos || '';
+  document.getElementById('sla-alerta-critico').checked = !!r.alerta_critico;
+  document.getElementById('sla-alerta-urgente').checked = !!r.alerta_urgente;
+  document.getElementById('sla-alerta-vencido').checked = !!r.alerta_vencido;
+  document.getElementById('sla-tp-externo').checked     = r.tipo_externo !== false;
+  document.getElementById('sla-tp-interno').checked     = r.tipo_interno !== false;
+  document.getElementById('sla-tp-escalonado').checked  = r.tipo_escalonado !== false;
+  document.getElementById('sla-form-title').textContent = '✎ Editar regra de SLA';
+  document.getElementById('sla-btn-del').style.display  = 'inline-flex';
+  document.getElementById('sla-form-err').style.display = 'none';
+  document.getElementById('sla-form-wrap').style.display = 'block';
+  document.getElementById('sla-form-wrap').scrollIntoView({behavior:'smooth', block:'start'});
+  preencherSelectsSla();
+}
+
+async function salvarRegraSla() {
+  const err = document.getElementById('sla-form-err');
+  const tipo = document.getElementById('sla-tipo').value;
+  const horas = parseInt(document.getElementById('sla-horas').value) || 0;
+  const mins  = parseInt(document.getElementById('sla-minutos').value) || 0;
+
+  if (!tipo) { err.textContent = 'Selecione o tipo de SLA.'; err.style.display='block'; return; }
+  if (horas === 0 && mins === 0) { err.textContent = 'Informe o prazo em horas e/ou minutos.'; err.style.display='block'; return; }
+  err.style.display = 'none';
+
+  const payload = {
+    tipo,
+    departamento:    document.getElementById('sla-dept').value || null,
+    categoria:       document.getElementById('sla-cat').value  || null,
+    prioridade:      document.getElementById('sla-prio').value  || null,
+    horas,
+    minutos:         mins,
+    alerta_critico:  document.getElementById('sla-alerta-critico').checked,
+    alerta_urgente:  document.getElementById('sla-alerta-urgente').checked,
+    alerta_vencido:  document.getElementById('sla-alerta-vencido').checked,
+    tipo_externo:    document.getElementById('sla-tp-externo').checked,
+    tipo_interno:    document.getElementById('sla-tp-interno').checked,
+    tipo_escalonado: document.getElementById('sla-tp-escalonado').checked,
+  };
+
+  const id = document.getElementById('sla-rule-id').value;
+  let error;
+  if (id) {
+    ({ error } = await sb.from('sla_regras').update(payload).eq('id', id));
+  } else {
+    ({ error } = await sb.from('sla_regras').insert(payload));
+  }
+
+  if (error) { err.textContent = 'Erro: ' + error.message; err.style.display='block'; return; }
+
+  fecharFormSla();
+  await loadSlaRules();
+  // Mudar para aba correspondente
+  const tabEl = document.getElementById(tipo === 'inicializacao' ? 'sla-tab-ini' : 'sla-tab-res');
+  switchSlaTab(tipo === 'inicializacao' ? 'ini' : 'res', tabEl);
+  showToast('✅ Regra de SLA salva com sucesso!', 'ok');
+}
+
+async function excluirRegraSla() {
+  const id = document.getElementById('sla-rule-id').value;
+  if (!id || !confirm('Excluir esta regra de SLA?')) return;
+  const { error } = await sb.from('sla_regras').delete().eq('id', id);
+  if (error) { showToast('Erro ao excluir: ' + error.message, 'err'); return; }
+  fecharFormSla();
+  await loadSlaRules();
+  showToast('Regra excluída.', 'ok');
+}
+
+function fecharFormSla() {
+  document.getElementById('sla-form-wrap').style.display = 'none';
+}
+
+// Resolver SLA para um chamado específico (hierarquia: regra específica > regra geral > fallback global)
+async function resolverSla(departamento, categoria, prioridade) {
+  // Buscar regras do banco se não tiver em cache
+  if (!slaRules.length) {
+    const { data } = await sb.from('sla_regras').select('*');
+    slaRules = data || [];
+  }
+
+  const score = (r) => {
+    // Quanto mais específica a regra, maior o score
+    let s = 0;
+    if (r.departamento && r.departamento === departamento) s += 4;
+    if (r.categoria && r.categoria === categoria)         s += 2;
+    if (r.prioridade && r.prioridade === prioridade)      s += 1;
+    // Regra genérica (sem nenhum filtro) tem score 0 — serve como fallback
+    return s;
+  };
+
+  const ini = slaRules
+    .filter(r => r.tipo === 'inicializacao')
+    .filter(r => (!r.departamento || r.departamento === departamento) &&
+                 (!r.categoria   || r.categoria   === categoria)     &&
+                 (!r.prioridade  || r.prioridade  === prioridade))
+    .sort((a,b) => score(b) - score(a))[0];
+
+  const res = slaRules
+    .filter(r => r.tipo === 'resolucao')
+    .filter(r => (!r.departamento || r.departamento === departamento) &&
+                 (!r.categoria   || r.categoria   === categoria)     &&
+                 (!r.prioridade  || r.prioridade  === prioridade))
+    .sort((a,b) => score(b) - score(a))[0];
+
+  // Fallback para SLA_CONFIG global
+  const globalSla = SLA_CONFIG[prioridade] || { resposta: 4, resolucao: 24 };
+
+  return {
+    inicializacao_h:   ini ? (ini.horas + (ini.minutos || 0) / 60) : globalSla.resposta,
+    resolucao_h:       res ? (res.horas + (res.minutos || 0) / 60) : globalSla.resolucao,
+    ini_regra:         ini || null,
+    res_regra:         res || null,
+  };
+}
 
 init();
 </script>
