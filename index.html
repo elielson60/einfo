@@ -4626,9 +4626,19 @@ async function enviarChamado() {
   // Upload imagens primeiro
   const anexoUrls = await uploadAnexos(ticketNum);
 
-  const { error } = await sb.from('chamados').insert({
+  // Resolver SLA específico para departamento + categoria + prioridade
+  const slaResolv = await resolverSla(
+    area || currentPerfil?.departamento || '',
+    cat || '',
+    selectedPrio || 'medio'
+  );
+  const agoraSla = new Date();
+  const deadlineIni = new Date(agoraSla.getTime() + slaResolv.inicializacao_h * 3600000);
+  const deadlineRes = new Date(agoraSla.getTime() + slaResolv.resolucao_h     * 3600000);
+
+  await sb.from('chamados').insert({
     ticket_num: ticketNum,
-    protocolo: novoProtocolo,       // campo numérico para ordenação correta
+    protocolo: novoProtocolo,
     titulo,
     descricao: desc,
     categoria: cat,
@@ -4641,7 +4651,12 @@ async function enviarChamado() {
     ramal: currentPerfil.ramal || '',
     ai_analise: '',
     ai_acao: '',
-    ai_sla: aiResult?.sla_horas ? String(aiResult.sla_horas) : '',
+    ai_sla: String(slaResolv.resolucao_h),
+    // Campos de SLA calculados
+    sla_inicializacao_h:  slaResolv.inicializacao_h,
+    sla_resolucao_h:      slaResolv.resolucao_h,
+    sla_deadline_ini:     deadlineIni.toISOString(),
+    sla_deadline_res:     deadlineRes.toISOString(),
     anexos: anexoUrls.length ? anexoUrls : null,
     campos_personalizados: Object.keys(camposExtra).length ? camposExtra : null,
     ...(emailCopia ? { email_copia: emailCopia } : {})
@@ -6900,10 +6915,13 @@ async function salvarConfig() {
 }
 
 function slaInfo(c) {
-  const cfg = SLA_CONFIG[c.prioridade] || {resposta:4, resolucao:24};
-  const horas = cfg.resolucao || 24;
+  const cfg   = SLA_CONFIG[c.prioridade] || {resposta:4, resolucao:24};
+  const horas = c.sla_resolucao_h || cfg.resolucao || 24;  // banco tem prioridade
   const criado = new Date(c.criado_em);
-  const prazo = new Date(criado.getTime() + horas*60*60*1000);
+  // Usar deadline salvo no banco (calculado com regra específica de departamento)
+  const prazo = c.sla_deadline_res
+    ? new Date(c.sla_deadline_res)
+    : new Date(criado.getTime() + horas*60*60*1000);
   const agora = new Date();
   const totalMs = prazo - criado;
   const usadoMs = agora - criado;
@@ -6987,7 +7005,7 @@ async function openModalDetalhe(id) {
   const prazoFill = document.getElementById('det-prazo-fill');
   if (c.status !== 'resolvido') {
     const cfg = SLA_CONFIG[c.prioridade] || {resolucao:24};
-    const horas = cfg.resolucao || 24;
+    const horas = c.sla_resolucao_h || cfg.resolucao || 24;
     const criado = new Date(c.criado_em);
     const prazo = new Date(criado.getTime() + horas*3600000);
     const agora = new Date();
