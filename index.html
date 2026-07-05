@@ -3192,8 +3192,8 @@ body[data-role="atendente"] #sb-admin-menu {
 
               <div class="field">
                 <label>URL do send_email.php <span class="req">*</span></label>
-                <input type="url" id="cfg-email-phpurl" placeholder="https://seudominio.com.br/eliticket/send_email.php"/>
-                <div style="font-size:11px;color:var(--muted);margin-top:4px;">Ex: https://martinsimport.com.br/eliticket/send_email.php</div>
+                <input type="url" id="cfg-email-phpurl" placeholder="https://chamados.zucatellibrasil.com.br/send_email.php"/>
+                <div style="font-size:11px;color:var(--muted);margin-top:4px;">Ex: https://chamados.zucatellibrasil.com.br/send_email.php</div>
               </div>
 
               <!-- Status -->
@@ -4003,7 +4003,7 @@ let CADASTRO_BLOQUEADO = false;
 // ── E-MAIL VIA PHP (Hostgator) ──────────────────────────
 // URL do send_email.php hospedado no Hostgator
 // Configure pela aba "E-mail" em Administração → Configurações da Conta
-let EMAIL_PHP_URL = '';  // ex: https://seudominio.com.br/eliticket/send_email.php
+let EMAIL_PHP_URL = '';  // ex: https://chamados.zucatellibrasil.com.br/send_email.php
 
 async function carregarConfigEmail() {
   try {
@@ -4577,37 +4577,37 @@ async function enviarChamado() {
   const btn = document.getElementById('btn-chamado');
   if (btn) { btn.innerHTML = '<span class="spin"></span> Enviando…'; btn.disabled = true; }
 
-  try {
+  // ── Validação dos campos ──────────────────────────────────────
   const titulo = document.getElementById('c-titulo').value.trim();
-  const desc = document.getElementById('c-desc').value.trim();
-  const area = document.getElementById('c-area').value;
+  const desc   = document.getElementById('c-desc').value.trim();
+  const area   = document.getElementById('c-area').value;
+  const cat    = document.getElementById('c-cat').value;
+  const pol    = CONTA_CONFIG.politica || {};
   let ok = true;
-  const cat = document.getElementById('c-cat').value;
-  const pol = CONTA_CONFIG.politica || {};
 
-  if (!area) { document.getElementById('err-area').style.display='block'; ok=false; } else document.getElementById('err-area').style.display='none';
+  if (!area)   { document.getElementById('err-area').style.display='block';   ok=false; } else document.getElementById('err-area').style.display='none';
   if (!titulo) { document.getElementById('err-titulo').style.display='block'; ok=false; } else document.getElementById('err-titulo').style.display='none';
-  if (!desc) { document.getElementById('err-desc').style.display='block'; ok=false; } else document.getElementById('err-desc').style.display='none';
+  if (!desc)   { document.getElementById('err-desc').style.display='block';   ok=false; } else document.getElementById('err-desc').style.display='none';
 
-  // Política: "Exigir categoria na criação de chamado"
-  const categoriaObrigatoria = pol['pol-exigir-categoria'] !== false; // padrão: obrigatório
+  const categoriaObrigatoria = pol['pol-exigir-categoria'] !== false;
   if (categoriaObrigatoria && !cat) { document.getElementById('err-cat').style.display='block'; ok=false; } else document.getElementById('err-cat').style.display='none';
 
   if (!selectedPrio) { document.getElementById('err-prio').style.display='block'; ok=false; } else document.getElementById('err-prio').style.display='none';
 
-  // Política: "Exigir ao menos 1 anexo na abertura de chamados críticos"
   if (pol['pol-anexo-obrigatorio'] && selectedPrio === 'critico' && (!selectedFiles || !selectedFiles.length)) {
-    showToast('Chamados críticos exigem ao menos 1 anexo, conforme a política da empresa.','err');
+    showToast('Chamados críticos exigem ao menos 1 anexo.','err');
     ok = false;
   }
 
   const { valores: camposExtra, ok: okExtra } = lerCamposExtra();
   if (!okExtra) ok = false;
 
-  if (!ok) return;
+  if (!ok) {
+    if (btn) { btn.innerHTML = 'Abrir chamado →'; btn.disabled = false; }
+    return;
+  }
 
-  const btn = document.getElementById('btn-chamado');
-  btn.innerHTML = '<span class="spin"></span> Abrindo...'; btn.disabled = true;
+  try {
 
   // cat já declarado na validação acima
   // Número de protocolo sequencial — lê o maior ticket_num existente
@@ -4657,7 +4657,7 @@ async function enviarChamado() {
   const deadlineIni = new Date(agoraSla.getTime() + slaResolv.inicializacao_h * 3600000);
   const deadlineRes = new Date(agoraSla.getTime() + slaResolv.resolucao_h     * 3600000);
 
-  await sb.from('chamados').insert({
+  const { error: insertError } = await sb.from('chamados').insert({
     ticket_num: ticketNum,
     protocolo: novoProtocolo,
     titulo,
@@ -4673,7 +4673,6 @@ async function enviarChamado() {
     ai_analise: '',
     ai_acao: '',
     ai_sla: String(slaResolv.resolucao_h),
-    // Campos de SLA calculados
     sla_inicializacao_h:  slaResolv.inicializacao_h,
     sla_resolucao_h:      slaResolv.resolucao_h,
     sla_deadline_ini:     deadlineIni.toISOString(),
@@ -4683,10 +4682,10 @@ async function enviarChamado() {
     ...(emailCopia ? { email_copia: emailCopia } : {})
   });
 
-  if (error) {
-    console.error('Erro ao salvar chamado:', error);
-    showToast('Erro ao salvar: ' + (error.message || 'Tente novamente.'), 'err');
-    btn.innerHTML='Abrir chamado →'; btn.disabled=false; return;
+  if (insertError) {
+    console.error('Erro ao salvar chamado:', insertError);
+    showToast('Erro ao salvar: ' + (insertError.message || 'Tente novamente.'), 'err');
+    return;
   }
 
   // Chamado salvo no Supabase
