@@ -4647,40 +4647,52 @@ async function enviarChamado() {
   // Upload imagens primeiro
   const anexoUrls = await uploadAnexos(ticketNum);
 
-  // Resolver SLA específico para departamento + categoria + prioridade
-  const slaResolv = await resolverSla(
-    area || currentPerfil?.departamento || '',
-    cat || '',
-    selectedPrio || 'medio'
-  );
-  const agoraSla = new Date();
-  const deadlineIni = new Date(agoraSla.getTime() + slaResolv.inicializacao_h * 3600000);
-  const deadlineRes = new Date(agoraSla.getTime() + slaResolv.resolucao_h     * 3600000);
+  // Resolver SLA — com fallback seguro se tabela não existir
+  let slaResolv = { inicializacao_h: 4, resolucao_h: 24 };
+  let deadlineIni = null, deadlineRes = null;
+  try {
+    slaResolv  = await resolverSla(
+      area || currentPerfil?.departamento || '',
+      cat  || '',
+      selectedPrio || 'medio'
+    );
+    const agoraSla = new Date();
+    deadlineIni = new Date(agoraSla.getTime() + slaResolv.inicializacao_h * 3600000);
+    deadlineRes = new Date(agoraSla.getTime() + slaResolv.resolucao_h     * 3600000);
+  } catch(slaErr) {
+    console.warn('SLA não calculado (tabela indisponível?):', slaErr);
+  }
 
-  const { error: insertError } = await sb.from('chamados').insert({
+  // Montar payload sem campos SLA opcionais que podem não existir na tabela
+  const insertPayload = {
     ticket_num: ticketNum,
-    protocolo: novoProtocolo,
+    protocolo:  novoProtocolo,
     titulo,
-    descricao: desc,
-    categoria: cat,
+    descricao:  desc,
+    categoria:  cat,
     prioridade: selectedPrio,
-    status: 'aberto',
+    status:     'aberto',
     usuario_id: currentUser.id,
     nome_solicitante: currentPerfil?.nome || 'Não identificado',
-    empresa: currentPerfil?.empresa || 'Não informado',
+    empresa:    currentPerfil?.empresa || 'Não informado',
     departamento: area || currentPerfil?.departamento || 'Não informado',
-    ramal: currentPerfil.ramal || '',
+    ramal:      currentPerfil.ramal || '',
     ai_analise: '',
-    ai_acao: '',
-    ai_sla: String(slaResolv.resolucao_h),
-    sla_inicializacao_h:  slaResolv.inicializacao_h,
-    sla_resolucao_h:      slaResolv.resolucao_h,
-    sla_deadline_ini:     deadlineIni.toISOString(),
-    sla_deadline_res:     deadlineRes.toISOString(),
-    anexos: anexoUrls.length ? anexoUrls : null,
+    ai_acao:    '',
+    ai_sla:     String(slaResolv.resolucao_h),
+    anexos:     anexoUrls.length ? anexoUrls : null,
     campos_personalizados: Object.keys(camposExtra).length ? camposExtra : null,
-    ...(emailCopia ? { email_copia: emailCopia } : {})
-  });
+    ...(emailCopia ? { email_copia: emailCopia } : {}),
+    // Campos SLA — adicionados apenas se deadlines foram calculados
+    ...(deadlineIni ? {
+      sla_inicializacao_h: slaResolv.inicializacao_h,
+      sla_resolucao_h:     slaResolv.resolucao_h,
+      sla_deadline_ini:    deadlineIni.toISOString(),
+      sla_deadline_res:    deadlineRes.toISOString(),
+    } : {}),
+  };
+
+  const { error: insertError } = await sb.from('chamados').insert(insertPayload);
 
   if (insertError) {
     console.error('Erro ao salvar chamado:', insertError);
